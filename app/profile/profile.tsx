@@ -26,12 +26,12 @@ export default function Profile() {
 
     return (
         <div className=" ">
-            <div className="flex gap-5 p-2">
-                <div className="h-20 w-20  profile-img rounded-full bg-white overflow-hidden border-black border-4">
+            <div className="flex flex-col justify-center  items-center gap-5 p-2">
+                <div className="h-32 w-32  profile-img rounded-full bg-white overflow-hidden border-black border-4">
                     <CIcon className="text-black" icon={cilUser} size="xxl"/>
                 </div>
-                <div className="details flex flex-col justify-center items-start grow">
-                    <div className="text-sm">
+                <div className="details flex flex-col justify-center items-center grow">
+                    <div className="text-lg text-center">
                         <p>{userData.fullname}</p>
                         <p>{userData.username}</p>
                         {/* <p>johndoe001@example.com</p> */}

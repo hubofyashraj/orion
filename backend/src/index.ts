@@ -1,5 +1,5 @@
 
-import { checkUserNameAvailable, checkCredentials, signup, getprofileData } from "./database/db";
+import { checkUserNameAvailable, checkCredentials, signup, getprofileData, search } from "./database/db";
 
 import express, { Request, Response } from "express";
 import https from 'https';
@@ -86,6 +86,19 @@ app.post('/signup', (req: Request, res: Response)=>{
     }).catch((reason)=>{
         res.json({success: false, reason});
     });
+})
+
+
+app.post('/search', (req: Request, res: Response)=>{
+    search(req.body.searchTxt).then((list: Array<object| null> | null)=>{
+        if(list) {
+            res.json({success: true, results: list})
+        }else {
+            res.json({success: false, reason: 'Server Err'})
+        }
+    }).catch(()=>[
+        res.json({success: false, reason: 'caught err on server sise'})
+    ])
 })
 
 // const server = https.createServer();

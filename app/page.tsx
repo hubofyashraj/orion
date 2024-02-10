@@ -8,6 +8,7 @@ import axios from 'axios';
 import { address } from './api/api';
 import Feed from './feed/feed';
 import Profile from './profile/profile';
+import Search from './search/search';
 
 // var n = 1;
 
@@ -103,6 +104,7 @@ export default function Home() {
           <div style={{height: 'calc( 100vh - 64px )' }} className='h-full bg-slate-700'>
             {contentPage==='feed' && <Feed />}
             {contentPage==='profile' && <Profile />}
+            {contentPage==='search' && <Search />}
           </div>
         </div>
       }

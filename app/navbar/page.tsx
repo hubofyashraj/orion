@@ -31,6 +31,7 @@ export default function Navbar(props: any) {
                     <li className="md:hidden"><button onClick={toggleCollapse} className="w-6 "><CIcon className="text-white w-6 " icon={cilX}  /></button></li>
                     {/* <li><a>Profile</a></li> */}
                     {props.loginState==true && <li><button onClick={()=>{props.router('feed')}} className="p-2">Home</button></li>}
+                    {props.loginState==true && <li><button onClick={()=>{props.router('search')}} className="p-2">Search</button></li>}
                     {props.loginState==true && <li><button onClick={()=>{props.router('profile')}} className="p-2">Profile</button></li>}
                     <li><button onClick={()=>login()} className="p-2" >{props.loginState==false?'Login':'Logout'}</button></li>
                 </ul>

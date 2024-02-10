@@ -1,7 +1,10 @@
 import axios from "axios";
 import { address } from "../api";
+var bcrypt = require('bcryptjs');
 
 export function signup(data: {username: string, password: string, fullname: string | undefined}) :Promise<object>{
+    
+    
     return new Promise((resolve, reject)=>{
         axios.post(
             address+'/signup',
