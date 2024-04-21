@@ -11,8 +11,9 @@ export function signup(data: {username: string, password: string, fullname: stri
             data
         ).then((result)=>{
             resolve(result.data);            
-        }).catch((result)=>{
+        }).catch((result: any)=>{
             console.log('err', result);
+            alert(result)
             reject(result.data);
         })
     })

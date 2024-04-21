@@ -10,6 +10,8 @@ export function login(data: {username:string, password: string, fullname: string
             if (result.data.verified == true) {
                 localStorage.setItem('token', result.data.token);
                 sessionStorage.setItem('user', data.username);
+                console.log('login success: ', result);
+                
                 resolve(true);
             } else {
                 reject('wrong credentials');

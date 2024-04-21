@@ -1,7 +1,7 @@
 import CIcon from '@coreui/icons-react';
 import './login.css'
 import { cilCircle, cilX } from '@coreui/icons';
-import { ChangeEvent, FormEvent, useState } from 'react';
+import { ChangeEvent, Context, FormEvent, useState } from 'react';
 import { checkUserNameAvailability } from '../api/events/signup';
 
 export default function Login(props: {close: Function, loginHandler: Function}) {
@@ -55,23 +55,38 @@ export default function Login(props: {close: Function, loginHandler: Function}) 
         
     }
 
+
+    // const debounce = (func: Function, delay: number)=> {
+    //     return function () {
+    //         const args = arguments
+    //     }
+    // }
+    let timer: ReturnType<typeof setTimeout>
+
     function onChangeHandler(event: ChangeEvent) {
+        
         if(!loginPage) {
+
             if(event.target!=null) {
+                
                 var uInput: HTMLInputElement = event.target as HTMLInputElement;
-                checkUserNameAvailability(uInput.value).then((available: boolean)=>{
-                    // console.log(available);
-                
-                    if(available==false) {
-                        setWarning('Username not available');
-                        // console.log(warning);
-                        
-                    } else {
-                        setWarning('');
-                        // console.log(warning);
-                    }
-                });
-                
+                clearTimeout(timer)
+                timer = setTimeout(()=>{
+                    // console.log(new Date());
+                    
+                    checkUserNameAvailability(uInput.value).then((available: boolean)=>{
+                        // console.log(available);
+                    
+                        if(available==false) {
+                            setWarning('Username not available');
+                            // console.log(warning);
+                            
+                        } else {
+                            setWarning('');
+                            // console.log(warning);
+                        }
+                    });
+                }, 1000)
             }
         }
     }

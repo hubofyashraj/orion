@@ -9,14 +9,28 @@ import { address } from './api/api';
 import Feed from './feed/feed';
 import Profile from './profile/profile';
 import Search from './search/search';
+import { sockInit } from './handleSocket';
+import Chat from './chat/page';
+import Edit from './profile/edit';
 
 // var n = 1;
+
+// const socket = io(address);
+
+
+
+
+
 
 export default function Home() {
   const [showLogin, setShowLogin] = useState(false);
   const [loginState, setLoginState] = useState(false);
 
   const [contentPage, setContentPage] = useState('feed');
+
+  const [notifications, setNotifications] = useState([] as Array<any>);
+
+  // const [user, setUser] = useState();
 
   function toggleLogin() {
     setShowLogin(!showLogin);
@@ -30,6 +44,7 @@ export default function Home() {
         alert('login success')
         setShowLogin(false);
         setLoginState(true);
+        initializer(localStorage.getItem('token')!);
       }).catch((reason: string)=>{
         setWarning(reason);        
       });
@@ -60,24 +75,42 @@ export default function Home() {
     })
   }
 
+  function initializer(token: string) {
+    axios.post(
+      address+'/',
+      {token: localStorage.getItem('token')}
+    ).then((result)=>{
+      console.log(result.data);
+      sessionStorage.setItem('user', result.data.userdata.username);
+      sockInit();
+      
+      setLoginState(true);
+    }).catch((reason)=>{
+      console.log(reason, 'FF');
+      setShowLogin(true);
+    })
+
+  }
+
+
+  const documentHeight = () => {
+    const doc = document.documentElement
+    doc.style.setProperty('--doc-height', `${window.innerHeight}px`)
+  }
+ 
+
   useEffect(()=>{
+
+
+    window.addEventListener('resize', documentHeight)
+    documentHeight()
+  
       
     const token: string | null = localStorage.getItem('token') ;
     // console.log(n++);
 
     if(token) {
-      axios.post(
-        address+'/',
-        {token: localStorage.getItem('token')}
-      ).then((result)=>{
-        console.log(result.data);
-        sessionStorage.setItem('user', result.data.authorizedData.username);
-        setLoginState(true);
-      }).catch((reason)=>{
-        console.log(reason);
-        setShowLogin(true);
-      })
-
+      initializer(token);
       
     }
     else {
@@ -85,29 +118,40 @@ export default function Home() {
       setShowLogin(true);
       console.log('hekko');
     }
-  
+
   }, [])
 
   
-
+  // const width = window.innerWidth;
+  // const height = window.innerHeight;
+  
+  // const docu = document.documentElement
+  // docu.style.setProperty('--doc-height', `${window.innerHeight}px`)
+// alert('inner '+ window.innerHeight);
+// alert('outer '+window.outerHeight);
+  
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-between overflow-hidden">
+    <main style={{  }} className="flex h-full flex-col items-center justify-between overflow-hidden">
       {showLogin && <Login close={toggleLogin} loginHandler={handleLogin}/>}
 
       {
         !showLogin && 
-        <div className='w-full flex flex-col justify-start'>
-          <div style={{height: 64}} className='w-full drop-shadow-sm border-b-2'>
-            <Navbar isLoggedIn={false} loginState={loginState} calllogin={toggleLogin} calllogout={handleLogout} router={setContentPage}/>
+        <div className='w-full h-full flex flex-col justify-start'>
+          <div style={{height: 64}} className='w-full fixed z-20 shadow-sm border-b-2'>
+            <Navbar isLoggedIn={false} loginState={loginState} calllogin={toggleLogin} calllogout={handleLogout} router={setContentPage} notifications={notifications} />
           </div>
-          <div style={{height: 'calc( 100vh - 64px )' }} className='h-full bg-slate-700'>
+          <div style={{height: 'calc( 100% - 64px )' }} className='h-full mt-16 '>
             {contentPage==='feed' && <Feed />}
-            {contentPage==='profile' && <Profile />}
+            {contentPage==='profile' && <Profile setPage={(val: string)=>setContentPage(val)} />}
             {contentPage==='search' && <Search />}
+            {contentPage==='chat' && <Chat />}
+            {contentPage==='edit' && <Edit  user={sessionStorage.getItem('user')!} setPage={(val: string)=>setContentPage(val)}/>}
           </div>
         </div>
       }
     </main>
   )
 }
+
+
