@@ -52,12 +52,28 @@ profileRouter.post('/saveinfo', (req: Request, res: Response)=>{
 })
 
 profileRouter.post('/saveimage', (req:Request, res: Response)=>{
-    console.log('bhbii');
-    console.log(req.body.image);
+    // console.log(req.body.image);
     
     verify_token(req.body.token).then((data)=>{
+        console.log('profile image save request', data.username!);
         saveImage(data.username!, req.body.image).then(()=>{
             res.json({success: true});
+            console.log('image saved', data.username!);
+            
+        })
+    })
+})
+
+profileRouter.post('/fetchProfileImage', (req: Request, res: Response)=>{
+    console.log('profile pic fetch request', req.body.user);
+    
+    verify_token(req.body.token).then((data)=>{
+        getInfo(req.body.user!).then((result)=>{
+            console.log('profile image fetched');
+            
+            res.json({success: true, image: result.profile_image})
+        }).catch((reason)=>{
+            res.json({success: false, reason});
         })
     })
 })

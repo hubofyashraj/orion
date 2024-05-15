@@ -1,4 +1,4 @@
-import { Document, MongoClient, ObjectId, WithId } from 'mongodb';
+import { Document, MongoClient, ObjectId, PushOperator, WithId } from 'mongodb';
 import dotenv from 'dotenv';
 import { resolve } from 'path';
 import bcrypt from 'bcrypt';
@@ -196,13 +196,8 @@ export  function getRequestsData(receiver: string) : Promise<object> {
                 }
             })
             
-            
-            // list.push(await l.next());
-            // console.log(list, 'FFF');
 
         }
-        // l.hasNext();
-        // console.log('test');
         
         resolve(list);
     })
@@ -216,10 +211,9 @@ async function connectUsers(u1: string, u2:string) {
 
     var user;
     user = await collection.findOne({user: u1});
-    await collection.updateOne({user: u1}, {$push: {connections: u2}})
-
+    await collection.updateOne({user: u1}, {$push: {connections: u2} as any})
     user = await collection.findOne({user: u2});
-    await collection.updateOne({user: u2}, {$push: {connections: u1}})
+    await collection.updateOne({user: u2}, {$push: {connections: u1} as any})
 
     
 }
@@ -258,18 +252,35 @@ export function getConnections(user: string) {
         if(result!=null) {
             const connections: Array<string>  = result.connections
 
-            const usercollection = db.collection('users')
+            const usercollection = db.collection('info')
             var list: any = [];
             
-            for (let i = 0; i < connections.length; i++) {
-                const username = connections[i];
-
-                const info = await usercollection.findOne({username}, {projection: {username: 1, fullname: 1}});
+            const promises = connections.map(async (username)=>{
+                // console.log(username);
+                var info = await usercollection.findOne({username}, {projection: {username: 1, fullname: 1}});
+                // console.log(username, info);
                 
-                if(info!=null)  await list.push(info)
-            }
+                if(info!=null) {
+                    const promise = db.collection('messages').find({$or: [{sender: user, receiver: username}, {sender: username, receiver: user}]}).sort({_id: -1}).limit(1);
+                    if(await promise.hasNext()) {
+                        const msg = await promise.next();
+                        info.lastmsg = msg!.msg;
+                        info.ts = msg!.ts;
+                        await list.push(info)
+                    }else {
+                        info.msg=null
+                        info.ts = '99999999999999';
+                        await list.push(info)
+                    }
+                }
+            })
 
-            
+            await Promise.all(promises);
+
+
+            // console.log('lemght', list.length);
+            list.sort((a: any, b: any)=>parseInt(b.ts)-parseInt(a.ts))
+            // console.log('sorted list: ', list);
             
 
             resolve(list);
@@ -277,6 +288,7 @@ export function getConnections(user: string) {
 
     })
 
+      
 
 
 }

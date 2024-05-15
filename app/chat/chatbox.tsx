@@ -5,7 +5,6 @@ import React, { ChangeEvent, FormEvent, useEffect } from "react";
 import { useState } from "react";
 import { address } from "../api/api";
 import { Socket, io } from "socket.io-client";
-import { handleChatSocket } from "./handleChatSocket";
 import MessageComp, { message } from "./message";
 
 export var setMsgs: Function=()=>{};
@@ -17,30 +16,40 @@ function ChatBox(props: any) {
     const [msg, setMsg] = useState('');
     const [msgList, setMsgList] = useState([] as Array<any>);
     // const [socket, setSocket] = useState(io(address));
-    var socket: Socket | null = null
     
 
+
     function middle(list: Array<any>){
-        console.log(list);
         setMsgList(list);
-        
     }
 
     setMsgs=middle;
         
-    useEffect(()=>{
-        console.log('chatbox efect', props.user)
-        if(socket==null) {
-            socket = io(address)
-            handleChatSocket(socket, props.user.username)
-        }
-        
-    }, [props.user])
 
     useEffect(()=>{
-        
         document.getElementById('msgs')!.lastElementChild?.scrollIntoView()
     }, [msgList])
+
+    useEffect(()=>{
+        axios.post(
+            address+'/chats/getChats',
+            {token: localStorage.getItem('token'), receiver: props.user.username}
+        ).then((result)=>{
+            const msgs = result.data.chats;
+            // console.log(msgs);
+            
+            var list: Array<any> = [];
+            for (let i = 0; i < msgs.length; i++) {
+                const ob = msgs[i];
+                if(ob.sender == sessionStorage.getItem('user') || ob.sender==props.user.username) {
+                    var element = <MessageComp msg={ob} sender={props.user.username} key={ob.msg+ob.ts} />
+                    list.push(element);
+                }
+            }
+            setMsgList(list);
+        })
+
+    },[props.user.username])
 
     function incomingMsg(ob: message) {
         if(ob.sender == sessionStorage.getItem('user') || ob.sender==props.user.username) {
@@ -63,7 +72,7 @@ function ChatBox(props: any) {
             ).then((result) =>{
                 setMsg('')
             }).catch((reason)=>{
-    
+                
             })
         }
         

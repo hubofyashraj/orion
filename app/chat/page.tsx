@@ -43,13 +43,13 @@ export default function Chat() {
 
 
     useEffect(()=>{
-        console.log(chatActive);
+        // console.log(chatActive);
         
     }, [chatActive])
 
     function toggleChat(val: boolean) {
         setChatActive(val)
-        console.log(val);
+        // console.log(val);
         
     }
 

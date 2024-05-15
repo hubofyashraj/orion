@@ -1,10 +1,14 @@
 "use client"
 import { cilBell, cilChatBubble, cilCommentBubble, cilMenu, cilX } from "@coreui/icons";
 import CIcon from "@coreui/icons-react";
-import { useEffect, useState } from "react";
+import { SetStateAction, useEffect, useState } from "react";
 
 import Notifications from "./notifications";
-
+import Requests from "./requests";
+import axios from "axios";
+import { address } from "../api/api";
+import { useAuth } from "../auth/ds";
+import { Dispatch } from "redux";
 
 
 
@@ -16,22 +20,33 @@ import Notifications from "./notifications";
 export default function Navbar(props: any) {
     const [isCollapsed, setCollapsed] = useState(true);
     const [showNotifications, setShowNotifications] = useState(false);
+    const [page, showPage] = useState(0);
 
+    const { isLoggedIn, setIsLoggedIn } = useAuth();
     function toggleCollapse() {
         setCollapsed(!isCollapsed);
     }
 
     
 
-    
-    function login() {
+    function handleLogout() {
+        axios.post(address+'/logout', {token: localStorage.getItem('token')}).then((result)=>{
+            localStorage.removeItem('token');
+            sessionStorage.removeItem('user');
+            setIsLoggedIn(false);
+            setContentPage('home');
+        }).catch((err)=>{
+            console.log(err);
+        })
+    }
 
-        if(!isCollapsed)    setCollapsed(true);
-        if(props.loginState==false) {
-            props.calllogin();
-        }else {
-            props.calllogout();
-        }
+
+    
+    function logout() {
+
+        setCollapsed(true);
+        if(isLoggedIn) handleLogout();
+        
     }
 
     function toggleChat() {
@@ -40,14 +55,9 @@ export default function Navbar(props: any) {
     
     function toggleNotifiacations(): void {
         setShowNotifications(!showNotifications);
-        // const n = document.getElementById('notifications')!;
-        // if(showNotifications) {
-        //     n.style.marginTop='-100vh';
-        // }
-        // else {
-        //     n.style.marginTop='';
-        // }
+        
     }
+
 
     useEffect(()=>{
         
@@ -55,17 +65,20 @@ export default function Navbar(props: any) {
 
     return (
         <div id="navbar" className="h-full  top-0 md:p-0  bg-slate-100 w-full flex justify-between items-center">
-            <div>
-                <p className="text-2xl mx-2">Orion</p>
+            <div >
+                <p onClick={()=>props.router('feed')} className="text-2xl mx-2">Orion</p>
             </div>
             
             
             <div className="flex h-full gap-5 items-center">
-                <div style={{}} id="notifications" className={(showNotifications?"mt-20 ":"-mt-[calc(100vh)] ")+"transition-all bg-slate-300 absolute md:right-[calc(19rem)]  left-1/2 -translate-x-1/2 md:left-auto md:-translate-x-0 -z-10 duration-500 self-start rounded-lg p-2"}>
-                    <button className="absolute right-2 top-2" onClick={toggleNotifiacations}><CIcon className="h-5" icon={cilX}/></button>
-                    <p>Notifications</p>
-                    <div className="border-t-2 my-2"></div>
-                    <Notifications />
+                <div style={{}} id="notifications" className={(showNotifications?"mt-20 ":"-mt-[calc(100vh)] ")+"transition-all min-h-96 w-[calc(25rem)] bg-slate-300 absolute md:right-[calc(19rem)]  left-1/2 -translate-x-1/2 md:left-auto md:-translate-x-0 -z-10 duration-500 self-start rounded-lg"}>
+                    <button className="absolute right-2  top-2" onClick={toggleNotifiacations}><CIcon className="h-5" icon={cilX}/></button>
+                    <div className="flex rounded-t-lg   justify-center divide-x-2 divide-slate-300 text-center select-none">
+                        <p onClick={page==0?()=>{}:()=>showPage(0)} className={(page==0?"w-2/3 bg-slate-300 ": "w-1/3 rounded-br-lg bg-slate-200 hover:text-violet-500")+" p-2 transition-all duration-500 rounded-tl-lg"}>Notifications</p>
+                        <p onClick={page==1?()=>{}:()=>showPage(1)}  className= {(page==1?"w-2/3 bg-slate-300 ": "w-1/3 rounded-bl-lg bg-slate-200 hover:text-violet-500 ")+" transition-all duration-500 p-2 rounded-tr-lg"}>Requests</p>
+                    </div>
+                    {page==0 &&  <Notifications /> }
+                    {page==1 &&  <Requests /> }
                 </div>
                 <div className=" h-full flex gap-4 items-center">
 
@@ -85,15 +98,36 @@ export default function Navbar(props: any) {
                     <ul className=" bg-orange-500 w-full  md:h-full flex flex-col md:flex-row gap-2 md:px-4 justify-start items-center rounded-l-lg">
                         <li className="md:hidden bg-orange-400 shadow-sm border border-b2 w-full h-16 "><button onClick={toggleCollapse} className="w-16 h-full  float-right"><CIcon className="text-white w-8 m-auto" icon={cilX}  /></button></li>
                         {/* <li><a>Profile</a></li> */}
-                        {props.loginState==true && <li className=" w-full"><button onClick={()=>{props.router('feed'); toggleCollapse();}} className="p-2 w-full">Home</button></li>}
-                        {props.loginState==true && <li className=" w-full"><button onClick={()=>{props.router('search'); toggleCollapse();}} className="p-2 w-full">Search</button></li>}
-                        {props.loginState==true && <li className=" w-full"><button onClick={()=>{props.router('profile');  toggleCollapse();}} className="p-2 w-full">Profile</button></li>}
-                        <li className=" w-full"><button onClick={()=>login()} className="p-2  w-full" >{props.loginState==false?'Login':'Logout'}</button></li>
+                             
+                        {
+                            isLoggedIn && 
+                            <>
+                                <li className=" w-full"><button onClick={()=>{props.router('feed'); toggleCollapse();}} className="p-2 w-full">Home</button></li>
+                        
+                                <li className=" w-full"><button onClick={()=>{props.router('search'); toggleCollapse();}} className="p-2 w-full">Search</button></li>
+                    
+                                <li className=" w-full"><button onClick={()=>{props.router('profile');  toggleCollapse();}} className="p-2 w-full">Profile</button></li>
+                            </>
+                        }
+                    
+                        <li className=" w-full"><button onClick={()=>logout()} className="p-2  w-full" >{!isLoggedIn?'Login':'Logout'}</button></li>
                     </ul>
                 </div>
 
             </div>
         </div>
     );
+}
+
+function setLoginState(arg0: boolean) {
+    throw new Error("Function not implemented.");
+}
+
+function setShowLogin(arg0: boolean) {
+    throw new Error("Function not implemented.");
+}
+
+function setContentPage(arg0: string) {
+    throw new Error("Function not implemented.");
 }
 

@@ -21,11 +21,12 @@ function compair(pair1 :pair, pair2: pair) {
 }
 
 export var clients :Map<string, Socket> = new Map() ;
-
+export var socIdToUserMap: Map<string, string> = new Map() ;
 
 export function addClient(ob: {user: string, soc :Socket}) {
     clients.set(ob.user, ob.soc);
-    console.log('inserted new user');
+    socIdToUserMap.set(ob.soc.id, ob.user);
+    // console.log('inserted new user');
     
 }
 
@@ -63,6 +64,6 @@ export function socketSendMsg(receiver: string, sender: string, msg: message) {
     if(receiverSocket)    receiverSocket.emit('new message', JSON.stringify(msg))
     else    console.log('socket not found');
     
-    console.log('here sending mnessagfes', receiver, receiverSocket);
+    // console.log('sending message', receiver);
     
 }

@@ -1,6 +1,8 @@
 import type { Metadata, Viewport } from 'next'
 import { Inter } from 'next/font/google'
 import './globals.css'
+import { Provider } from "react-redux";
+import { AuthProvider } from './auth/ds';
 
 const inter = Inter({ subsets: ['latin'] })
 

@@ -9,24 +9,25 @@ import { ObjectId } from "mongodb";
 
 const router = express.Router();
 module.exports = router;
-router.post('/getChats', (req: Request, res: Response)=>{
-    console.log('here');
+router.post('/getConnections', (req: Request, res: Response)=>{
+    console.log('fetching chats for ');
     
     verify_token(req.body.token).then(async (data)=>{
         const user = data.username!;
-        console.log('data', data);
-        const chatUser = req.body.user;
+        
+        
 
-        const texts = getTexts(user, chatUser);
         
 
 
-
-
         const connections = await getConnections(user);
+        // console.log(connections);
+        
         if(connections==null) {
             res.json({success: false, reason: 'connections not found'});
         }else {
+            
+
             res.json({success: true, connections});
         }
     }).catch((reason: any)=>{
@@ -38,11 +39,13 @@ router.post('/getChats', (req: Request, res: Response)=>{
 router.post('/sendText', (req: Request, res: Response)=>{
     console.log('sending text', req.body);
 
-    const receiver = req.body.receiver;
-    const msg = req.body.msg;
-    const ts = req.body.timeStamp;
+    
     
     verify_token(req.body.token).then((data)=>{
+        const receiver = req.body.receiver;
+        const msg = req.body.msg;
+        const ts = req.body.timeStamp;
+
         const ob = {
             sender: data.username!,
             receiver,
@@ -61,10 +64,11 @@ router.post('/sendText', (req: Request, res: Response)=>{
 })
 
 
-router.post('/getUserTexts', (req: Request, res: Response)=>{
+router.post('/getChats', (req: Request, res: Response)=>{
     verify_token(req.body.token).then((data)=>{
-        getTexts(data.username!, req.body.user).then((chats)=>{
-            console.log(chats);
+        
+        getTexts(data.username!, req.body.receiver).then((chats)=>{
+            // console.log(chats);
             res.json({chats});
             
         })

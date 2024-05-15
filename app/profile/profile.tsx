@@ -28,11 +28,11 @@ export default function Profile(props: {setPage: Function}) {
                 address+'/profile/fetchinfo',
                 {token: localStorage.getItem('token'), user: sessionStorage.getItem('user')}
             ).then((result)=>{
-                console.log(result.data);
+                // console.log(result.data);
                 
                 if(result.data.success) {
                     const info = result.data.info
-                    console.log(info);
+                    // console.log(info);
 
                 }else {
                     
@@ -50,9 +50,9 @@ export default function Profile(props: {setPage: Function}) {
             fetchInfo().then((info)=>{
                 
                 setUserData(info);
-                console.log(info);
+                // console.log(info);
                 setSrc(info.profile_image!)
-                console.log(imgsrc);
+                // console.log(imgsrc);
                 setFetched(true);
             })
             
@@ -104,13 +104,16 @@ export default function Profile(props: {setPage: Function}) {
                     <div className="w-full text-center md:text-start">
                         <p className=" w-full text-xl">About Me</p>
                         <p className=" w-full "> {userData.bio }</p>
-                        <div className="self-start mt-5 text-left flex flex-col gap-2 text-sm">
-                            { <a href={"tel:"+userData.contact} type="tel" className="flex gap-1 items-center"><CIcon className="h-4 text-orange-500" icon={cilPhone} />{userData.contact}</a>}
+                        <div className="self-start mt-5 text-left flex flex-col items-center md:items-start gap-2 text-sm">
                             <a href={"mailto:"+userData.email} type="email" className="flex gap-1 items-center"><CIcon className="h-4 text-orange-500" icon={cilEnvelopeClosed} />{userData.email}</a>
+                            { <a href={"tel:"+userData.contact} type="tel" className="flex gap-1 items-center"><CIcon className="h-4  text-orange-500" icon={cilPhone} />{userData.contact}</a>}
                             <p className="flex gap-1 items-center"><CIcon className="h-4 text-orange-500" icon={cilBirthdayCake} />{userData.dob}</p>
                             <p className="flex gap-1 items-center"><CIcon className="h-4 text-orange-500" icon={userData.gender=='Male'?cilUser:cilUserFemale} />{userData.gender}</p>
                         </div>
                     </div>
+                </div>
+                <div>
+                    
                 </div>
                 <div className="absolute right-6">
                     <p onClick={()=>{props.setPage('edit')}}><CIcon className="h-5"  icon={cilSettings}/></p>

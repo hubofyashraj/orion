@@ -34,6 +34,6 @@ export function getTexts(user1: string, user2: string) {
 export function sendText(msg: object) {
     return new Promise(async (resolve, reject) => {
         const result = await collection.insertOne(msg);
-        resolve(result);
+        resolve(result.insertedId);
     })
 }

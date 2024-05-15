@@ -3,17 +3,18 @@ import CIcon from "@coreui/icons-react";
 import axios from "axios";
 import { address } from "../api/api";
 import Image from "next/image";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Schema } from "inspector";
-import { handleRequest } from "../navbar/notifications";
 import UserProfile from "./userProfile";
 import { pullbackReq, sendConnectionRequest } from "./events";
+import { handleRequest } from "../navbar/data";
 
 export default function Search() {
 
     const [foundUsers, setFoundUsersList] = useState([]);
     const [user, setUser] = useState('');
-
+    // const [photos, setPhotos] = useState(new Map<string, string>());
+    // const [imagesFetched, setImagesFetched] = useState(false);
 
     interface userSkel  {username: string; fullname: string;};
 
@@ -25,8 +26,8 @@ export default function Search() {
             axios.post(
                 address+'/search',
                 {searchTxt: e.target.value, user: sessionStorage.getItem('user')}
-            ).then((result)=>{  
-                console.log(result);
+            ).then(async (result)=>{  
+                // console.log(result);
                 var found: Array<userSkel> = result.data.results;
                 var tiles : any= [];
                 found.forEach((user: userSkel)=>{
@@ -34,12 +35,26 @@ export default function Search() {
                 })
 
                 setFoundUsersList(tiles);
+                // var img = new Map<string, string>();
+                // var promises: Array<Promise<string | void>> = [];
+                // for (let i = 0; i < found.length; i++) {
+                //     const user = found[i];
+                //     promises.push(fetchProfileImage(user.username).then((image)=>{
+                //         img.set(user.username, image);
+                //     }))
+                // }
+
+                // Promise.all(promises).then(()=>{
+                //     setPhotos(img);
+                //     setImagesFetched(true);
+                // })
 
             })
         }, 1000)
         
     }
 
+ 
 
     const demo = {
         username: 'johndoe',
@@ -95,17 +110,54 @@ function UserTile(props:any) {
     //     })
     // }
 
+    const [photo, setPhoto] = useState<string>('');
+
+    function fetchProfileImage(username: string) : Promise<string> {
+        return new Promise((resolve, reject)=>{
+            axios.post(
+                address+'/profile/fetchProfileImage',
+                {token: localStorage.getItem('token'), user: username}
+            ).then((result)=>{
+                // console.log(result);
+                
+                if(result.data.success) {
+                    resolve(result.data.image);
+                }
+            }).catch((reason)=>{
+                console.log('cluldn\'t fetch image', reason);
+
+                reject('');
+            })
+        })
+    }
+
+    useEffect(()=>{
+        fetchProfileImage(props.user.username).then((image)=>{
+            setPhoto(image);
+            // console.log(photo);
+            
+        }).catch((reason)=>{
+            console.log('couldn\'t fetch', reason);
+            
+            setPhoto('');
+        })
+    }, []);
+
+
     return (
-        <div onClick={props.onClick} className="w-full max-w-96 flex gap-2 justify-between items-center mx-2 bg-slate-200 hover:bg-slate-300 hover:shadow-lg p-2 rounded-md">
-            <div className="rounded-full shrink-0 border-2 border-black p-1">
-                <CIcon className="h-10" icon={cilUser}/>
+        <div onClick={props.onClick} className="w-full max-w-96 flex gap-2 justify-between items-center mx-2 bg-slate-200 hover:bg-slate-300 hover:shadow-lg py-2 px-4 rounded-md">
+            <div className="rounded-full shrink-0 border-2 bg-slate-400 p-1">
+                {(photo==null || photo=='' || photo==undefined) ?  
+                <CIcon className="h-12 p-1" icon={cilUser}/> :
+                <Image className="rounded-full h-12 w-12" width={50} height={50} src={photo} alt="img" />
+                }
             </div>
             <div className="grow">
-                <p>{props.user.fullname}</p>
-                <p>{props.user.username}</p>
+                <p className="text-lg ">{props.user.fullname}</p>
+                <p className="text-sm font-extralight">{props.user.username}</p>
             </div>
 
-            <div className="shrink-0 shadow-sm  hover:bg-opacity-30">
+            <div className="shrink-0   hover:bg-opacity-30">
                 {
                     props.user.status=='none' 
                     &&

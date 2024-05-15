@@ -7,11 +7,17 @@ import cors from 'cors';
 import morgan from 'morgan';
 
 import jwt from 'jsonwebtoken';
-import { Server } from "socket.io";
-import { addClient, clients } from "./handleSocket";
+import { Server, Socket } from "socket.io";
+import { addClient, clients, socIdToUserMap } from "./handleSocket";
 import { insertOnlineUser } from "./onlineDS";
 
+const http = require('http');
+const socketio = require('socket.io');
+
 const app = express();
+const server = http.createServer(app);
+// const io = socketio(server);
+
 app.use(express.json({limit: '10mb'}));
 app.use(express.urlencoded({extended: true}));
 app.use(cors());
@@ -25,9 +31,11 @@ export function verify_token(token: string): Promise<{username?: string}> {
         jwt.verify(token, process.env.JWT_SECRET as string, (err: any, authorizedData: any)=>{
             
             if(err) {
+                console.log('token not verified!', err);
                 reject(err)
             }
-            else resolve(authorizedData)
+            // console.log('token verified!', authorizedData);
+            resolve(authorizedData)
         })
     })
 }
@@ -36,8 +44,7 @@ app.post('/' , (req: Request, res: Response)=>{
     
 
     verify_token(req.body.token).then((data: any)=>{
-        // console.log('token verified!');
-        console.log(data);
+        // console.log(data);
         
         getRequestsData(data.username).then((list)=>{
             // console.log('list: ', list);
@@ -94,7 +101,13 @@ app.post('/logout', (req, res)=>{
             
     //     }
     // })
-    res.json({});
+    verify_token(req.body.token).then((data)=>{
+        var soc: Socket| undefined = clients.get(data.username!);
+        if(soc) soc.disconnect(true)
+        clients.delete(data.username!)
+        res.json({});
+
+    })
 })
 
 app.get('/checkusernameavailability', async (req: Request, res: Response)=>{
@@ -166,55 +179,99 @@ app.post('/pullbackReq', async (req: Request, res: Response)=>{
     await cancelRequest(id);
     res.json({success: true})
 })
-// const server = https.createServer();
 
 
 const chatRoutes = require('./routes/chat');
 const profileRoutes = require('./routes/profile');
+const notificationRouter = require('./routes/notifications');
 app.use('/chats', chatRoutes);
 app.use('/profile', profileRoutes);
-// app.post('/getChats', (req: Request, res: Response)=>{
-    
-// })
+app.use('/notifications', notificationRouter);
 
-const server = app.listen(PORT, ()=>{
+
+server.listen(PORT, ()=>{
     console.log('listning on port', PORT);
     
 })
 
-const io = new Server(server, {cors: {origin: "*"}});
+const io = socketio(server, {
+    cors: {
+        origin: '*',
+        methods: ['GET', 'POST']
+    }
 
-io.on('connection', (socket)=>{
-    console.log('new user');
-    console.log(socket.id);
+});
+
+
+io.on('connection', (socket: Socket)=>{
+    // console.log('new user', socket.id);
+    // console.log(socket.id);
+
+    if(socIdToUserMap.has(socket.id)) {
+        console.log('same user ', clients.get(socIdToUserMap.get(socket.id)!));
+        
+    }
+
+    socket.on('reconnect', (reconnect_count)=>{
+        console.log(`socket reconnected after #${reconnect_count} try`);
+        socket.emit('reverify');
+        
+    })
+    socket.on('reconnect_attempt', () => {
+        // Handle reconnection attempts
+        console.log('attempt to reconnect');
+        
+    });
+
+    // if(socket.recovered) {
+    //     console.log('socket recovered', socket.id);
+        
+    // }
+
+    socket.on('error', function()
+    {
+        console.log("Sorry, there seems to be an issue with the connection!");
+    });
+
+    socket.on('connect_error', function(err: any)
+    {
+        console.log("connect failed"+err);
+    });
+
     
-    socket.on('ping', (m)=>{
-        console.log('ping from client');
+    socket.on('ping', ()=>{        
+        if(!socIdToUserMap.has(socket.id)) {
+            socket.emit('reverify')
+        }
         
     })
 
-    socket.on('verify',(token)=>{
-        verify_token(token).then((data)=>{
-                var user = data.username!
-                console.log(user);
-                
-                // var id = socket.id
-                var soc = socket
-                addClient({user, soc});
-                insertOnlineUser(data.username!, soc)
 
-             getRequestsData(data.username!).then((list)=>{
+    socket.on('verify',(token: string)=>{
+        // console.log('socket verification');
+        
+        verify_token(token).then((data)=>{
+            var user = data.username!
+            // console.log(user);
+            // console.log('socket varified', user);
+            
+            // var id = socket.id
+            var soc = socket
+            addClient({user, soc});
+            insertOnlineUser(data.username!, soc)
+
+            getRequestsData(data.username!).then((list)=>{
                 // console.log(list);
                 
                 socket.emit('new notification', JSON.stringify(list));
-             })
+            })
         }).catch((reason)=>{
             console.log(reason);
             socket.emit('autherr', 'Invalid Token')
         })
     })
     
-    socket.on('onlineSocket', (token)=>{
+    socket.on('onlineSocket', (token: string)=>{
         verify_token(token).then((data)=>{
             var soc = socket;
             insertOnlineUser(data.username!, soc)
@@ -237,10 +294,18 @@ io.on('connection', (socket)=>{
 
 
 setInterval(()=>{
-    console.log('Clients');
+    // console.log('Clients', clients.size);
+    // console.log('clients');
+    // clients.forEach((soc,usr, map)=>{
+    //     console.log(usr, soc.id);
+        
+    // })
+    // console.log('map', socIdToUserMap)
+    console.clear()
     const list = Array.from(clients.keys());
     list.forEach(user => {
         var  soc = clients.get(user)!;
+        
         soc.emit('ping', 'ping from server')
         console.log(user, 'active: ', soc.connected);
 

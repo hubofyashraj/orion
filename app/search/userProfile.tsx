@@ -1,13 +1,11 @@
 import axios from "axios";
-import { ChangeEvent, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { address } from "../api/api";
-import { user } from "../data/user";
 import Image from "next/image";
 import CIcon from "@coreui/icons-react";
 import { cilAt, cilBirthdayCake, cilEnvelopeClosed, cilEnvelopeLetter, cilLocationPin, cilPhone, cilSettings, cilUser, cilUserFemale, cilUserX } from "@coreui/icons";
 import { pullbackReq, sendConnectionRequest } from "./events";
-import { handleRequest } from "../navbar/notifications";
-import { userInfo } from "os";
+import { handleRequest } from "../navbar/data";
 
 
 interface Info {
@@ -74,32 +72,35 @@ export default function UserProfile({ user } : {user: string}) {
     if(!fetched) return (<></>);
     
     return (
-        <div className=" px-6 h-full w-full  scrollbar-thin ">
-            <div className="flex flex-col  justify-center md:justify-start md:items-start  items-center gap-5 p-2">
-                <div className="details w-full  flex flex-col justify-center md:items-start items-center grow">
-                    <div className="flex w-full flex-col md:gap-12 md:flex-row-reverse  justify-between items-center">
-                        <div className="flex w-full  flex-col justify-center items-center md:items-start">
-                            <p className="text-xl">{userData.fullname}</p>
-                            <p className="text-base flex justify-center items-center gap-1"><CIcon className="h-3 text-red-500" size={"sm"}  icon={cilAt}/>{userData.username}</p>
-                            <p className="text-sm flex justify-center items-center gap-1"><CIcon className="h-3 text-red-500" size={"sm"} icon={cilLocationPin} />{userData.location}</p>
+        <div className="  h-full w-full  scrollbar-thin ">
+            <div className="flex flex-col  justify-center md:justify-start md:items-start  items-center gap-5 ">
+                <div className="details w-full   flex flex-col justify-center md:items-start items-center grow">
+                    <div className="flex bg-blue-300 w-full h-36 border-b-2 flex-col md:gap-6  md:flex-row-reverse  justify-between items-center">
+                        <div className="flex w-full self-end md:mb-2 mt-2  flex-col justify-center items-center md:items-start">
+                            <p className="text-xl font-light ">{userData.fullname}</p>
+                            <p className="text-sm  font-extralight flex justify-center items-center gap-1"><CIcon className="h-3 text-red-500" size={"sm"}  icon={cilAt}/>{userData.username}</p>
                         </div>
-                        <div className="h-32 w-32 shrink-0 my-4 profile-img rounded-full bg-red-500 overflow-hidden flex justify-center items-center">
-                            { imgsrc==''?<CIcon  className="text-black h-2/3" icon={userData.gender=='Male'?cilUser:cilUserFemale} size="xxl"/>:<Image width={100} height={100} className="w-full h-full" alt="" src={imgsrc}/> }
+                        <div className="p-2 bg-inherit  md:mt-20 rounded-full">
+                            <div className="h-32 w-32 shrink-0  border  profile-img rounded-full  overflow-hidden flex justify-center items-center">
+                                { imgsrc==''?<CIcon  className="text-black h-2/3" icon={userData.gender=='Male'?cilUser:cilUserFemale} size="xxl"/>:<Image width={100} height={100} className="w-full h-full" alt="" src={imgsrc}/> }
+                            </div>
                         </div>
                     </div>
-                    <div className="flex w-full justify-between gap-24">
-                        <div className="w-full text-center md:text-start">
-                            <p className=" w-full text-xl">About Me</p>
-                            <p className=" w-full "> {userData.bio }</p>
-                            <div className="self-start mt-5 text-left flex flex-col gap-2 text-sm">
-                                { <a href={"tel:"+userData.contact} type="tel" className="flex gap-1 items-center"><CIcon className="h-4 text-orange-500" icon={cilPhone} />{userData.contact}</a>}
-                                <a href={"mailto:"+userData.email} type="email" className="flex gap-1 items-center"><CIcon className="h-4 text-orange-500" icon={cilEnvelopeClosed} />{userData.email}</a>
+                    <div className="flex md:flex-row mt-20 flex-col w-full md:px-6   items-center gap-5">
+                        
+                        <div className="w-full flex flex-col items-center md:items-start md:text-start">
+                            <p className="  text-lg">About Me</p>
+                            <p className="  text-sm"> {userData.bio }</p>
+                            <div className="  w-max   mt-5  flex flex-col  gap-2 text-sm">
+                                <p className="w-max flex justify-center items-center gap-1"><CIcon className="h-3 text-red-500" size={"sm"} icon={cilLocationPin} />{userData.location}</p>
+                                {/* {!userData.contact_privacy &&  <a href={"tel:"+userData.contact} type="tel" className="flex gap-1 items-center"><CIcon className="h-4 text-orange-500" icon={cilPhone} />{userData.contact}</a>} */}
+                                {/* <a href={"mailto:"+userData.email} type="email" className="flex gap-1 items-center"><CIcon className="h-4 text-orange-500" icon={cilEnvelopeClosed} />{userData.email}</a> */}
                                 <p className="flex gap-1 items-center"><CIcon className="h-4 text-orange-500" icon={cilBirthdayCake} />{userData.dob}</p>
                                 <p className="flex gap-1 items-center"><CIcon className="h-4 text-orange-500" icon={userData.gender=='Male'?cilUser:cilUserFemale} />{userData.gender}</p>
                             </div>
                         </div>
-                        <div className="flex flex-col-reverse">
-                            <div className="shrink-0 shadow-sm  hover:bg-opacity-30 flex ">
+                        <div className="connection-status text-sm md:absolute right-12">
+                            <div className="shrink-0   hover:bg-opacity-30 flex ">
                                 {
                                     connectionStatus=='none' 
                                     &&

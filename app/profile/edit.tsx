@@ -78,9 +78,11 @@ export default function Edit(props: { user: string , setPage: Function }) {
 
     useEffect(()=>{
         fetchInfo().then((data)=>{
-            // setInfo(data as Info)
+            console.log('info', data);
+            
+            setInfo(data as Info)
         })
-    })
+    }, [])
 
     var newInfo: Info = info;
     var updatedInfo: {[key: string]: string | boolean | Blob | null}={}
@@ -131,7 +133,7 @@ export default function Edit(props: { user: string , setPage: Function }) {
                 </div>
                 <form >
                     <EditInput type="text" label="Full name" name="fullname" value={fullname} disabled={disabled} onChange={(e)=>{setFullname((e.currentTarget as HTMLInputElement).value)}}/>
-                    <EditInput type="date" label="DOB" name="dob" value={dob.replace('/','-')} disabled={disabled} onChange={(e)=>{setDob((e.currentTarget as HTMLInputElement).value)}}/>
+                    <EditInput type="date" label="DOB" name="dob" value={dob?dob.replace('/','-'):''} disabled={disabled} onChange={(e)=>{setDob((e.currentTarget as HTMLInputElement).value)}}/>
                     <EditInput type="text" label="Profession" name="profession" value={profession} disabled={disabled} onChange={(e)=>{setProfession((e.currentTarget as HTMLInputElement).value)}}/>
                     <EditInput type="text" label="Location" name="location" value={location} disabled={disabled} onChange={(e)=>{setLocation((e.currentTarget as HTMLInputElement).value)}}/>
                     <EditInput type="text" label="Bio" name="bio" value={bio} disabled={disabled} onChange={(e)=>{setBio((e.currentTarget as HTMLInputElement).value)}}/>

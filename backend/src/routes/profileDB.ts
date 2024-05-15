@@ -68,13 +68,18 @@ export function addConnectionStatus(info: Info, user: string, user1: string): Pr
 
 
 
-export function saveInfo(user: string, updatedInfo: object): Promise<void> {
+export function saveInfo(user: string, updatedInfo: any): Promise<void> {
     return new Promise(async (resolve, reject)=>{
         console.log(updatedInfo, 30);
         if(await collection.findOne({username: user}))
             await collection.updateOne({username: user}, {$set: updatedInfo});
         else
             await collection.insertOne(updatedInfo);
+
+        if(updatedInfo.hasOwnProperty('fullname')) {
+            var collection1 = db.collection('users');
+            await collection1.updateOne({username: user}, {$set: {fullname: updatedInfo['fullname']}})
+        }
         resolve()
     })
 }
