@@ -112,26 +112,29 @@ function UserTile(props:any) {
 
     const [photo, setPhoto] = useState<string>('');
 
-    function fetchProfileImage(username: string) : Promise<string> {
-        return new Promise((resolve, reject)=>{
-            axios.post(
-                address+'/profile/fetchProfileImage',
-                {token: localStorage.getItem('token'), user: username}
-            ).then((result)=>{
-                // console.log(result);
-                
-                if(result.data.success) {
-                    resolve(result.data.image);
-                }
-            }).catch((reason)=>{
-                console.log('cluldn\'t fetch image', reason);
 
-                reject('');
-            })
-        })
-    }
 
     useEffect(()=>{
+
+        function fetchProfileImage(username: string) : Promise<string> {
+            return new Promise((resolve, reject)=>{
+                axios.post(
+                    address+'/profile/fetchProfileImage',
+                    {token: localStorage.getItem('token'), user: username}
+                ).then((result)=>{
+                    // console.log(result);
+                    
+                    if(result.data.success) {
+                        resolve(result.data.image);
+                    }
+                }).catch((reason)=>{
+                    console.log('cluldn\'t fetch image', reason);
+    
+                    reject('');
+                })
+            })
+        }
+
         fetchProfileImage(props.user.username).then((image)=>{
             setPhoto(image);
             // console.log(photo);
@@ -141,7 +144,7 @@ function UserTile(props:any) {
             
             setPhoto('');
         })
-    }, []);
+    }, [props.user.username]);
 
 
     return (

@@ -5,12 +5,11 @@ import express, { Request, Response } from "express";
 import { getConnections,  } from "../database/db";
 import { getTexts, sendText } from "./chatDb";
 import { socketSendMsg } from "../handleSocket";
-import { ObjectId } from "mongodb";
 
 const router = express.Router();
 module.exports = router;
 router.post('/getConnections', (req: Request, res: Response)=>{
-    console.log('fetching chats for ');
+    // console.log('fetching chats for ');
     
     verify_token(req.body.token).then(async (data)=>{
         const user = data.username!;
@@ -37,7 +36,7 @@ router.post('/getConnections', (req: Request, res: Response)=>{
 })
 
 router.post('/sendText', (req: Request, res: Response)=>{
-    console.log('sending text', req.body);
+    // console.log('sending text', req.body);
 
     
     

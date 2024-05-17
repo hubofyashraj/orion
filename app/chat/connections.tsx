@@ -54,12 +54,7 @@ function Connections(props: any) {
 function ClickableUser(props: any) {
 
     const [photo, setPhoto] = useState(null);
-
-    // console.log(props.info);
-    // async function fetchProfileImage() {
-        
-    // }
-
+    
     
 
     useEffect(()=>{
@@ -74,7 +69,7 @@ function ClickableUser(props: any) {
                 setPhoto(result.data.image)
             }
         })
-    },[])
+    },[props.info.username])
 
 
 

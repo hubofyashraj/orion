@@ -83,7 +83,7 @@ useEffect(()=>{
                 <div style={{height: 64}} className='w-full fixed z-20 shadow-sm border-b-2'>
                 <Navbar isLoggedIn={false} router={setContentPage} notifications={[]} />
                 </div>
-                <div style={{height: 'calc( 100% - 64px )' }} className='h-full mt-16 '>
+                <div style={{height: 'calc( 100% - 64px )' }} className='h-full  mt-16 overflow-hidden'>
                 {contentPage==='feed' && <Feed />}
                 {contentPage==='profile' && <Profile setPage={(val: string)=>setContentPage(val)} />}
                 {contentPage==='search' && <Search />}

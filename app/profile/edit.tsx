@@ -45,44 +45,45 @@ export default function Edit(props: { user: string , setPage: Function }) {
     const [profilepic, setProfilepic] = useState('');
 
 
-    function fetchInfo() :Promise<Info>{
-        return new Promise((resolve, reject)=>{
-            axios.post(
-                address+'/profile/fetchinfo',
-                {token: localStorage.getItem('token'), user: props.user}
-            ).then((result)=>{
-                // console.log(result.data);
-                
-                if(result.data.success) {
-                    const info = result.data.info
-                    console.log(info);
-
-                    setInfo(result.data.info);
-                    setFullname(info.fullname)
-                    setDob(info.dob)
-                    setProfession(info.profession)
-                    setLocation(info.location)
-                    setBio(info.bio)
-                    setGender(info.gender)
-                    setEmail(info.email)
-                    setContact(info.contact)
-                    // setProfilepic(info.profile_image)
-                }else {
-                    
-                }
-
-                resolve(result.data.info)
-            })
-        })
-    }
 
     useEffect(()=>{
+        function fetchInfo() :Promise<Info>{
+            return new Promise((resolve, reject)=>{
+                axios.post(
+                    address+'/profile/fetchinfo',
+                    {token: localStorage.getItem('token'), user: props.user}
+                ).then((result)=>{
+                    // console.log(result.data);
+                    
+                    if(result.data.success) {
+                        const info = result.data.info
+                        console.log(info);
+    
+                        setInfo(result.data.info);
+                        setFullname(info.fullname)
+                        setDob(info.dob)
+                        setProfession(info.profession)
+                        setLocation(info.location)
+                        setBio(info.bio)
+                        setGender(info.gender)
+                        setEmail(info.email)
+                        setContact(info.contact)
+                        // setProfilepic(info.profile_image)
+                    }else {
+                        
+                    }
+    
+                    resolve(result.data.info)
+                })
+            })
+        }
+    
         fetchInfo().then((data)=>{
             console.log('info', data);
             
             setInfo(data as Info)
         })
-    }, [])
+    }, [props.user])
 
     var newInfo: Info = info;
     var updatedInfo: {[key: string]: string | boolean | Blob | null}={}
