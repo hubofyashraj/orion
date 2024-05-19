@@ -22,17 +22,19 @@ function Connections(props: any) {
                 
                 const users : Array<any> = result.data.connections;
                 
-                var list: Array<any> = [];
-                for (let i = 0; i < users.length; i++) {
-                    const ob = users[i];
-                    // console.log(ob);
-                    
-                    list.push(<ClickableUser onClick={()=>{props.toggleChat(); props.setChatUser(ob)}} key={ob.username} info={ob}/>)
-                    // console.log(ob);
+                if(users) {
+                    var list: Array<any> = [];
+                    for (let i = 0; i < users.length; i++) {
+                        const ob = users[i];
+                        // console.log(ob);
+                        
+                        list.push(<ClickableUser onClick={()=>{props.toggleChat(); props.setChatUser(ob)}} key={ob.username} info={ob}/>)
+                        // console.log(ob);
+                        
+                    }
+                    setConnections(list)
                     
                 }
-                setConnections(list)
-                
             })
         }
 
@@ -54,7 +56,7 @@ function Connections(props: any) {
 function ClickableUser(props: any) {
 
     const [photo, setPhoto] = useState(null);
-    
+
     
 
     useEffect(()=>{

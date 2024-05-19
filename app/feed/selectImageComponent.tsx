@@ -2,7 +2,7 @@ import { DeleteOutlineRounded } from "@mui/icons-material";
 import Image from "next/image";
 import { DragEvent, useEffect, useState } from "react";
 
-export default function SelectImagesComponent(props: {curState: boolean, toggleState: Function}) {
+export default function SelectImagesComponent(props: {curState: boolean, toggleState: Function, fnCreatePost: Function}) {
     const [images, setImages] = useState([] as Array<string>)
    
     
@@ -66,18 +66,18 @@ export default function SelectImagesComponent(props: {curState: boolean, toggleS
         
         
     }
-    const inpt: HTMLInputElement  = document.getElementById('filePicker')! as HTMLInputElement
+    // const inpt: HTMLInputElement  = document.getElementById('filePicker')! as HTMLInputElement
 
-    if(inpt) {
-        inpt.addEventListener('change', ()=>{
-            if(inpt.files!.length) {
-                validateFiles(inpt.files!);
+    if((document.getElementById('filePicker')! as HTMLInputElement)) {
+        (document.getElementById('filePicker')! as HTMLInputElement).addEventListener('change', ()=>{
+            if((document.getElementById('filePicker')! as HTMLInputElement).files!.length) {
+                validateFiles((document.getElementById('filePicker')! as HTMLInputElement).files!);
             }     
         })
     }
 
     function pickFiles() {
-        inpt.click()
+        (document.getElementById('filePicker')! as HTMLInputElement).click()
     }
 
 
@@ -93,7 +93,7 @@ export default function SelectImagesComponent(props: {curState: boolean, toggleS
                         {images.map(image=>(
                             <div key={images.indexOf(image)} className="h-36 relative shrink-0">
                                 <DeleteOutlineRounded onClick={()=>{setImages(images.filter((img)=>img!=image))}} className="absolute right-2 top-2 bg-white bg-opacity-90 rounded-full h-10" />
-                                <Image className="h-full w-auto" alt="" width={2} height={2} src={image}/>
+                                <Image className="h-full w-auto" alt="" width={200} height={200} src={image}/>
                             </div>
                         ))}
                     </div>
@@ -102,11 +102,12 @@ export default function SelectImagesComponent(props: {curState: boolean, toggleS
             <div onDragEnter={dragEnter} onDragLeave={dragLeave} 
                     onDrop={fileDrop} onDragOver={dragOver} className="bg-blue-100 border-t-2 border-blue-200 w-full h-48 p-5 flex flex-col justify-between items-center ">
                 <div onClick={pickFiles}
-                    className={ " border-dashed mt-8 border-slate-500 border-2 rounded-lg w-1/2 h-1/2 flex justify-center items-center"}>
+                    className={ " border-dashed mt-8 border-slate-500 border-2 rounded-lg w-1/2 h-1/2 flex flex-col justify-center items-center"}>
                     <p>Drop Image Here</p>
+                    <p>/ Pick Images</p>
                 </div>
                 <div className="flex gap-5 self-end  ">
-                    {images.length!=0 && <p className={textBtnCls}>Continue</p>}
+                    {images.length!=0 && <p onClick={()=>props.fnCreatePost(images)} className={textBtnCls}>Continue</p>}
                     <p onClick={()=>{setImages([]);  props.toggleState()} } className={textBtnCls}>Cancel</p>
                 </div>
             </div>

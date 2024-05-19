@@ -16,8 +16,8 @@ export default function FloatingActionButton(props: {setShowSelectComponent: Fun
     }
 
     return (
-       <div className="w-full overflow-hidden    absolute bottom-0 rounded-full">
-            <div onClick={()=>{props.setShowSelectComponent()}} onMouseEnter={()=>setHover(true)} onMouseLeave={()=>setHover(false)} className={(hovering?"":"") + " btn rounded-full float-right m-10 shadow-lg w-12 h-12 flex justify-center items-center "}>
+       <div className=" overflow-hidden  bg-white absolute bottom-10 right-10 rounded-full">
+            <div onClick={()=>{props.setShowSelectComponent()}} onMouseEnter={()=>setHover(true)} onMouseLeave={()=>setHover(false)} className={(hovering?"":"") + " btn rounded-full float-right m-2 shadow-lg w-12 h-12 flex justify-center items-center "}>
                 <Add fontSize="large" />
             </div>
             

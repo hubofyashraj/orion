@@ -115,19 +115,19 @@ export default function Edit(props: { user: string , setPage: Function }) {
         <div className=" w-full py-12 h-full flex justify-center  md:items-center overflow-y-scroll">
             <div className="w-2/3 max-w-[calc(40rem)] h-max shadow-lg px-5 sm:px-8 md:px-10 py-6 shrink transition-all ">
 
-                <div className="flex justify-between">
+                <div className="flex gap-2 justify-between">
                     <div className="flex gap-1 bg-orange-500 px-4 rounded-full text-white font-bold">
                         <CIcon className="w-4 h-full"   icon={cilAt}/>
                         <p className="h-full flex items-center text-lg ">{props.user}</p>
                     </div>
-                    <div>
+                    <div className="flex gap-2">
                         <button className={"h-8 w-8 p-2 "+roundButton} onClick={()=>setDisabled(!disabled)}>
                             <CIcon icon={cilPencil}/>
                         </button>
-                        <button className={"h-8 w-8 ml-5 p-2 "+roundButton} onClick={save}>
+                        <button className={"h-8 w-8  p-2 "+roundButton} onClick={save}>
                             <CIcon icon={cilSave}/>
                         </button>
-                        <button className={"h-8 w-8 ml-5 p-2 "+roundButton} onClick={()=>{props.setPage('profile')}}>
+                        <button className={"h-8 w-8  p-2 "+roundButton} onClick={()=>{props.setPage('profile')}}>
                             <CIcon icon={cilX}/>
                         </button>
                     </div>

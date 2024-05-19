@@ -11,6 +11,7 @@ import Navbar from "./navbar/page";
 import Edit from "./profile/edit";
 import Profile from "./profile/profile";
 import Search from "./search/search";
+import { CircularProgress } from "@mui/material";
 
 
 
@@ -18,6 +19,7 @@ import Search from "./search/search";
 export default function App() {
 const { isLoggedIn, setIsLoggedIn } = useAuth();
 
+const [showProgress, setSHowProgress] = useState(true);
 
 const [contentPage, setContentPage] = useState('feed');
 
@@ -33,22 +35,25 @@ const documentHeight = () => {
 
 
 useEffect(()=>{
-  function initializer(token: string) {
-    axios.post(
-      address+'/',
-      {token: token}
-    ).then((result)=>{
-      // console.log(result.data);
-      sessionStorage.setItem('user', result.data.userdata.username);
-      sockInit();
-      setIsLoggedIn(true);
-      // setLoggedIn(true)
-      // setLoginState(true);
-    }).catch((reason)=>{
-      console.log(reason, 'FF');
-      setIsLoggedIn(false);
-
-      // setShowLogin(true);
+  function initializer(token: string) : Promise<void> {
+    return new Promise((resolve, reject)=>{
+      axios.post(
+        address+'/',
+        {token: token}
+      ).then((result)=>{
+        // console.log(result.data);
+        sessionStorage.setItem('user', result.data.userdata.username);
+        sockInit();
+        setIsLoggedIn(true);
+        resolve()
+        // setLoggedIn(true)
+        // setLoginState(true);
+      }).catch((reason)=>{
+        console.log(reason, 'FF');
+        setIsLoggedIn(false);
+        reject()
+        // setShowLogin(true);
+      })
     })
 
   }
@@ -61,17 +66,25 @@ useEffect(()=>{
   // console.log(n++);
 
   if(token) {
-    initializer(token);
+    // setSHowProgress(true);
+    // alert('test1')
+    initializer(token).then(()=>{ setTimeout(() => {
+      setSHowProgress(false);  console.log('test')
+    }, 2000);
+    }).catch(()=>setSHowProgress(false))
     
   }
   else {
     setIsLoggedIn(false);
+    setSHowProgress(false);
     // setShowLogin(true);
   }
 
 }, [setIsLoggedIn])
 
-    if(!isLoggedIn) return (<><Auth  /></>)
+  if(showProgress) return (<div className="w-full h-full flex flex-col gap-5 justify-center  items-center"><CircularProgress className=" h-20 w-20 "  /><p className="animate-bounce text-xl text-slate-400">Loading</p></div>)
+
+  if(!isLoggedIn) return (<><Auth  /></>)
 
     return (
         <main style={{  }} className="flex h-full flex-col items-center justify-between overflow-hidden">

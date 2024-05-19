@@ -5,6 +5,7 @@ import { user } from "../data/user";
 import Image from "next/image";
 import CIcon from "@coreui/icons-react";
 import { cilAt, cilBirthdayCake, cilEnvelopeClosed, cilEnvelopeLetter, cilLocationPin, cilPhone, cilSettings, cilUser, cilUserFemale, cilUserX } from "@coreui/icons";
+import { CircularProgress } from "@mui/material";
 
 
 interface Info {
@@ -28,16 +29,6 @@ export default function Profile(props: {setPage: Function}) {
                 address+'/profile/fetchinfo',
                 {token: localStorage.getItem('token'), user: sessionStorage.getItem('user')}
             ).then((result)=>{
-                // console.log(result.data);
-                
-                if(result.data.success) {
-                    const info = result.data.info
-                    // console.log(info);
-
-                }else {
-                    
-                }
-
                 resolve(result.data.info)
             })
         })
@@ -48,14 +39,10 @@ export default function Profile(props: {setPage: Function}) {
         if(localStorage.getItem('token')){
             setLoggedIn(true);
             fetchInfo().then((info)=>{
-                
                 setUserData(info);
-                // console.log(info);
                 setSrc(info.profile_image!)
-                // console.log(imgsrc);
                 setFetched(true);
             })
-            
         }
     }, [imgsrc])
 
@@ -81,7 +68,7 @@ export default function Profile(props: {setPage: Function}) {
         }
     }
 
-    if(!fetched) return (<></>);
+    if(!fetched) return (<div className="w-full h-full flex flex-col gap-5 justify-center  items-center"><CircularProgress className=" h-20 w-20 "  /><p className="animate-bounce text-xl text-slate-400">Loading</p></div>)
 
     return (
         <div className=" px-6 h-full w-full overflow-y-scroll scrollbar-thin ">
