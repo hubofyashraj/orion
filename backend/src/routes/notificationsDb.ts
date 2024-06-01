@@ -43,7 +43,7 @@ export function getRequests(user: string) : Promise<Array<any>> {
 
                 const promises = objs.map(async (obj)=>{
                     await getInfo(obj.sender).then((info)=>{
-                        list.push({req_id: obj.req_id, user, fullname: info.fullname, profile_image: info.profile_image})
+                        list.push({req_id: obj.req_id, user, fullname: info.fullname, pfp_uploaded: info.pfp_uploaded})
 
                     })
                 })

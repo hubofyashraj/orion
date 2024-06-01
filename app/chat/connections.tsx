@@ -5,53 +5,49 @@ import Image from "next/image";
 import CIcon from "@coreui/icons-react";
 import { cilUser } from "@coreui/icons";
 
-function Connections(props: any) {
+function Connections(props: {screenWidth:number, setPrimary:Function, setChatUser: Function}) {
 
     const [connections, setConnections] = useState([] as Array<any>)
-
-
 
     useEffect(()=>{
         function getConnections() {
             // console.log('test');
-            
-            axios.post(
+            axios.defaults.headers.common['Authorization'] = `Bearer ${localStorage.getItem('token')}`
+            axios.get(
                 address+'/chats/getConnections',
-                {token: localStorage.getItem('token')}
             ).then((result)=>{
-                
                 const users : Array<any> = result.data.connections;
-                
-                if(users) {
-                    var list: Array<any> = [];
-                    for (let i = 0; i < users.length; i++) {
-                        const ob = users[i];
-                        // console.log(ob);
-                        
-                        list.push(<ClickableUser onClick={()=>{props.toggleChat(); props.setChatUser(ob)}} key={ob.username} info={ob}/>)
-                        // console.log(ob);
-                        
-                    }
-                    setConnections(list)
-                    
-                }
+                setConnections(users)
             })
         }
 
         getConnections()
     }, [props])
 
+    function onClickOnUser(user: any) {
+        props.setPrimary(); 
+        props.setChatUser(user)
+        if(props.screenWidth<=640) {
+            const div = document.getElementById('connections') as HTMLDivElement
+            div.style.marginLeft='-100vw'
+        }
+    }
+
     return (
-        <div className="connections border bg-slate-100 flex flex-col w-full md:w-[calc(60rem)] h-[calc(100vh-64px)] ">
+        <div id="connections" className="connections transition-all border bg-slate-100 flex flex-col w-full sm:m-0 sm:w-1/3 shrink-0 h-[calc(100vh-64px)] ">
             <div className="h-16 text-center flex justify-center items-center border-b-2">
-                <p className="text-lg">Your Connections</p>
+                <p className="text-lg">Your Connections</p> 
             </div>
-            <div className="grow flex flex-col overflow-y-scroll scrollbar-thin scrollbar-track-slate-100 scrollbar-thumb-slate-200">
-                {connections}
+            <div className="grow flex pl-5 flex-col overflow-y-scroll scrollbar-thin scrollbar-track-slate-100 scrollbar-thumb-slate-200">
+                { connections.map(
+                    (user, idx)=><ClickableUser onClick={()=>onClickOnUser(user)} key={idx} info={user}/>
+                )}
             </div>
         </div>
     )
 }
+
+
 
 function ClickableUser(props: any) {
 
@@ -60,9 +56,10 @@ function ClickableUser(props: any) {
     
 
     useEffect(()=>{
-        axios.post(
-            address+'/profile/fetchProfileImage',
-            {token: localStorage.getItem('token'), user: props.info.username}
+        axios.defaults.headers.common['Authorization'] = `Bearer ${localStorage.getItem('token')}`
+        axios.get(
+            address+'/profile/fetchPFP?user='+props.info.username,
+            
         ).then((result)=>{
             // console.log(result);
             if(result.data.success) {

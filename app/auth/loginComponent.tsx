@@ -44,8 +44,8 @@ export default function LoginComponent() {
     
     return (
         <>
-            <form onSubmit={submit} className={'overflow-hidden flex flex-col gap-2'}>
-                <input className='outline-none bg-slate-300 bg-opacity-50 rounded-lg hover:bg-opacity-70 px-3 py-2 text-center border-b-2' name='username' type='text' placeholder='username' />
+            <form onSubmit={submit} autoComplete="off" className={'overflow-hidden flex flex-col gap-2'}>
+                <input className='outline-none bg-slate-300 bg-opacity-50 rounded-lg hover:bg-opacity-70 px-3 py-2 text-center border-b-2' name='username' type='text' autoComplete="off" placeholder='username' />
                 <input className='outline-none bg-slate-300 bg-opacity-50 rounded-lg hover:bg-opacity-70 px-3 py-2 text-center border-b-2' name='password' type='password' placeholder='password'/>
                 {<input className='bg-slate-300 bg-opacity-50 hover:bg-opacity-80 rounded-md p-1 text-slate-700 cursor-pointer'  type='submit' value={'Login'}/>}
             </form>

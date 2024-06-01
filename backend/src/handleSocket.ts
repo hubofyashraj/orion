@@ -62,7 +62,7 @@ export function socketSendMsg(receiver: string, sender: string, msg: message) {
     
     const receiverSocket = getUserSocket(receiver);
     if(receiverSocket)    receiverSocket.emit('new message', JSON.stringify(msg))
-    else    console.log('socket not found');
+    else    console.log('socket not found', receiver);
     
     // console.log('sending message', receiver);
     

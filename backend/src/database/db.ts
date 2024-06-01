@@ -1,4 +1,4 @@
-import { Document, MongoClient, ObjectId, PushOperator, WithId } from 'mongodb';
+import { Collection, Document, MongoClient, ObjectId, PushOperator, WithId } from 'mongodb';
 import dotenv from 'dotenv';
 import { resolve } from 'path';
 import bcrypt from 'bcrypt';
@@ -21,14 +21,16 @@ db.collection('users').createIndex(
     {collation: {locale: 'en', strength: 2}}
 )
 
-export async function checkCredentials(data: {username: string, password: string}) {
+export async function checkCredentials(data: Array<string>) {
     try{
+        console.log(data);
+        
         const collection = db.collection('users');
         
-        var l = await collection.findOne({username: data.username});
+        var l = await collection.findOne({username: data[0]});
 
         if(l) {
-            if(bcrypt.compareSync(data.password, l.password)) {
+            if(bcrypt.compareSync(data[1], l.password)) {
                 return true;
             }else return false;
             
@@ -40,13 +42,38 @@ export async function checkCredentials(data: {username: string, password: string
     };
 }
 
-export async function signup(data: {username: string, password: string, fullname: string}) : Promise<string> {
+type User = {
+    _id?: ObjectId
+    username: string,
+    password: string,
+    fullname: string
+}
+
+type Connections = {
+    _id?: ObjectId
+    user: string,
+    connections: Array<string>
+}
+
+export async function signup(data: {username: string, password: string, fullname: string}) : Promise<void> {
     return new Promise(async (resolve, reject)=>{
+        const session = client.startSession();
         try {
-            var collection = db.collection('users');
-        
+            session.startTransaction();
+            console.log('new signup data', data);
+            
+            var userCollection: Collection<User> = db.collection('users');
+            var infoCollection: Collection<Info> = db.collection('info');
+            const connectionsCollection: Collection<Connections> = db.collection('connections');
+
             var salt = bcrypt.genSaltSync(10);
             data.password = bcrypt.hashSync(data.password , salt);
+
+            const user: User = {
+                username: data.username.toLowerCase(),
+                password: data.password,
+                fullname: data.fullname
+            }
 
             const info: Info = {
                 username: data.username.toLowerCase(),
@@ -59,20 +86,27 @@ export async function signup(data: {username: string, password: string, fullname
                 gender: '',
                 location: '',
                 profession: '',
-                profile_image: ''
+                pfp_uploaded: false
             }
 
-            const result = await collection.insertOne({username: data.username.toLowerCase(), password: data.password, fullname: data.fullname});
-            collection = db.collection('info');
-            await collection.insertOne(info)
-            if (result.acknowledged) {
-                await db.collection('connections').insertOne({user: data.username, connections: []})
-                resolve(result.insertedId+'');
-            } else {
-                reject('Could not insert');
+            const connections: Connections = {
+                user: data.username.toLowerCase(),
+                connections: []
             }
+
+
+            await userCollection.insertOne(user);
+            await infoCollection.insertOne(info);
+            await connectionsCollection.insertOne(connections);
+            
+            session.commitTransaction();
+            resolve();
+            
         } catch {
-            reject('Probable MongoDb issue');
+            session.abortTransaction();
+            reject();
+        } finally {
+            session.endSession();
         }
     })
 }
@@ -81,7 +115,6 @@ export async function checkUserNameAvailable(username: string) {
     try {
         const collection = db.collection('users');
         const user = await collection.findOne({username: username.toLowerCase()});
-        // console.log(user);
         return user==null;  // username is available
     }catch{};
 }
@@ -97,55 +130,90 @@ export async function getprofileData(username: string): Promise<any> {
 
 }
 
-export async function search(txt: string, user: string): Promise<Array<object| null>| null> {
+
+type Match = {
+    username: string, 
+    fullname: string, 
+    status?: string, 
+    id?: ObjectId
+}
+/**
+ * 
+ * @param txt text to match
+ * @param user user that requested the search
+ * @returns a list of possible matches
+ */
+
+export async function search(txt: string, user: string): Promise<Array<Match>> {
     return new Promise(async (resolve, reject)=>{
-        const collection = db.collection('users');
-        const resultSet = collection.find(
-        {$and: [{username: {$ne :user}}, {$or: [{username: txt }, {fullname: txt}]}]})
-        .project({_id: false, password: false})    
-        .collation({locale: 'en', strength: 2});
         
-        var list: Array<object|null>= []
-        while(await resultSet.hasNext()) {
-            var ob=await resultSet.next()
+        const session = client.startSession();
+
+        try {
+            session.startTransaction()
+            const collection: Collection<User> = db.collection('users');
+            const resultSet: Array<User> = await collection.find(
+                {$and: [
+                    {username: {$ne :user}}, 
+                    {$or: [
+                        {username: txt }, 
+                        {fullname: txt}
+                    ]}
+                ]}
+            ).toArray()  
+            // .collation({locale: 'en', strength: 2});
             
-            var conn = await db.collection('connections').findOne({user});
-            if(!conn) {
-                await db.collection('connections').insertOne({user: user, connections: []})
-            }
-            conn = await db.collection('connections').findOne({user});
-            const connections: Array<string> = conn!.connections
-            // console.log(connections.includes(ob!.username));
             
-            
-            if(connections.includes(ob!.username)) {
-                list.push({...ob, status: 'connected'})
-            }
-            else {
+            var list: Array<Match>= []
+    
+            for(const result of resultSet) {
+                let obj: Match = {username: result.username, fullname: result.fullname};
+                const connections: Array<string> = (await db.collection('connections').findOne({user}))!.connections;
+                console.log(connections);
                 
-                var incoming_req=await db.collection('connect_request')
-                .findOne({sender: ob!.username, receiver: user});
-                if(incoming_req) {
-                    list.push({...ob, status: 'incoming', id: incoming_req._id})
+                if(connections.includes(obj.username)) {
+                    obj.status = 'connected';
+                    list.push(obj);
+                    continue;
+                }
 
-                }
-                else {
-                    var outgoing = await db.collection('connect_request')
-                    .findOne({sender: user, receiver: ob!.username});
-                    if(outgoing) {
-                        list.push({...ob, status: 'outgoing', id: outgoing._id})
-                    }
-                    else {
-                        list.push({...ob, status: 'none'})
-                    }
-                }
+                const incomingReq = await db.collection('connect_request')
+                    .findOne({sender: obj.username, receiver: user});
                 
+                if(incomingReq) {
+                    obj.status = 'incoming'
+                    obj.id = incomingReq._id
+                    list.push(obj);
+                    continue;
+                }
 
+                const sentReq = await db.collection('connect_request')
+                    .findOne({sender: user, receiver: obj.username});
+
+                if(sentReq) {
+                    obj.status = 'outgoing';
+                    obj.id = sentReq._id;
+                    list.push(obj);
+                    continue;
+                }
+
+                obj.status = 'none';
+                list.push(obj);
             }
 
+
+
+            await session.commitTransaction();
+            resolve(list)
+        } catch (err) {
+            console.log('ERR', err);
             
+            await session.abortTransaction();
+            reject([]);
+        } finally {
+            await session.endSession()
         }
-        resolve(list)
+        
     })
 }
 
@@ -173,13 +241,19 @@ export async function cancelRequest(req_id: string) {
     await collection.deleteOne({_id: new ObjectId(req_id)});
 }
 
+type Connection_Request = {
+
+}
+
+
 export  function getRequestsData(receiver: string) : Promise<object> {
     return new Promise(async (resolve, reject) => {
         const collection = db.collection('connect_request');
         const l = collection.find({receiver});
-        // console.log(await l.next());
+        // const l = await collection.find({receiver}).toArray();
         
         var list: Array<object> = [];
+        // for()
         while(await l.hasNext()) {
             // console.log('test');
             const request = await l.next();

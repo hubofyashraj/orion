@@ -5,6 +5,8 @@ import { cilAt, cilPen, cilPencil, cilSave, cilX } from "@coreui/icons"
 import { ChangeEvent, ChangeEventHandler, useEffect, useState } from "react"
 import { setGlobal } from "next/dist/trace"
 
+import { Bounce, ToastContainer, toast } from "react-toastify"
+import 'react-toastify/ReactToastify.css'
 interface Info {
     username: string, fullname: string, dob: string, profession: string, 
     location: string, bio: string, gender: string, 
@@ -49,9 +51,10 @@ export default function Edit(props: { user: string , setPage: Function }) {
     useEffect(()=>{
         function fetchInfo() :Promise<Info>{
             return new Promise((resolve, reject)=>{
-                axios.post(
+                axios.defaults.headers.common['Authorization'] = `Bearer ${localStorage.getItem('token')}`
+
+                axios.get(
                     address+'/profile/fetchinfo',
-                    {token: localStorage.getItem('token'), user: props.user}
                 ).then((result)=>{
                     // console.log(result.data);
                     
@@ -99,13 +102,23 @@ export default function Edit(props: { user: string , setPage: Function }) {
         if(info.email!==email)    updatedInfo.email=email;
         if(info.contact!==contact)    updatedInfo.contact=contact;
 
-        console.log(updatedInfo);
+        // console.log(updatedInfo);
         
+        axios.defaults.headers.common['Authorization'] = `Bearer ${localStorage.getItem('token')}`
         axios.post(
             address+'/profile/saveinfo',
-            {token: localStorage.getItem('token'), updatedInfo}
+            {updatedInfo}
         ).then((result)=>{
-
+            toast('Updated!', {
+                position: "top-right",
+                autoClose: 5000,
+                hideProgressBar: false,
+                closeOnClick: true,
+                pauseOnHover: true,
+                draggable: true,
+                theme: "light",
+                transition: Bounce,
+            })
         })
     }
 
@@ -143,6 +156,7 @@ export default function Edit(props: { user: string , setPage: Function }) {
                     <EditInput type="tel" label="Contact" name="contact" value={contact} disabled={disabled} onChange={(e)=>{setContact((e.currentTarget as HTMLInputElement).value)}}/>
                 </form>
             </div>
+            <ToastContainer />
         </div>
     )
 }

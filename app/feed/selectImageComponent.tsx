@@ -1,16 +1,17 @@
 import { DeleteOutlineRounded } from "@mui/icons-material";
 import Image from "next/image";
-import { DragEvent, useEffect, useState } from "react";
+import { ChangeEvent, DragEvent, MouseEvent, useEffect, useMemo, useRef, useState } from "react";
 
 export default function SelectImagesComponent(props: {curState: boolean, toggleState: Function, fnCreatePost: Function}) {
-    const [images, setImages] = useState([] as Array<string>)
    
-    
+    const [images, setImages] = useState(new Array<string>());
 
 
     const textBtnCls = "hover:text-slate-900 text-slate-700 hover:drop-shadow-lg cursor-pointer ";
     
+    let fileList = useRef(new Set<File>());
 
+    
     function dragOver(e: DragEvent) {
         e.preventDefault();
     }
@@ -28,8 +29,13 @@ export default function SelectImagesComponent(props: {curState: boolean, toggleS
         const files = e.dataTransfer.files;
 
         if(files.length) {
+            for(const file of Array.from(files)) {
+                fileList.current.add(file)
+            } 
+
             validateFiles(files);
-            console.log(' sent for validation');
+
+            // console.log(' sent for validation');
             
         }
         
@@ -37,7 +43,7 @@ export default function SelectImagesComponent(props: {curState: boolean, toggleS
 
     async function validateFiles(files: FileList) {
 
-        const validTypes = ['image/jpeg', 'image/jpg', 'image/png'];
+        const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
         // console.log(files.length);
         
         var imgAr = [...images];
@@ -46,9 +52,12 @@ export default function SelectImagesComponent(props: {curState: boolean, toggleS
             const reader = new FileReader();
 
             reader.onload = function(e){
-                // setImages(prev=>[...prev, e.target!.result as string])
                 imgAr.push(e.target!.result as string)
-                if(imgAr.length === files.length) {
+                // console.log(imgAr);
+                
+                if(imgAr.length === files.length+images.length) {
+                    // console.log('should rerender now');
+                    
                     setImages(imgAr);
                 }
             }
@@ -58,22 +67,20 @@ export default function SelectImagesComponent(props: {curState: boolean, toggleS
             ]
         } 
 
-        // while(true) {
-
-
-        // }
-
         
         
     }
-    // const inpt: HTMLInputElement  = document.getElementById('filePicker')! as HTMLInputElement
 
-    if((document.getElementById('filePicker')! as HTMLInputElement)) {
-        (document.getElementById('filePicker')! as HTMLInputElement).addEventListener('change', ()=>{
-            if((document.getElementById('filePicker')! as HTMLInputElement).files!.length) {
-                validateFiles((document.getElementById('filePicker')! as HTMLInputElement).files!);
-            }     
-        })
+    function onChangeHandler(e: ChangeEvent<HTMLInputElement>){
+        const files = e.target.files;
+        if(files?.length) {
+            for (const file of Array.from(files)) {
+                fileList.current.add(file);
+            }
+            console.log('fileList', fileList);
+            
+            validateFiles(files);
+        }   
     }
 
     function pickFiles() {
@@ -84,6 +91,12 @@ export default function SelectImagesComponent(props: {curState: boolean, toggleS
 
 
     
+
+    function onClickHandler(event: MouseEvent<HTMLParagraphElement>): void {
+        console.log('fileList on click', fileList);
+        
+        props.fnCreatePost(Array.from(fileList.current))
+    }
 
     return (
         <div className={(props.curState?"":" -mb-96 ")+(images.length==0?" h-48 ":" h-96 ")+" transition-all rounded-t-lg  select-none absolute bottom-0 left-1/2 -translate-x-1/2 w-full max-w-96 pt-4 bg-blue-100"}>
@@ -107,12 +120,12 @@ export default function SelectImagesComponent(props: {curState: boolean, toggleS
                     <p>/ Pick Images</p>
                 </div>
                 <div className="flex gap-5 self-end  ">
-                    {images.length!=0 && <p onClick={()=>props.fnCreatePost(images)} className={textBtnCls}>Continue</p>}
+                    {images.length!=0 && <p onClick={onClickHandler} className={textBtnCls}>Continue</p>}
                     <p onClick={()=>{setImages([]);  props.toggleState()} } className={textBtnCls}>Cancel</p>
                 </div>
             </div>
 
-            <input id="filePicker" type="file" multiple hidden />
+            <input onChange={onChangeHandler} id="filePicker" type="file"  multiple hidden />
 
         </div>
     )

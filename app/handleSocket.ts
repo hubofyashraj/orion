@@ -10,22 +10,12 @@ import { setIncomingMsg } from "./chat/chatbox";
 
 
 export function sockInit() {
-    // var socket: Socket|undefined = undefined;
-    
-    // if(socket==undefined) {
-    // console.log('trying to connect');
-        
     var interval: string | number | NodeJS.Timeout | undefined;
 
     var socket = io(address, {reconnection: true});
-    // console.log(address);
-    
-    // socket = io(address);
     handleSocket(socket);
-    // console.log(socket);
     
     socket.emit('verify',localStorage.getItem('token')!)
-    // console.log(socket.connected);
     
     interval = setInterval(()=>{
         if(localStorage.getItem('token')) {
@@ -36,10 +26,8 @@ export function sockInit() {
         }
 
     }, 10000)
-    // }else console.log(socket);
-
     
-  }
+}
 
 /**
  * 
@@ -93,7 +81,7 @@ export default function handleSocket(socket: Socket) {
 
     socket.on('new message', (msg)=> {
         msg=JSON.parse(msg);
-        // console.log('new message', msg);
+        console.log('new message', msg);
         
         setIncomingMsg(msg)
         

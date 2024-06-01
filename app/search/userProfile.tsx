@@ -32,9 +32,8 @@ export default function UserProfile({ user } : {user: string}) {
 
         function fetchInfo() :Promise<void>{
             return new Promise((resolve, reject)=>{
-                axios.post(
-                    address+'/profile/fetchinfo',
-                    {token: localStorage.getItem('token'), user}
+                axios.get(
+                    address+`/profile/fetchinfo?user=${user}`,
                 ).then((result)=>{
                     // console.log(result.data);
                     

@@ -30,26 +30,19 @@ export default function Requests() {
     useEffect(()=>{
 
       async function fetchRequests() {
-        await axios.post(
+        axios.defaults.headers.common['Authorization'] = `Bearer ${localStorage.getItem('token')}`;
+        await axios.get(
           address+'/notifications/getRequests', 
-          {token: localStorage.getItem('token'), user: sessionStorage.getItem('user')}
         ).then((res)=>{
             const data = res.data as result;
-            
             if(data.success) {
-              // console.log(data.requests);
-              
                 var list: Array<React.JSX.Element> = [];
                 data.requests!.forEach((reqst)=>{
-                  // console.log(reqst);
-                  
                     const comp = <RequestNotification key={reqst.req_id} data={reqst} />
                     list.push(comp)
                 })
-  
                 setReqs(list)
             }
-            
         })
       }
 

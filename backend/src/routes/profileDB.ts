@@ -10,7 +10,7 @@ export interface Info {
     username: string, fullname: string, dob: string, profession: string, 
     location: string, bio: string, gender: string, 
     email: string, contact: string, contact_privacy: boolean
-    profile_image: string | null,
+    pfp_uploaded: boolean,
 }
 
 
@@ -68,25 +68,25 @@ export function addConnectionStatus(info: Info, user: string, user1: string): Pr
 
 
 
-export function saveInfo(user: string, updatedInfo: any): Promise<void> {
-    return new Promise(async (resolve, reject)=>{
-        console.log(updatedInfo, 30);
-        if(await collection.findOne({username: user}))
-            await collection.updateOne({username: user}, {$set: updatedInfo});
-        else
-            await collection.insertOne(updatedInfo);
-
+export async function saveInfo(user: string, updatedInfo: any) {
+    const session = client.startSession();
+    try {
+        session.startTransaction();
+        await collection.updateOne({username: user}, {$set: updatedInfo});
         if(updatedInfo.hasOwnProperty('fullname')) {
-            var collection1 = db.collection('users');
-            await collection1.updateOne({username: user}, {$set: {fullname: updatedInfo['fullname']}})
+            await db.collection('users').updateOne({username: user}, {$set: {fullname: updatedInfo.fullname}})
         }
-        resolve()
-    })
+        session.commitTransaction()
+    } catch (error) {
+        session.abortTransaction();
+    } finally {
+        session.endSession();
+    }
 }
 
-export function saveImage(user: string, image: string): Promise<void> {
+export function saveImage(user: string): Promise<void> {
     return new Promise(async (resolve, reject)=>{
-        await collection.updateOne({username: user}, {$set: {profile_image: image}});
+        await collection.updateOne({username: user}, {$set: {pfp_uploaded: true}});
         resolve()
     })
 }
