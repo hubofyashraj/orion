@@ -2,7 +2,7 @@ import { cibStyleshare, cilArrowThickRight, cilBookmark, cilChatBubble, cilComme
 import CIcon from "@coreui/icons-react"
 import axios from "axios"
 import Image from "next/image"
-import { TouchEvent, UIEvent, useEffect, useState } from "react"
+import { MouseEvent, TouchEvent, UIEvent, useEffect, useState } from "react"
 import { address } from "../api/api"
 import { Bookmark, BookmarkBorder, BookmarkSharp, ChatBubbleOutline, Favorite, FavoriteBorder, FavoriteBorderOutlined, FavoriteBorderSharp, FavoriteBorderTwoTone, FavoriteOutlined, Light, SendSharp, Share, ShareSharp } from "@mui/icons-material"
 import { Italiana } from "next/font/google"
@@ -166,11 +166,48 @@ export default function ImagePost(props: {post: PostIdentifier}) {
 
     let touchStart: number = 0;
     let touchEnd: number = 0;
+
+    function mousedownHandler(event: MouseEvent<HTMLDivElement>): void {
+        
+        touchStart = event.clientX;
+        console.log(touchStart);
+        
+    }
+
     function touchStartHandler(event: TouchEvent<HTMLDivElement>): void {
         
         touchStart = event.touches[0].clientX;
         console.log(touchStart);
         
+    }
+
+    function mouseupHandler(event: MouseEvent<HTMLDivElement>): void {
+        console.log(event.clientX);
+        
+        touchEnd = event.clientX;
+        const div: HTMLDivElement = document.getElementById('imageContainer'+props.post?.post_id) as HTMLDivElement; 
+        const progressDots: HTMLDivElement = document.getElementById('progressDots'+props.post?.post_id) as HTMLDivElement
+        console.log(progressDots);
+        
+        if(touchEnd-touchStart>div.clientWidth/4) {
+
+            if(currentImgInView>0) {
+                div.scrollBy({top: 0, left: -1*div.clientWidth, behavior: 'smooth'})
+                progressDots.children.item(currentImgInView)?.setAttribute('style', '')
+                currentImgInView--;
+                progressDots.children.item(currentImgInView)?.setAttribute('style', 'width: 8px; height: 8px')
+
+            }
+            // div.scrollBy({top: 0, left: -1*div.clientWidth, behavior: 'smooth'})
+        }
+        else if(touchStart-touchEnd>div.clientWidth/4) {
+            if(currentImgInView<div.children.length-1) {
+                div.scrollBy({top: 0, left: div.clientWidth, behavior: 'smooth'})
+                progressDots.children.item(currentImgInView)?.setAttribute('style', '')
+                currentImgInView++;
+                progressDots.children.item(currentImgInView)?.setAttribute('style', 'width: 8px; height: 8px')
+            }
+        }
     }
 
     function touchEndHandler(event: TouchEvent<HTMLDivElement>): void {
@@ -218,7 +255,7 @@ export default function ImagePost(props: {post: PostIdentifier}) {
                 </div>
             </div>
             <div className="bg-inherit select-none border-b-slate-50 border-t-slate-50 border-b-2 border-t-2">
-                <div id={"imageContainer"+props.post?.post_id} onTouchStart={touchStartHandler} onTouchEnd={touchEndHandler} onScroll={scrollHandler} className="flex overflow-hidden">
+                <div id={"imageContainer"+props.post?.post_id} onTouchStart={touchStartHandler} onTouchEnd={touchEndHandler}  onScroll={scrollHandler}  onMouseDown={mousedownHandler} onMouseUp={mouseupHandler}  className="flex overflow-hidden">
                     {content.map(image=>
                         <Image key={content.indexOf(image)} className="w-full h-full" alt="" width={0} height={0} src={`data:image/jpg;base64,${image}`} />
 
