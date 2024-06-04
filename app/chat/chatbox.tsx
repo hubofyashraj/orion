@@ -1,41 +1,41 @@
 import { cilArrowLeft } from "@coreui/icons";
 import CIcon from "@coreui/icons-react";
 import axios from "axios";
-import React, { ChangeEvent, FormEvent, useEffect } from "react";
+import React, { ChangeEvent, FormEvent, useEffect, useRef } from "react";
 import { useState } from "react";
 import { address } from "../api/api";
 import { Socket, io } from "socket.io-client";
-import MessageComp, { message } from "./message";
+import MessageComp from "./message";
 import { CircularProgress } from "@mui/material";
 import { Send } from "@mui/icons-material";
+import images from "../images";
+import Image from "next/image";
+import { Message } from "./types";
+import CircularLoader from "../Loader/Loader";
+import { socket } from "../handleSocket";
 
 export var setMsgs: Function=()=>{};
 
-export var setIncomingMsg: Function=()=>{}
 
-type Message = {
-    sender: string, receiver: string, msg: string, ts: string
-}
+
+
+export let handleNewMessage: Function = ()=>{} 
 
 function ChatBox(props: {screenWidth:number, setPrimary: Function,  user:any }) {
 
-    const [msg, setMsg] = useState('');
-    const [msgList, setMsgList] = useState([] as Array<message>);
-    const [fetched, setFetched] = useState(false)
+    const message = useRef('');
+    const [msgList, setMsgList] = useState<Array<Message>>([]);
     
-    // const [socket, setSocket] = useState(io(address));
-    
+    // useEffect(()=>{
+    //     if(props.screenWidth<=640) {
+    //         const div = document.getElementById('connections') as HTMLDivElement;
+    //         div.style.marginLeft='0'
+    //     }else {
+    //         const div = document.getElementById('connections') as HTMLDivElement;
+    //         div.style.marginLeft='0'
+    //     }
 
-    useEffect(()=>{
-        if(props.screenWidth<=640) {
-            const div = document.getElementById('connections') as HTMLDivElement;
-            div.style.marginLeft='0'
-        }else {
-            const div = document.getElementById('connections') as HTMLDivElement;
-            div.style.marginLeft='0'
-        }
-
-    }, [props.screenWidth])
+    // }, [props.screenWidth])
 
 
     function middle(list: Array<any>){
@@ -44,13 +44,26 @@ function ChatBox(props: {screenWidth:number, setPrimary: Function,  user:any }) 
 
     setMsgs=middle;
         
+    function addNewMessage(msg: Message) {
+        console.log('adding new message');
+        
+        setMsgList((msgs)=>[...msgs, msg])
+        
+    }
+
+    handleNewMessage=addNewMessage
+
 
     useEffect(()=>{
-        document.getElementById('msgs')!.lastElementChild?.scrollIntoView()
-        setFetched(true)
+        const container = document.getElementById('msgs') as HTMLDivElement
+        container?.scrollTo({top: container.scrollHeight})
+
     }, [msgList])
 
     useEffect(()=>{
+        
+        if(props.user==null) return;
+
         axios.defaults.headers.common['Authorization'] = `Bearer ${localStorage.getItem('token')}`
         axios.get(
             address+`/chats/getChats?receiver=${props.user.username}`,
@@ -58,28 +71,20 @@ function ChatBox(props: {screenWidth:number, setPrimary: Function,  user:any }) 
             const msgs = result.data.chats;
             setMsgList(msgs);
             
-            // console.log(msgs);
+            console.log(msgs);
             
         })
 
-    },[props.user.username])
+    },[props.user])
 
-    function incomingMsg(ob: message) {
-        setMsgList([...msgList, ob]);
-    }
-        
 
-    setIncomingMsg=incomingMsg
-
-    function sendMsg(event: FormEvent<HTMLFormElement>) {
-        event.preventDefault();
-
-        if(msg.length!=0) {
+    function sendMsg(message: string, resetValue: Function) {
+        if(message.length!=0) {
             axios.post(
                 address+'/chats/sendText',
-                {receiver: props.user.username, msg, timeStamp: Date.now().toString()}
+                {receiver: props.user.username, msg: message, timeStamp: Date.now().toString()}
             ).then((result) =>{
-                setMsg('')
+                resetValue()
             }).catch((reason)=>{
                 
             })
@@ -88,9 +93,6 @@ function ChatBox(props: {screenWidth:number, setPrimary: Function,  user:any }) 
         
     }
 
-    function onChange(event: ChangeEvent) {
-        setMsg((event.target! as HTMLInputElement).value);
-    }
 
     function onBack(){
         const div = document.getElementById('connections') as HTMLDivElement
@@ -98,34 +100,38 @@ function ChatBox(props: {screenWidth:number, setPrimary: Function,  user:any }) 
         props.setPrimary()
     }
 
+    if(props.user==null) return (
+        <div className="h-full w-[calc(100svw)] sm:w-[calc(66svw)] bg-slate-300   flex justify-center items-center">
+            <Image alt="Orion logo" className=" opacity-25" width={300} height={300} src={images.demo.src}/>
+        </div>
+    )
+
     
     return (
-        <div id="chatbox" className="h-full grow relative  w-full sm:w-2/3 flex flex-col justify-between">
+        <div id="chatbox" className="h-[calc(100svh-64px)] overflow-y-auto w-[calc(100svw)] sm:w-[calc(66svw)] bg-slate-300 flex flex-col justify-start">
             <div className="h-16 shrink-0 flex gap-5 items-center px-4 border-b">
                 <div><CIcon onClick={()=>onBack()} className="w-4 h-4" icon={cilArrowLeft}/></div>
                 <div>
                     <p>{props.user.username}</p>
                 </div>
             </div>
-            <div id="msgs" className="grow flex mb-16 flex-col items-start justify-start overflow-y-auto scrollbar-none scrollbar-track-white">
-                {!fetched  && <div className="w-full h-full flex flex-col gap-5 justify-center  items-center">
-                        <CircularProgress className=" h-20 w-20 " />
-                        <p className="animate-bounce text-xl text-slate-400">Loading</p>
-                    </div>  
-                }
-                {fetched && msgList.map((msg, idx)=>{
-                    if(msg.sender == sessionStorage.getItem('user') || msg.sender==props.user.username) {
+            <div id="msgs" className="grow flex flex-col items-start justify-start overflow-y-auto scrollbar-none scrollbar-track-white">
+                { msgList.length==0 
+                ? <CircularLoader /> 
+                : msgList.map((msg, idx)=>{
+
+                    if(msg.sender == localStorage.getItem('user') || msg.sender==props.user.username) {
                         return <MessageComp key={idx}  msg={msg} sender={props.user.username} />
-                    }})
+                    }
+                    else {
+                        console.log('not users msg', msg);
+                        
+                    }
+                })
                 }
             </div>
-            <div className="py-4 h-16 shrink-0 flex justify-center items-center w-full bg-white border-t-2">
-                <form onSubmit={sendMsg} className="flex  gap-3 justify-center items-center">
-                    <input onChange={onChange} value={msg} name="msg" className=" py-2 px-4 rounded-full bg-slate-100 text-gray-500" placeholder="Enter Message" />
-                    <button type="submit" className="h-8 w-8">
-                        <Send className=" text-blue-400 h-full w-full  rounded-full" />
-                    </button>
-                </form>
+            <div className="h-16 shrink-0 flex justify-center items-center w-[calc(100svw)] sm:w-[calc(66svw)] bg-white border-t-2">
+                <MessageForm send={sendMsg}/>
             </div>
         </div>
     )
@@ -137,3 +143,22 @@ function ChatBox(props: {screenWidth:number, setPrimary: Function,  user:any }) 
 export default ChatBox;
 
 
+
+
+function MessageForm(props: {send: Function}) {
+
+    const [value, setValue] = useState('');
+
+    function onChange(event: ChangeEvent<HTMLInputElement>) {
+        setValue(event.target.value);
+    }
+
+    return (
+        <form onSubmit={(e)=>{e.preventDefault(); props.send(value, ()=>setValue(''))}} className="flex  gap-3 justify-center items-center">
+            <input autoComplete="off" onChange={onChange} value={value} name="msg" className=" py-2 px-4 rounded-full bg-slate-100 text-gray-500" placeholder="Enter Message" />
+            <button type="submit" className="h-8 w-8">
+                <Send className=" text-blue-400 h-full w-full  rounded-full" />
+            </button>
+        </form>
+    )
+}

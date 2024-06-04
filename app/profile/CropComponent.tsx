@@ -157,7 +157,7 @@ export default function CropComponent({file, close, setFetch}: {file: File, clos
         getCroppedImage(img, startX, startY, endX, endY).then(async (value)=>{
             const blob: Blob = await (await fetch(value)).blob()
             const formData = new FormData();
-            formData.append('files', blob);
+            formData.append('file', blob);
             axios.defaults.headers.common['Authorization'] = `Bearer ${localStorage.getItem('token')}`
             axios.post(
                 address + '/profile/saveimage',

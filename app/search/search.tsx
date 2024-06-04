@@ -28,7 +28,7 @@ export default function Search() {
                 axios.defaults.headers.common['Authorization'] = `Bearer ${localStorage.getItem('token')}`
                 axios.post(
                     address+'/search',
-                    {searchTxt: e.target.value, user: sessionStorage.getItem('user')}
+                    {searchTxt: e.target.value, user: localStorage.getItem('user')}
                 ).then(async (result)=>{  
                     console.log(result);
                     if(result.data.success)    setFoundUsersList(result.data.results);
@@ -49,7 +49,7 @@ export default function Search() {
     
     return (
         <div className="flex overflow-hidden flex-col w-full h-full gap-10 justify-start items-center">
-            <div className="w-full h-16 flex justify-center items-center gap-2">
+            <div className="w-[calc(90svw)] max-w-96 h-24 flex justify-center items-center gap-2">
                 <input className="bg-inherit h-3/5 w-96  border-2 border-solid border-slate-200 rounded-lg outline-none shadow-lg text-center" onKeyDown={keyPressed}  placeholder="Search"/>
                 {/* <button><CIcon className="h-5 " icon={cilSearch }/></button> */}
             </div>
@@ -80,9 +80,8 @@ function UserTile(props:any) {
 
         function fetchProfileImage(username: string) : Promise<string> {
             return new Promise((resolve, reject)=>{
-                axios.post(
-                    address+'/profile/fetchProfileImage',
-                    {token: localStorage.getItem('token'), user: username}
+                axios.get(
+                    address+'/profile/fetchPFP?user='+username,
                 ).then((result)=>{
                     // console.log(result);
                     
@@ -98,7 +97,7 @@ function UserTile(props:any) {
         }
 
         fetchProfileImage(props.user.username).then((image)=>{
-            setPhoto(image);
+            setPhoto(`data:image/png;base64,${image}`);
             // console.log(photo);
             
         }).catch((reason)=>{

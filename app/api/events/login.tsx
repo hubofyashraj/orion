@@ -10,8 +10,9 @@ export function login(data: {username:string, password: string}): Promise<any> {
             axios.defaults.auth=undefined
             if (result.data.verified == true) {
                 localStorage.setItem('token', result.data.token);
+                localStorage.setItem('user', data.username);
                 sessionStorage.setItem('user', data.username);
-                // console.log('login success: ', result);
+                console.log('login success: ', result);
                 resolve(true);
             } else {
                 reject('wrong credentials');

@@ -5,7 +5,9 @@ import { customRequest } from "../types/customTypes";
 import { Multer } from "multer";
 import { srcpath } from "../readFile";
 import path from "path";
-import { writeFileSync } from "fs";
+import { unlinkSync, writeFileSync } from "fs";
+import sharp from 'sharp';
+
 
 const postRouter = express.Router();
 
@@ -13,16 +15,26 @@ module.exports = postRouter;
 
 
 postRouter.post('/upload', postUploadMiddleware.array('files'), (req: customRequest, res: Response, next: Function)=>{
-    // console.log('body', req.body);
-    // console.log('files', req.files);
-    upload({post_user: req.user!, ...req.body}).then((result)=>{
+    upload({post_user: req.user!, ...req.body}).then(async (result)=>{
         const files = req.files!
         if(Array.isArray(files)) {
             const dest = path.join(srcpath, '..', 'uploads')
-            files.forEach((file, idx)=>{
+
+            const promises = files.map( async (file, idx)=>{
                 const filename = result.post_id+'-'+idx
-                writeFileSync(path.join(dest, filename), file.buffer)
+                await sharp(file.buffer)
+                    .resize(1024)
+                    .jpeg({ quality: 80 })
+                    .toFile(path.join(dest, filename));
+                // unlinkSync(file.path);
             })
+
+            await Promise.all(promises)
+            req.files=undefined            
+            // files.forEach((file, idx)=>{
+            //     const filename = result.post_id+'-'+idx
+            //     writeFileSync(path.join(dest, filename), file.buffer)
+            // })
         }
         res.json({success: true})
     }).catch((reason)=>{
@@ -39,8 +51,8 @@ postRouter.post('/fetchPosts', (req: customRequest, res: Response)=>{
     })
 })
 
-postRouter.post('/like', (req: Request, res: Response)=>{
-    likePost(req.body.post_id, req.body.username!).then(()=>{
+postRouter.post('/like', (req: customRequest, res: Response)=>{
+    likePost(req.body.post_id, req.user!).then(()=>{
         res.json({success: true})
     }).catch(()=>{
         res.json({success: true, reason: 'DBMS err'})
@@ -48,8 +60,8 @@ postRouter.post('/like', (req: Request, res: Response)=>{
     
 })
 
-postRouter.post('/unlike', (req: Request, res: Response)=>{
-    unlikePost(req.body.post_id, req.body.username!).then(()=>{
+postRouter.post('/unlike', (req: customRequest, res: Response)=>{
+    unlikePost(req.body.post_id, req.user!).then(()=>{
         res.json({success: true})
     }).catch(()=>{
         res.json({success: true, reason: 'DBMS err'})
@@ -57,8 +69,8 @@ postRouter.post('/unlike', (req: Request, res: Response)=>{
     
 })
 
-postRouter.post('/save', (req: Request, res: Response)=>{
-    savePost(req.body.post_id, req.body.username!).then(()=>{
+postRouter.post('/save', (req: customRequest, res: Response)=>{
+    savePost(req.body.post_id, req.user!).then(()=>{
         res.json({success: true})
     }).catch(()=>{
         res.json({success: true, reason: 'DBMS err'})
@@ -66,8 +78,8 @@ postRouter.post('/save', (req: Request, res: Response)=>{
 
 })
 
-postRouter.post('/unsave', (req: Request, res: Response)=>{
-    unsavePost(req.body.post_id, req.body.username!).then(()=>{
+postRouter.post('/unsave', (req: customRequest, res: Response)=>{
+    unsavePost(req.body.post_id, req.user!).then(()=>{
         res.json({success: true})
     }).catch(()=>{
         res.json({success: true, reason: 'DBMS err'})

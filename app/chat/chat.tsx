@@ -9,13 +9,13 @@ import "./style.css";
 var  userClickedEvent: Function=()=>{}
 var activeChat: Function=()=>{};
 
-const dummyUser = {_id: 'self', username: 'dummyUser', fullname: 'Dummy User'}
+type User = {_id: string, username: string, fullname: string}
 
 
 export default function Chat() {
     const [screenWidth, setWidth] = useState(0);
     const primary = useRef<'connections'|'chatbox'>('connections');
-    const [chatUser, setChatUser] = useState(dummyUser);
+    const [chatUser, setChatUser] = useState<User | null>(null);
 
     useEffect(()=>{
         setWidth(window.innerWidth)
@@ -30,11 +30,11 @@ export default function Chat() {
 
 
 
-    return (
-        <div className="h-full w-full grow" >
-            { true &&  <div className="flex h-full ">
+    return ( 
+        <div className="h-full w-[calc(200vw)] grow" >
+            { <div className="flex h-full w-full ">
                 <Connections screenWidth={screenWidth} setPrimary={()=>primary.current='chatbox'} setChatUser={setChatUser}  />
-                <ChatBox screenWidth={screenWidth} setPrimary={()=>primary.current='connections'} user={chatUser} />
+                <ChatBox screenWidth={screenWidth} setPrimary={()=>{primary.current='connections'; setChatUser(null)}} user={chatUser} />
             </div> }
             {/* { screenWidth<=640 && <div className=" h-full">
                 { primary.current=='connections' 

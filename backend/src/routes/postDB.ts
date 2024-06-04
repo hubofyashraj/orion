@@ -340,43 +340,43 @@ export function fetchComments(post_id: string): Promise<Array<PostComments>> {
 }
 
 
-export function fetchPost(post_id: string, cur_user: string) : Promise<{success: boolean, post?: Post, stats?: PostStats, secondaryStats: SecondaryStats, reason?: string}> {
-    return new Promise(async (resolve, reject)=>{
+export async function fetchPost(post_id: string, cur_user: string) {
         const session = client.startSession()
-        try {
-            session.startTransaction();
+    try {
+        session.startTransaction();
+        
+        const post = await collection.findOne({post_id})
+        if(!post) throw new Error("Incorrect Post ID");
+        post.post_content=new Array<string>();
+        const promises=[]
+        for(let i =0; i<post.post_length; i++) {
+            const file_name = post.post_id+'-'+i
+            promises.push(readImage(file_name).then((imgsrc)=>post.post_content?.push(imgsrc))
+                .catch((err)=>{}))
             
-            const post = await collection.findOne({post_id})
-            if(!post) throw new Error("Incorrect Post ID");
-            post.post_content=new Array<string>();
-            const promises=[]
-            for(let i =0; i<post.post_length; i++) {
-                const file_name = post.post_id+'-'+i
-                promises.push(readImage(file_name).then((imgsrc)=>post.post_content?.push(imgsrc))
-                    .catch((err)=>{}))
-                
-            }
-
-
-            const stats = (await postStatsCollection.findOne({post_id}))!;
-            
-            const options = (await postOptionsCollection.findOne({post_id}))!;
-
-            const secondaryStats = {
-                liked: options.post_liked_by.includes(cur_user),
-                saved: options.post_saved_by.includes(cur_user)
-            }
-            
-            await session.commitTransaction();
-            await Promise.all(promises)
-            resolve({success: true, post, stats, secondaryStats})
-        } catch (err) {
-            session.abortTransaction();
-            reject({success: false, reason: 'DBMS err'})
-        } finally {
-            session.endSession();
         }
-    })
+
+
+        const stats = (await postStatsCollection.findOne({post_id}))!;
+        
+        const options = (await postOptionsCollection.findOne({post_id}))!;
+
+        const secondaryStats = {
+            liked: options.post_liked_by.includes(cur_user),
+            saved: options.post_saved_by.includes(cur_user)
+        }
+        
+        const pfp = await readImage(post.post_user, 'pfp')
+
+        await session.commitTransaction();
+        await Promise.all(promises)
+        return {success: true, post, stats, secondaryStats, pfp}
+    } catch (err) {
+        session.abortTransaction();
+        throw ({success: false, reason: 'DBMS err'})
+    } finally {
+        session.endSession();
+    }
 }
 
 export function deletePost(post_id: string) : Promise<void> {
@@ -401,3 +401,6 @@ export function deletePost(post_id: string) : Promise<void> {
         }
     })
 }
+
+
+

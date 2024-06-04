@@ -1,4 +1,5 @@
-import { MongoClient } from "mongodb";
+import { Collection, MongoClient, ObjectId } from "mongodb";
+import { readImage } from "../readFile";
 
 const client = new MongoClient(process.env.MONGO_LOCAL as string);
 
@@ -11,6 +12,7 @@ export interface Info {
     location: string, bio: string, gender: string, 
     email: string, contact: string, contact_privacy: boolean
     pfp_uploaded: boolean,
+    pfp?: string
 }
 
 
@@ -91,3 +93,40 @@ export function saveImage(user: string): Promise<void> {
     })
 }
 
+export type Post = {
+    _id?: ObjectId,
+    post_user: string,
+    post_id: string,
+    post_type: 'image' | 'video' | 'text',
+    post_length: number, 
+    post_content?: Array<string>,
+    post_caption: string
+}
+
+export async function getUserPosts(user: string) {
+    const session = client.startSession();
+    type Thumbnail = {
+        post_id: string,
+        thumbnail: string
+    }
+    try {
+        session.startTransaction();
+        const postCollection: Collection<Post> = db.collection('post')
+        const posts = await postCollection.find({post_user: user}).toArray();
+        const result: Array<Thumbnail> = []
+        const promises = posts.map(async (post)=>{
+            const thumbnail = await readImage(post.post_id+'-0')
+            result.push({post_id: post.post_id, thumbnail})
+        })
+
+        await Promise.all(promises);
+        session.commitTransaction();
+
+        return result;
+    } catch (error) {
+        session.abortTransaction();
+        throw error
+    } finally {
+        session.endSession();
+    }
+}

@@ -1,11 +1,13 @@
 import { useEffect, useState } from "react";
 import FloatingActionButton from "./floatingActionButton";
-import ImagePost from "./imagepost";
+// import ImagePost from "./imagepost";
 import SelectImagesComponent from "./selectImageComponent";
 import CreatePost from "./createpost";
 import { ObjectId } from "mongoose";
 import axios from "axios";
 import { address } from "../api/api";
+import dynamic from "next/dynamic";
+
 
 export type Post = {
     _id?: ObjectId,
@@ -18,8 +20,8 @@ export type Post = {
 }
 
 
-
 export default function Feed() {
+    
 
     const [showSelectComponent, setShowSelectComponent] = useState(false);
     const [showCreatePost, setShowCreatePost] = useState(false);
@@ -50,15 +52,14 @@ export default function Feed() {
     }, [])
 
 
+    const ImagePost = dynamic(()=>import('./imagepost'), {ssr: false})
 
     return (
-        <div className=" relative h-full w-full">
-            <div className="max-w-96 h-full overflow-y-auto">
+        <div className=" relative h-full w-full flex flex-col items-center">
+            <div className="w-full max-w-[calc(640px)] h-full flex flex-col justify-start gap-0 overflow-y-auto scrollbar-none">
                 {posts.map(post=>{
                     if(post.post_type=='image') return <ImagePost key={post.post_id} post={post} />
                 })}
-                {/* <ImagePost user={'user'} postid={'123'} /> */}
-
             </div>
 
             <FloatingActionButton setShowSelectComponent={()=>setShowSelectComponent(true)} />

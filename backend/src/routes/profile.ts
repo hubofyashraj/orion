@@ -1,11 +1,12 @@
 import express, {Request, Response} from "express";
-import { Info, addConnectionStatus, getInfo, saveImage, saveInfo } from "./profileDB";
+import { Info, addConnectionStatus, getInfo, getUserPosts, saveImage, saveInfo } from "./profileDB";
 import { getprofileData } from "../database/db";
 import { pfpUploadMiddleware } from "./upload";
 import fs from 'fs';
 import path from "path";
-import { readImage } from "../readFile";
+import { readImage, srcpath } from "../readFile";
 import { customRequest } from "../types/customTypes";
+import sharp from "sharp";
 const profileRouter = express.Router();
 module.exports = profileRouter;
 
@@ -20,9 +21,13 @@ module.exports = profileRouter;
  */
 
 profileRouter.get('/fetchinfo', (req: customRequest, res: Response)=>{
-    getInfo(req.query.user as string??req.user!).then((result)=>{
+    getInfo(req.query.user as string??req.user!).then(async (result)=>{
+        if(result.pfp_uploaded) {
+            const pfp = await readImage(result.username, 'pfp')
+            result.pfp=pfp;
+        }
         if(req.query.user) {
-            addConnectionStatus(result, req.query.user as string, req.body.username!).then(result=>{
+            addConnectionStatus(result, req.query.user as string, req.user!).then(result=>{
                 res.json({success: true, result})
             })
         }else {
@@ -56,9 +61,15 @@ profileRouter.post('/saveinfo', (req: Request, res: Response)=>{
     })
 })
 
-profileRouter.post('/saveimage', pfpUploadMiddleware.single('files'), (req:any, res: Response)=>{
+profileRouter.post('/saveimage', pfpUploadMiddleware.single('file'), (req:customRequest, res: Response)=>{
     console.log('profile image save request', req.user);
-    saveImage(req.user).then(()=>{
+    saveImage(req.user!).then(async ()=>{
+
+        await sharp(req.file!.buffer)
+        .resize(512)
+        .jpeg({quality: 80})
+        .toFile(path.join(srcpath, '..', 'uploads', 'pfp', req.user!))
+        req.file=undefined
         res.json({success: true});
         console.log('image saved', req.user);
     })
@@ -82,5 +93,15 @@ profileRouter.get('/fetchPFP', (req: any, res: Response)=>{
         }
     }).catch((reason)=>{
         res.json({success: false, reason});
+    })
+})
+
+profileRouter.get('/fetchUserPosts', (req: customRequest, res: Response)=>{
+    const user = req.user!;
+
+    getUserPosts(user).then((result)=>{
+        res.json({success: true, posts: result})
+    }).catch((err)=>{
+        res.json({success: false, reason: err})
     })
 })

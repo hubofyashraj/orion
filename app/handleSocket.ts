@@ -1,18 +1,20 @@
 import { Socket, io } from "socket.io-client" 
 import { address } from "./api/api";
-import { setIncomingMsg } from "./chat/chatbox";
+import { handleNewMessage } from "./chat/chatbox";
+// import { setIncomingMsg } from "./chat/chatbox";
 // import { useNotification } from "./navbar/data";
 
 
 
 // export var methods : any= {}
+export let socket: Socket | null = null
 
 
 
 export function sockInit() {
     var interval: string | number | NodeJS.Timeout | undefined;
 
-    var socket = io(address, {reconnection: true});
+    socket = io(address, {reconnection: true});
     handleSocket(socket);
     
     socket.emit('verify',localStorage.getItem('token')!)
@@ -20,7 +22,7 @@ export function sockInit() {
     interval = setInterval(()=>{
         if(localStorage.getItem('token')) {
             socket!.emit('ping');
-            console.log('socket status', socket.connected);  
+            console.log('socket status', socket!.connected);  
         }else {
             clearInterval(interval)
         }
@@ -28,6 +30,8 @@ export function sockInit() {
     }, 10000)
     
 }
+
+
 
 /**
  * 
@@ -79,11 +83,9 @@ export default function handleSocket(socket: Socket) {
 
     socket.on('ping', (msg)=>{})
 
-    socket.on('new message', (msg)=> {
-        msg=JSON.parse(msg);
-        console.log('new message', msg);
-        
-        setIncomingMsg(msg)
-        
+    socket.on('new message', (msg)=>{
+        const new_message = JSON.parse(msg);
+        handleNewMessage(new_message)
     })
+
 }

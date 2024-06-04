@@ -35,12 +35,12 @@ export default function UserProfile({ user } : {user: string}) {
                 axios.get(
                     address+`/profile/fetchinfo?user=${user}`,
                 ).then((result)=>{
-                    // console.log(result.data);
+                    console.log(result.data);
                     
                     if(result.data.success) {
                         const info = result.data.result.info
                         setUserData(info);
-                        setSrc(info.profile_image);
+                        if(info.pfp_uploaded)   setSrc(`data:image/png;base64,${info.pfp}`);
                         setStatus(result.data.result.status);
                         setReqId(result.data.result.id);
                         resolve()

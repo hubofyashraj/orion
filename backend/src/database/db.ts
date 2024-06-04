@@ -1,9 +1,7 @@
 import { Collection, Document, MongoClient, ObjectId, PushOperator, WithId } from 'mongodb';
 import dotenv from 'dotenv';
-import { resolve } from 'path';
 import bcrypt from 'bcrypt';
 import { socketSendNoti } from '../handleSocket';
-import { connection } from 'mongoose';
 import { Info } from '../routes/profileDB';
 
 dotenv.config();
@@ -156,8 +154,8 @@ export async function search(txt: string, user: string): Promise<Array<Match>> {
                 {$and: [
                     {username: {$ne :user}}, 
                     {$or: [
-                        {username: txt }, 
-                        {fullname: txt}
+                        {username: { $regex: `.*${(txt)}.*`, $options: 'i'} }, 
+                        {fullname: { $regex: `.*${(txt)}.*`, $options: 'i'} }
                     ]}
                 ]}
             ).toArray()  
@@ -366,4 +364,3 @@ export function getConnections(user: string) {
 
 
 }
-

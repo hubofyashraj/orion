@@ -7,7 +7,7 @@ import Auth from "./auth/auth";
 import Chat from "./chat/chat";
 import Feed from "./feed/feed";
 import { sockInit } from "./handleSocket";
-import Navbar from "./navbar/page";
+import Navbar from "./navbar/navbar";
 import Edit from "./profile/edit";
 import Profile from "./profile/profile";
 import Search from "./search/search";

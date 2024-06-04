@@ -9,7 +9,7 @@ export default function SelectImagesComponent(props: {curState: boolean, toggleS
 
     const textBtnCls = "hover:text-slate-900 text-slate-700 hover:drop-shadow-lg cursor-pointer ";
     
-    let fileList = useRef(new Set<File>());
+    let fileList = useRef(new Array<File>());
 
     
     function dragOver(e: DragEvent) {
@@ -30,7 +30,7 @@ export default function SelectImagesComponent(props: {curState: boolean, toggleS
 
         if(files.length) {
             for(const file of Array.from(files)) {
-                fileList.current.add(file)
+                fileList.current.push(file)
             } 
 
             validateFiles(files);
@@ -75,9 +75,9 @@ export default function SelectImagesComponent(props: {curState: boolean, toggleS
         const files = e.target.files;
         if(files?.length) {
             for (const file of Array.from(files)) {
-                fileList.current.add(file);
+                fileList.current.push(file);
             }
-            console.log('fileList', fileList);
+            // console.log('fileList', fileList);
             
             validateFiles(files);
         }   
@@ -98,14 +98,19 @@ export default function SelectImagesComponent(props: {curState: boolean, toggleS
         props.fnCreatePost(Array.from(fileList.current))
     }
 
+    const deleteFile = (image: string, idx: number)=>{
+        setImages(images.filter((img)=>img!=image));
+        fileList.current = fileList.current.filter((file)=>file!=Array.from(fileList.current)[idx])
+    }
+
     return (
         <div className={(props.curState?"":" -mb-96 ")+(images.length==0?" h-48 ":" h-96 ")+" transition-all rounded-t-lg  select-none absolute bottom-0 left-1/2 -translate-x-1/2 w-full max-w-96 pt-4 bg-blue-100"}>
             {images.length!==0 && 
                 <div className={" h-40 px-4  "}>
                     <div className=" m-3 flex gap-3 border-2 border-blue-200 rounded-md overflow-auto scrollbar-none scrollbar-track-transparent scrollbar-thumb-slate-200 ">
-                        {images.map(image=>(
-                            <div key={images.indexOf(image)} className="h-36 relative shrink-0">
-                                <DeleteOutlineRounded onClick={()=>{setImages(images.filter((img)=>img!=image))}} className="absolute right-2 top-2 bg-white bg-opacity-90 rounded-full h-10" />
+                        {images.map((image, idx)=>(
+                            <div key={idx} className="h-36 relative shrink-0">
+                                <DeleteOutlineRounded onClick={()=>deleteFile(image, idx)} className="absolute right-2 top-2 bg-white bg-opacity-90 rounded-full h-10" />
                                 <Image className="h-full w-auto" alt="" width={200} height={200} src={image}/>
                             </div>
                         ))}
