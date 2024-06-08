@@ -1,6 +1,6 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import 'tailwindcss/base';
+@import 'tailwindcss/components';
+@import 'tailwindcss/utilities';
 
 :root {
   --foreground-rgb: 0, 0, 0;
@@ -17,10 +17,16 @@
   }
 } */
 
+html {
+  overscroll-behavior-block: none;
+
+}
+
 body {
   height: var(--doc-height);
-  width: 100vw;
+  width: 100svw;
   color: rgb(var(--foreground-rgb));
+  overscroll-behavior-block: none;
   /* background: linear-gradient(
       to bottom,
       transparent,

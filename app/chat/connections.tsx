@@ -15,6 +15,7 @@ function Connections(props: {screenWidth:number, setPrimary:Function, setChatUse
             axios.defaults.headers.common['Authorization'] = `Bearer ${localStorage.getItem('token')}`
             axios.get(
                 address+'/chats/getConnections',
+    
             ).then((result)=>{
                 const users : Array<any> = result.data.connections;
                 setConnections(users)
@@ -34,14 +35,15 @@ function Connections(props: {screenWidth:number, setPrimary:Function, setChatUse
     }
 
     return (
-        <div id="connections" className="connections transition-all border bg-slate-100 flex flex-col w-[calc(100svw)] sm:m-0 sm:w-[calc(34svw)] shrink-0 h-full ">
-            <div className="h-16 text-center flex justify-center items-center border-b-2">
+        <div id="connections" className="connections  border-r border-slate-500 transition-all  text-white bg-slate-700 flex flex-col w-[calc(100svw)] sm:m-0 sm:w-[calc(34svw)] shrink-0 h-full ">
+            {/* <div className=" text-center flex justify-center items-center  bg-slate-800">
                 <p className="text-lg">Your Connections</p> 
-            </div>
-            <div className="grow flex  flex-col overflow-y-scroll scrollbar-thin scrollbar-track-slate-100 scrollbar-thumb-slate-200">
+            </div> */}
+            <div className="grow flex  flex-col gap-px overflow-y-auto scrollbar-none ">
                 { connections.map(
                     (user, idx)=><ClickableUser onClick={()=>onClickOnUser(user)} key={idx} info={user}/>
                 )}
+                
             </div>
         </div>
     )
@@ -67,19 +69,19 @@ function ClickableUser(props: any) {
     },[props.info.username])
 
     return (
-        <div onClick={props.onClick} className="clickableuser h-16 px-2 flex gap-5 justify-between items-center bg-slate-200">
-            <div className="h-12 w-12 bg-gray-300 rounded-full p-[calc(3px)]">
+        <div onClick={props.onClick} className="clickableuser px-2 py-2 flex gap-5 justify-start items-center bg-slate-800 shadow-md">
+            <div className="h-12 w-12 bg-slate-900 rounded-full p-[calc(3px)] shrink-0">
                 <div className="h-full w-full rounded-full overflow-hidden ">
                     {(photo=='' || photo==null)
-                    ?<CIcon className="h-full w-full p-1 bg-gray-400" icon={cilUser} />
+                    ?<CIcon className="h-full w-full p-1 bg-slate-950" icon={cilUser} />
                     :<Image className="h-full w-full" alt="img" height={100} width={100} src={'data:image/png;base64,'+photo} /> }
                 </div>
             </div>
-            <div className="grow">
-                <div className="flex flex-col justify-between">
+            <div className="grow max-w-[calc(50%)]  h-full ">
+                <div className="flex h-full flex-col justify-center gap-1 ">
                     <p>{props.info.fullname}</p>
-                    <div className="text-xs text-slate-700">
-                        {props.info.lastmsg!=null && <p>{props.info.lastmsg}</p>}
+                    <div className="text-xs grow-0 max-h-4 text-slate-400 overflow-clip text-ellipsis">
+                        {props.info.lastmsg!=null && <p className="">{props.info.lastmsg}</p>}
                     </div>
                 </div>                
             </div>

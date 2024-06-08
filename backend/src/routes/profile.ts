@@ -1,12 +1,11 @@
-import express, {Request, Response} from "express";
-import { Info, addConnectionStatus, getInfo, getUserPosts, saveImage, saveInfo } from "./profileDB";
-import { getprofileData } from "../database/db";
+import express, { Response} from "express";
+import { addConnectionStatus, getInfo, getUserPosts, saveImage, saveInfo } from "./profileDB";
 import { pfpUploadMiddleware } from "./upload";
-import fs from 'fs';
 import path from "path";
 import { readImage, srcpath } from "../readFile";
-import { customRequest } from "../types/customTypes";
+import { RequestExtended } from "../types/types_local";
 import sharp from "sharp";
+import { Info } from "../types/types_local";
 const profileRouter = express.Router();
 module.exports = profileRouter;
 
@@ -20,8 +19,8 @@ module.exports = profileRouter;
  * jwt token is verified. 
  */
 
-profileRouter.get('/fetchinfo', (req: customRequest, res: Response)=>{
-    getInfo(req.query.user as string??req.user!).then(async (result)=>{
+profileRouter.get('/fetchinfo', (req: RequestExtended, res: Response)=>{
+    getInfo(req.query.user as string??req.user!).then(async (result: Info)=>{
         if(result.pfp_uploaded) {
             const pfp = await readImage(result.username, 'pfp')
             result.pfp=pfp;
@@ -33,9 +32,7 @@ profileRouter.get('/fetchinfo', (req: customRequest, res: Response)=>{
         }else {
             res.json({success: true, info: result});    
         }
-    }).catch(async (reason)=>{
-        console.log(reason, req.body.user);
-        
+    }).catch( (reason)=>{
         var info: Info = {
             username: req.body.user,
             fullname: '',
@@ -55,13 +52,13 @@ profileRouter.get('/fetchinfo', (req: customRequest, res: Response)=>{
 })
 
 
-profileRouter.post('/saveinfo', (req: Request, res: Response)=>{
+profileRouter.post('/saveinfo', (req: RequestExtended, res: Response)=>{
     saveInfo(req.body.username!, req.body.updatedInfo).then(()=>{
         res.json({success: true});
     })
 })
 
-profileRouter.post('/saveimage', pfpUploadMiddleware.single('file'), (req:customRequest, res: Response)=>{
+profileRouter.post('/saveimage', pfpUploadMiddleware.single('file'), (req:RequestExtended, res: Response)=>{
     console.log('profile image save request', req.user);
     saveImage(req.user!).then(async ()=>{
 
@@ -75,10 +72,10 @@ profileRouter.post('/saveimage', pfpUploadMiddleware.single('file'), (req:custom
     })
 })
 
-profileRouter.get('/fetchPFP', (req: any, res: Response)=>{
-    let user = req.user;  
+profileRouter.get('/fetchPFP', (req: RequestExtended, res: Response)=>{
+    let user = req.user!;  
 
-    if(req.query.user) user = req.query.user
+    if(req.query.user) user = req.query.user as string
     
     getInfo(user).then((result)=>{
         if(result.pfp_uploaded) {
@@ -96,7 +93,7 @@ profileRouter.get('/fetchPFP', (req: any, res: Response)=>{
     })
 })
 
-profileRouter.get('/fetchUserPosts', (req: customRequest, res: Response)=>{
+profileRouter.get('/fetchUserPosts', (req: RequestExtended, res: Response)=>{
     const user = req.user!;
 
     getUserPosts(user).then((result)=>{

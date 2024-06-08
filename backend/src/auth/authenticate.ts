@@ -1,42 +1,28 @@
-const jwt = require('jsonwebtoken')
-import { Request, Response } from "express";
-import { customRequest } from "../types/customTypes";
+import { JwtPayload, verify } from 'jsonwebtoken'
+import { Response } from "express";
+import { RequestExtended } from "../types/types_local";
 
-
-export function verify_token(token: string): Promise<{username?: string}> {
-    return new Promise((resolve, reject)=>{
-        jwt.verify(token, process.env.JWT_SECRET as string, (err: any, authorizedData: any)=>{
-            
-            if(err) {
-                // console.log('token not verified!', token, '\n', err);
-                reject(err)
-            }
-            // console.log('token verified!', authorizedData);
-            resolve(authorizedData)
-        })
-    })
+export async function verify_token(token: string) {
+    try {
+        const data = verify(token, process.env.JWT_SECRET as string) as JwtPayload & {username: string}
+        return data.username
+    }
+    catch (err) {
+        throw err
+    }
 }
 
-
-export const jwt_middleware = async (req: customRequest, res: Response, next: Function)=>{
-    console.log('request: '+req.path);
-    if(
-        req.path=='/login' 
-        || req.path=='/signup' 
-        || req.path=='/checkusernameavailability'
-    ) next();
+export const jwt_middleware = async (req: RequestExtended, res: Response, next: Function)=>{
+    const path = req.path;
+    console.log('request: '+path);
+    if( path=='/login' || path=='/signup' || path=='/checkusernameavailability' ) next();
     else {
         const token = req.headers.authorization!;
-        verify_token(token.split(' ')[1]).then((data)=>{
-            req.user=data.username
+        verify_token(token.split(' ')[1]).then((username)=>{
+            req.user=username,
             next();
         }).catch((reason)=>{
-            console.log(token);
-            console.log(reason);
-            
-            
-            res.json({success: false, reason})
+            res.json({success: false, reason: reason.name})
         })
     }
-    
 }

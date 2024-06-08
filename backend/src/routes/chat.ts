@@ -1,37 +1,31 @@
-import { verify_token } from "../auth/authenticate";
-
-// const express = require('express');
-import express, { Request, Response } from "express";
-import { getConnections,  } from "../database/db";
-import { getTexts, sendText } from "./chatDb";
-import { socketSendMsg } from "../handleSocket";
+import express, { Response } from "express";
+import { getConnections, getTexts, sendText } from "./chatDb";
+import { socketSendMsg } from "../socket/functions";
+import { RequestExtended } from "../types/types_local";
+import { Messages } from "../types/db_schema";
 
 const router = express.Router();
 module.exports = router;
-router.get('/getConnections', async (req: any, res: Response)=>{
-    const user = req.user;
+
+router.get('/getConnections', async (req: RequestExtended, res: Response)=>{
+    const user = req.user!;
     const connections = await getConnections(user);
-    if(connections==null) {
-        res.json({success: false, reason: 'connections not found'});
-    }else {
-        res.json({success: true, connections});
-    }
+    res.json({success: true, connections});
 })
 
-router.post('/sendText', (req: any, res: Response)=>{
-    const receiver = req.body.receiver;
-    const msg = req.body.msg;
-    const ts = req.body.timeStamp;
-    const ob = {
-        sender: req.user,
-        receiver,
-        msg, 
-        ts,
+router.post('/sendText', (req: RequestExtended, res: Response)=>{
+    const ob: Messages = {
+        sender: req.user!,
+        receiver: req.body.receiver,
+        msg: req.body.msg,
+        ts: req.body.ts
     }
     sendText(ob).then((insertID)=>{
-        socketSendMsg(receiver, req.user, {...ob, id: insertID as string})
+        ob.id=insertID
+        socketSendMsg(ob)
         res.json({success: true, insertID});
-
+    }).catch((error)=>{
+        res.json({success: false, reason: error});
     })
 
     

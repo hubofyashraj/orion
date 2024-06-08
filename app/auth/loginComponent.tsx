@@ -1,4 +1,4 @@
-import { ChangeEvent, FormEvent } from "react";
+import { ChangeEvent, FormEvent, useEffect } from "react";
 import { login } from "../api/events/login";
 import { useAuth } from "./ds";
 import { sockInit } from "../handleSocket";
@@ -7,10 +7,14 @@ export default function LoginComponent() {
 
     const { isLoggedIn, setIsLoggedIn} = useAuth();
 
+    useEffect(()=>{
+        console.log('login');
+        
+    },[])
 
     function submit(event: FormEvent) {
-
         const ele = document.getElementById('warning')
+
 
         event.preventDefault();
         const form:HTMLFormElement = event['target'] as HTMLFormElement;
@@ -45,9 +49,9 @@ export default function LoginComponent() {
     return (
         <>
             <form onSubmit={submit} autoComplete="off" className={'overflow-hidden flex flex-col gap-2'}>
-                <input className='outline-none bg-slate-300 bg-opacity-50 rounded-lg hover:bg-opacity-70 px-3 py-2 text-center border-b-2' name='username' type='text' autoComplete="off" placeholder='username' />
-                <input className='outline-none bg-slate-300 bg-opacity-50 rounded-lg hover:bg-opacity-70 px-3 py-2 text-center border-b-2' name='password' type='password' placeholder='password'/>
-                {<input className='bg-slate-300 bg-opacity-50 hover:bg-opacity-80 rounded-md p-1 text-slate-700 cursor-pointer'  type='submit' value={'Login'}/>}
+                <input className='outline-none bg-slate-900 bg-opacity-50 rounded-lg hover:bg-opacity-70 px-3 py-2 text-center border-b border-slate-600' name='username' type='text' autoComplete="off" placeholder='username' />
+                <input className='outline-none bg-slate-900 bg-opacity-50 rounded-lg hover:bg-opacity-70 px-3 py-2 text-center border-b border-slate-600' name='password' type='password' placeholder='password'/>
+                {<input className='bg-slate-900 bg-opacity-50 hover:bg-opacity-80 rounded-md p-1 text-slate-200 cursor-pointer'  type='submit' value={'Login'}/>}
             </form>
         </>
     )

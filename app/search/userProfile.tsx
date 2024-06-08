@@ -6,6 +6,7 @@ import CIcon from "@coreui/icons-react";
 import { cilAt, cilBirthdayCake, cilEnvelopeClosed, cilEnvelopeLetter, cilLocationPin, cilPhone, cilSettings, cilUser, cilUserFemale, cilUserX } from "@coreui/icons";
 import { pullbackReq, sendConnectionRequest } from "./events";
 import { handleRequest } from "../navbar/data";
+import CircularLoader from "../Loader/Loader";
 
 
 interface Info {
@@ -68,19 +69,19 @@ export default function UserProfile({ user } : {user: string}) {
 
 
     if(err) return (<div className="h-full w-full flex justify-center items-center "><p className="text-5xl">Error!!</p></div>)
-    if(!fetched) return (<></>);
+    if(!fetched) return (<CircularLoader />);
     
     return (
-        <div className="  h-full w-full  scrollbar-thin ">
+        <div className=" bg-slate-700 h-full w-full  scrollbar-thin ">
             <div className="flex flex-col  justify-center md:justify-start md:items-start  items-center gap-5 ">
                 <div className="details w-full   flex flex-col justify-center md:items-start items-center grow">
-                    <div className="flex bg-blue-300 w-full h-36 border-b-2 flex-col md:gap-6  md:flex-row-reverse  justify-between items-center">
+                    <div className="flex bg-slate-800 w-full h-36  flex-col md:gap-6  md:flex-row-reverse  justify-between items-center">
                         <div className="flex w-full self-end md:mb-2 mt-2  flex-col justify-center items-center md:items-start">
                             <p className="text-xl font-light ">{userData.fullname}</p>
                             <p className="text-sm  font-extralight flex justify-center items-center gap-1"><CIcon className="h-3 text-red-500" size={"sm"}  icon={cilAt}/>{userData.username}</p>
                         </div>
                         <div className="p-2 bg-inherit  md:mt-20 rounded-full">
-                            <div className="h-32 w-32 shrink-0  border  profile-img rounded-full  overflow-hidden flex justify-center items-center">
+                            <div className="h-32 w-32 shrink-0  border-2 border-slate-900  profile-img rounded-full  overflow-hidden flex justify-center items-center">
                                 { imgsrc==''?<CIcon  className="text-black h-2/3" icon={userData.gender=='Male'?cilUser:cilUserFemale} size="xxl"/>:<Image width={100} height={100} className="w-full h-full" alt="" src={imgsrc}/> }
                             </div>
                         </div>

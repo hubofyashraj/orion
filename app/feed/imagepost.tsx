@@ -4,7 +4,7 @@ import axios from "axios"
 import Image from "next/image"
 import { MouseEvent, TouchEvent, UIEvent, useEffect, useState } from "react"
 import { address } from "../api/api"
-import { Bookmark, BookmarkBorder, BookmarkSharp, ChatBubbleOutline, Favorite, FavoriteBorder, FavoriteBorderOutlined, FavoriteBorderSharp, FavoriteBorderTwoTone, FavoriteOutlined, Light, SendSharp, Share, ShareSharp } from "@mui/icons-material"
+import { ArrowLeft, ArrowRight, Bookmark, BookmarkBorder, BookmarkSharp, ChatBubbleOutline, Favorite, FavoriteBorder, FavoriteBorderOutlined, FavoriteBorderSharp, FavoriteBorderTwoTone, FavoriteOutlined, Light, SendSharp, Share, ShareSharp } from "@mui/icons-material"
 import { Italiana } from "next/font/google"
 import images from "../images"
 import assert from "assert"
@@ -249,123 +249,100 @@ export default function ImagePost(props: {post: PostIdentifier}) {
     let touchStart: number = 0;
     let touchEnd: number = 0;
 
-    function mousedownHandler(event: MouseEvent<HTMLDivElement>): void {
-        
-        touchStart = event.clientX;
-        // console.log(touchStart);
-        
-    }
-
     function touchStartHandler(event: TouchEvent<HTMLDivElement>): void {
-        
         touchStart = event.touches[0].clientX;
-        // console.log(touchStart);
         
     }
 
-    function mouseupHandler(event: MouseEvent<HTMLDivElement>): void {
-        console.log(event.clientX);
-        
-        touchEnd = event.clientX;
-        const div: HTMLDivElement = document.getElementById('imageContainer'+props.post?.post_id) as HTMLDivElement; 
-        const progressDots: HTMLDivElement = document.getElementById('progressDots'+props.post?.post_id) as HTMLDivElement
-        console.log(progressDots);
-        
-        if(touchEnd-touchStart>div.clientWidth/4) {
-
-            if(currentImgInView>0) {
-                div.scrollBy({top: 0, left: -1*div.clientWidth, behavior: 'smooth'})
-                progressDots.children.item(currentImgInView)?.setAttribute('style', '')
-                currentImgInView--;
-                progressDots.children.item(currentImgInView)?.setAttribute('style', 'width: 8px; height: 8px')
-
-            }
-            // div.scrollBy({top: 0, left: -1*div.clientWidth, behavior: 'smooth'})
-        }
-        else if(touchStart-touchEnd>div.clientWidth/4) {
-            if(currentImgInView<div.children.length-1) {
-                div.scrollBy({top: 0, left: div.clientWidth, behavior: 'smooth'})
-                progressDots.children.item(currentImgInView)?.setAttribute('style', '')
-                currentImgInView++;
-                progressDots.children.item(currentImgInView)?.setAttribute('style', 'width: 8px; height: 8px')
-            }
-        }
-    }
 
     function touchEndHandler(event: TouchEvent<HTMLDivElement>): void {
-        // console.log(event.changedTouches[0].clientX);
-        
         touchEnd = event.changedTouches[0].clientX;
+        const div: HTMLDivElement = document.getElementById('imageContainer'+props.post?.post_id) as HTMLDivElement; 
+        
+        if(touchEnd-touchStart>div.clientWidth/4) {
+            swipe('left')
+        }
+        else if(touchStart-touchEnd>div.clientWidth/4) {
+            swipe('right')
+        }
+    }
+
+    function swipe(direction: 'left' | 'right') {
         const div: HTMLDivElement = document.getElementById('imageContainer'+props.post?.post_id) as HTMLDivElement; 
         const progressDots: HTMLDivElement = document.getElementById('progressDots'+props.post?.post_id) as HTMLDivElement
         
-        if(touchEnd-touchStart>div.clientWidth/4) {
-
-            if(currentImgInView>0) {
-                div.scrollBy({top: 0, left: -1*div.clientWidth, behavior: 'smooth'})
-                progressDots.children.item(currentImgInView)?.setAttribute('style', '')
-                currentImgInView--;
-                progressDots.children.item(currentImgInView)?.setAttribute('style', 'width: 8px; height: 8px')
-
-            }
-            // div.scrollBy({top: 0, left: -1*div.clientWidth, behavior: 'smooth'})
+        if(direction=='left' && currentImgInView>0) {
+            div.scrollTo({behavior: 'smooth', left: (currentImgInView-1)*(div.clientWidth+4)})
+            // div.scrollBy({top: 0, left: -1*(div.clientWidth+4), behavior: 'smooth'})
+            progressDots.children.item(currentImgInView)?.setAttribute('style', '')
+            currentImgInView--;
+            progressDots.children.item(currentImgInView)?.setAttribute('style', 'width: 8px; height: 8px')
+            return;
         }
-        else if(touchStart-touchEnd>div.clientWidth/4) {
-            if(currentImgInView<div.children.length-1) {
-                div.scrollBy({top: 0, left: div.clientWidth, behavior: 'smooth'})
-                progressDots.children.item(currentImgInView)?.setAttribute('style', '')
-                currentImgInView++;
-                progressDots.children.item(currentImgInView)?.setAttribute('style', 'width: 8px; height: 8px')
-            }
+        if(direction=='right' && currentImgInView<div.children.length-1) {
+            div.scrollTo({behavior: 'smooth', left: (currentImgInView+1)*(div.clientWidth+4)})
+            // div.scrollBy({top: 0, left: div.clientWidth+4, behavior: 'smooth'});
+            progressDots.children.item(currentImgInView)?.setAttribute('style', '');
+            currentImgInView++;
+            progressDots.children.item(currentImgInView)?.setAttribute('style', 'width: 8px; height: 8px')
+            return;
         }
+
     }
+
     
 
     return (
-        <div className="w-full  border-2 border-b-0 bg-slate-100">
-            <div className="flex items-center  w-full gap-3 p-1 ">
-                <div className="w-[calc(10%)]  rounded-full overflow-hidden bg-gray-400">
-                    { pfp ==null
-                    ? <CIcon className="w-full h-full" icon={cilUser} /> 
-                    : <Image className="w-full h-full " alt="img" width={0} height={0} src={`data:image/jpg;base64,${pfp}`}/>}
-                </div>
-                <div className="flex flex-col  justify-center">
-                    <div className="shrink">
-                        <p style={{fontSize: 'clamp(0.5rem, 10vh, 1rem)'}} className="  ">{props.post.post_user}</p>
+        <div className="flex w-full relative border-r border-l border-b border-slate-600 text-slate-200  bg-slate-800">
+            { screen.width>0 && <button onClick={()=>swipe('left')}  className="  "><ArrowLeft /></button>}
+            <div className="">
+                <div className="flex items-center  w-full gap-3 p-1 ">
+                    <div className="w-[calc(10%)]  rounded-full overflow-hidden bg-gray-400">
+                        { pfp ==null
+                        ? <CIcon className="w-full h-full" icon={cilUser} /> 
+                        : <Image className="w-full h-full " alt="img" width={0} height={0} src={`data:image/jpg;base64,${pfp}`}/>}
+                    </div>
+                    <div className="flex flex-col  justify-center">
+                        <div className="shrink">
+                            <p style={{fontSize: 'clamp(0.5rem, 10vh, 1rem)'}} className="  ">{props.post.post_user}</p>
+                        </div>
                     </div>
                 </div>
-            </div>
-            <div className="bg-inherit select-none border-b-slate-50 border-t-slate-50 border-b-2 border-t-2">
-                <div id={"imageContainer"+props.post?.post_id} onTouchStart={touchStartHandler} onTouchEnd={touchEndHandler}  onMouseDown={mousedownHandler} onMouseUp={mouseupHandler}  className="flex overflow-hidden">
-                    
-                    {post && post.post_content.map((image, idx)=>
-                        <Image loading="lazy" key={idx} className="w-full h-full" alt="" width={0} height={0} src={`data:image/jpg;base64,${image}`} />
+                <div className="bg-inherit flex select-none border-b-slate-50 border-t-slate-50 border-b border-t">
+                    <div id={"imageContainer"+props.post?.post_id} onTouchStart={touchStartHandler} onTouchEnd={touchEndHandler} className="flex gap-1 overflow-hidden">
+                        
+                        {post && post.post_content.map((image, idx)=>
+                            <Image loading="lazy" key={idx}  className="w-full h-full select-none" alt="" width={0} height={0} src={`data:image/jpg;base64,${image}`} />
 
-                    )}
+                        )}
+                    </div>
                 </div>
-            </div>
-            {post && post.post_content.length>1 && 
-                <div id={"progressDots"+props.post?.post_id} className="h-3 flex gap-1 items-center justify-center">
-                    { post.post_content.map((image, index) => (
-                        <div style={index==0?{height: '8px', width: '8px'}:{}} className="h-1.5 w-1.5 transition-all bg-black rounded-full" key={index}>{}</div>
-                    ))}
+                {post && post.post_content.length>1 && 
+                    <div id={"progressDots"+props.post?.post_id} className="h-3 flex gap-1  items-center justify-center">
+                        { post.post_content.map((image, index) => (
+                            <div style={index==0?{height: '8px', width: '8px'}:{}} className="h-1.5 w-1.5 transition-all bg-slate-200 rounded-full" key={index}>{}</div>
+                        ))}
+                    </div>
+                }
+                <div className="flex bg-inherit    justify-between">
+                    <div className="w-1/3 h-full flex gap-2">
+                        {/* {secStats &&  <button className={(secStats.liked?" text-blue-500 ": "")+' text-base bg-blue-200 px-2 rounded-lg w-20'} onClick={toggleLike}>{secStats.liked? 'Liked': 'Like'}</button> } */}
+                        {secStats && secStats.liked ? <Favorite onClick={toggleLike} className="  text-red-600 drop-shadow-md" />: <FavoriteBorderOutlined onClick={toggleLike} /> }
+                        {stats && <p>{stats.post_likes_count} like</p>}
+                        {/* <CIcon className="w-[calc(25%)]  "  icon={cilCommentBubble}/> */}
+                        {/* <CIcon className="w-[calc(25%)] "  icon={cilPaperPlane}/> */}
+                    </div>
+                    <div className="w-1/3 flex justify-end">
+                        {/* { secStats && secStats.saved?<BookmarkSharp onClick={toggleSaved} className="w-[calc(25%)] h-full text-slate-500 drop-shadow-md" />: <CIcon icon={cilBookmark}  onClick={toggleSaved}  className="w-[calc(22%)]  " />} */}
+                    </div>
+
                 </div>
-            }
-            <div className="flex bg-inherit  px-2  text-4xl justify-between">
-                <div className="w-1/3 h-full flex gap-2">
-                    {secStats && secStats.liked?  <Favorite onClick={toggleLike} className="w-[calc(25%)] h-full text-red-600 drop-shadow-md" />: <CIcon icon={cilHeart}  onClick={toggleLike}  className="w-[calc(25%)] " /> }
-                    <CIcon className="w-[calc(25%)]  "  icon={cilCommentBubble}/>
-                    <CIcon className="w-[calc(25%)] "  icon={cilPaperPlane}/>
-                </div>
-                <div className="w-1/3 flex justify-end">
-                    { secStats && secStats.saved?<BookmarkSharp onClick={toggleSaved} className="w-[calc(25%)] h-full text-slate-500 drop-shadow-md" />: <CIcon icon={cilBookmark}  onClick={toggleSaved}  className="w-[calc(22%)]  " />}
+                <div className=" my-2 ">
+                    <p className="flex gap-2 text-base items-center"><span className="font-bold ">{props.post.post_user}</span> {post!.post_caption}</p>
                 </div>
 
             </div>
-            <div className="px-2 ">
-                <p className="flex gap-2"><span className="font-bold">{props.post.post_user}</span> {post!.post_caption}</p>
-            </div>
-
+            { screen.width>0 && <button onClick={()=>swipe('right')} className=""><ArrowRight /></button>}
         </div>
     )
 }

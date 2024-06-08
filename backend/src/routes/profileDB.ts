@@ -1,30 +1,17 @@
 import { Collection, MongoClient, ObjectId } from "mongodb";
 import { readImage } from "../readFile";
-
+import { Info } from '../types/db_schema'
 const client = new MongoClient(process.env.MONGO_LOCAL as string);
 
 client.connect();
 const db = client.db('demo');
-const collection = db.collection('info');
-
-export interface Info {
-    username: string, fullname: string, dob: string, profession: string, 
-    location: string, bio: string, gender: string, 
-    email: string, contact: string, contact_privacy: boolean
-    pfp_uploaded: boolean,
-    pfp?: string
-}
+const infoCollection: Collection<Info> = db.collection('info');
 
 
-export function getInfo(user: string) : Promise<Info> {
-    return new Promise(async (resolve, reject)=>{
-        var res = await collection.findOne({username: user}, {projection: {_id:0}})
-
-        if(res) {
-            resolve(res as unknown as Info)
-        }
-        else reject('user not found ')
-    })
+export async function getInfo(user: string) {
+    var info = await infoCollection.findOne({username: user})
+    if(info) return info;
+    else throw 'User not found'
 }
 
 
@@ -74,7 +61,7 @@ export async function saveInfo(user: string, updatedInfo: any) {
     const session = client.startSession();
     try {
         session.startTransaction();
-        await collection.updateOne({username: user}, {$set: updatedInfo});
+        await infoCollection.updateOne({username: user}, {$set: updatedInfo});
         if(updatedInfo.hasOwnProperty('fullname')) {
             await db.collection('users').updateOne({username: user}, {$set: {fullname: updatedInfo.fullname}})
         }
@@ -88,7 +75,7 @@ export async function saveInfo(user: string, updatedInfo: any) {
 
 export function saveImage(user: string): Promise<void> {
     return new Promise(async (resolve, reject)=>{
-        await collection.updateOne({username: user}, {$set: {pfp_uploaded: true}});
+        await infoCollection.updateOne({username: user}, {$set: {pfp_uploaded: true}});
         resolve()
     })
 }

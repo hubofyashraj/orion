@@ -1,11 +1,13 @@
-import {MongoClient} from 'mongodb';
+import {Collection, MongoClient} from 'mongodb';
 import { resolve } from 'path';
 import { getInfo } from './profileDB';
+import { ConnectRequest } from '../types/db_schema';
 
 const client = new MongoClient(process.env.MONGO_LOCAL!);
 client.connect()
 
 const db = client.db('demo')
+const requestsCollection: Collection<ConnectRequest> = db.collection('connect_request');
 
 
 interface request {
@@ -13,45 +15,34 @@ interface request {
     sender: string
 }
 
-export async function getReqObjs(user: string) : Promise<Array<request>> {
-    return new Promise(async (resolve, reject)=>{
-
-        const collection = db.collection('connect_request');
-        const res = collection.find({receiver: user});
-        console.log('requests found: ', await res.hasNext());
-        
-        var list: Array<request> = [];
-
-        while(await res.hasNext()) {
-            const doc = await res.next();
-            list.push({req_id: doc!._id.toString(), sender: doc!.sender});
+export async function getReqObjs(user: string) {
+    const requests = await requestsCollection.find({receiver: user}).toArray();
+    
+    var list = requests.map((request)=>{
+        return {
+            req_id: request._id.toString(),
+            sender: request.sender
         }
-
-        
-
-        resolve(list);
-
     })
+
+    return list
 }
 
-export function getRequests(user: string) : Promise<Array<any>> {
-    return new Promise(
-        async (resolve, reject)=>{
-            var list: Array<any> = [];
+export async function getRequests(user: string) {
+    const requests = await getReqObjs(user)
+    const list = requests.map(async (request)=>{
+        try {
+            const userInfo = await getInfo(request.sender);
+            return {
+                ...request,
+                fullname: userInfo.fullname,
+                user,
+                pfp_uploaded: userInfo.pfp_uploaded
+            }
+        } catch(err) {
             
-            await getReqObjs(user).then(async (objs: Array<request>)=>{
-
-                const promises = objs.map(async (obj)=>{
-                    await getInfo(obj.sender).then((info)=>{
-                        list.push({req_id: obj.req_id, user, fullname: info.fullname, pfp_uploaded: info.pfp_uploaded})
-
-                    })
-                })
-                await Promise.all(promises);
-                resolve(list);
-            })
-            // console.log(list);
-            //TODO NOT WORKING!!!! list going out empty
         }
-    )
+    })
+    await Promise.all(list);
+    return (list);
 }

@@ -48,9 +48,9 @@ export default function Search() {
     }
     
     return (
-        <div className="flex overflow-hidden flex-col w-full h-full gap-10 justify-start items-center">
-            <div className="w-[calc(90svw)] max-w-96 h-24 flex justify-center items-center gap-2">
-                <input className="bg-inherit h-3/5 w-96  border-2 border-solid border-slate-200 rounded-lg outline-none shadow-lg text-center" onKeyDown={keyPressed}  placeholder="Search"/>
+        <div className="text-slate-200 flex overflow-hidden flex-col w-full h-full gap-10 justify-start items-center bg-slate-700">
+            <div className=" max-w-96 mt-2 bg-slate-600  rounded-xl">
+                <input className="bg-inherit h-8   rounded-lg outline-none text-center" onKeyDown={keyPressed}  placeholder="Search"/>
                 {/* <button><CIcon className="h-5 " icon={cilSearch }/></button> */}
             </div>
             <div className="w-full h-full  py-5 flex flex-col justify-start items-center gap-2 px-5">
@@ -58,7 +58,7 @@ export default function Search() {
                 {foundUsers.length>0 && <p>Users Found</p>}
                 {foundUsers.map(user=><UserTile key={user.username} user={user} onClick={()=>setUser(user.username)}/>)}
             </div>  
-            {user!='' && <div className={(user==''?"mt-[calc(100vh)] ":"mt-0 ")+"h-[calc(100vh-64px)] w-full absolute bg-white transition-all duration-1000"}>
+            {user!='' && <div className={(user==''?"mt-[calc(100vh)] ":"mt-0 ")+"h-[calc(100vh-64px)] w-full absolute bg-white "}>
                 <UserProfile user={user}/>
                 <div className="absolute right-0 top-0 hover:drop-shadow-lg">
                     <CIcon onClick={()=>setUser('')} className="w-6 h-6 float-right m-6 hover:drop-shadow-lg" icon={cilX}/>
@@ -73,47 +73,42 @@ function UserTile(props:any) {
     
     
     const [photo, setPhoto] = useState<string>('');
+    const [fetched, setFetched] = useState(false);
 
 
-
-    useEffect(()=>{
+    useEffect( ()=>{
 
         function fetchProfileImage(username: string) : Promise<string> {
             return new Promise((resolve, reject)=>{
                 axios.get(
                     address+'/profile/fetchPFP?user='+username,
                 ).then((result)=>{
-                    // console.log(result);
+                    console.log(result);
                     
                     if(result.data.success) {
                         resolve(result.data.image);
                     }
+                    setFetched(true)
                 }).catch((reason)=>{
-                    console.log('cluldn\'t fetch image', reason);
-    
                     reject('');
                 })
             })
         }
 
-        fetchProfileImage(props.user.username).then((image)=>{
-            setPhoto(`data:image/png;base64,${image}`);
-            // console.log(photo);
-            
+        fetchProfileImage(props.user.username).then(async (image)=>{
+            setPhoto(image);
         }).catch((reason)=>{
-            console.log('couldn\'t fetch', reason);
-            
             setPhoto('');
         })
     }, [props.user.username]);
 
 
     return (
-        <div onClick={props.onClick} className="w-full max-w-96 flex gap-2 justify-between items-center mx-2 bg-slate-200 hover:bg-slate-300 hover:shadow-lg py-2 px-4 rounded-md">
-            <div className="rounded-full shrink-0 border-2 bg-slate-400 p-1">
+        <div onClick={props.onClick} className="w-full max-w-96 flex gap-2 justify-between items-center mx-2 bg-slate-600 hover:bg-slate-500 hover:shadow-lg py-2 px-4 rounded-md">
+            <div className="rounded-full shrink-0 border-2 border-slate-800 bg-slate-800 ">
                 {(photo==null || photo=='' || photo==undefined) ?  
-                <CIcon className="h-12 p-1" icon={cilUser}/> :
-                <Image className="rounded-full h-12 w-12" width={50} height={50} src={photo} alt="img" />
+                <CIcon className={(!fetched?'animate-pulse':'')+" h-12 p-1"} icon={cilUser}/> :
+                <Image className="rounded-full " width={50} height={50} src={`data:image/png;base64,${photo}`} alt="img" />
                 }
             </div>
             <div className="grow">

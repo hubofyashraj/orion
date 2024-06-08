@@ -6,6 +6,8 @@ export default function SignupComponent(props: {setPage: React.Dispatch<SetState
     const [available, setAvailable] = useState(false);
     const [filled, setFilled] = useState(false);
 
+    
+
     type Formdata = {
         username: string,
         fullname: string,
@@ -20,6 +22,10 @@ export default function SignupComponent(props: {setPage: React.Dispatch<SetState
         fullname: ''
     } as Formdata)
 
+    useEffect(()=>{
+        console.log('abcd');
+
+    }, [])
 
     useEffect(()=>{
         
@@ -29,9 +35,6 @@ export default function SignupComponent(props: {setPage: React.Dispatch<SetState
         
         setFilled(!res)
         btn.disabled = res && available
-        
-
-        console.log(formdata);
 
         const ele = document.getElementById('warning')!
 
@@ -129,11 +132,11 @@ export default function SignupComponent(props: {setPage: React.Dispatch<SetState
     return (
         <>
             <form onSubmit={submit} autoComplete="off" id="inputform" className={' overflow-hidden flex flex-col gap-2'}>
-                <input className='outline-none bg-slate-300 bg-opacity-50 hover:bg-opacity-70 px-3 py-2 text-center border-b-2' onChange={onChangeHandlerInput} name='username' type='text' placeholder='username' />
-                {<input className='outline-none bg-slate-300 bg-opacity-50 hover:bg-opacity-70 px-3 py-2 text-center border-b-2'  onChange={onChangeHandlerInput} name='name' type='text' placeholder='full name'/>}
-                <input className='outline-none bg-slate-300 bg-opacity-50 hover:bg-opacity-70 px-3 py-2 text-center border-b-2'  onChange={onChangeHandlerInput} name='password' type='password' placeholder='password'/>
-                {<input className='outline-none bg-slate-300 bg-opacity-50 hover:bg-opacity-70 px-3 py-2 text-center  border-b-2'  onChange={onChangeHandlerInput} name='cnfpassword' type='password' placeholder='confirm password'/>}
-                {<button id="submitbtn" className='bg-slate-300 bg-opacity-50 hover:bg-opacity-80 rounded-md p-1 text-slate-700 cursor-pointer disabled:opacity-50 disabled:hover:bg-opacity-50 disabled:cursor-not-allowed' type='submit' disabled>Signup</button>}
+                <input className='outline-none bg-slate-900 bg-opacity-50 rounded-lg  hover:bg-opacity-70 px-3 py-2 text-center border-b border-slate-600' onChange={onChangeHandlerInput} name='username' type='text' placeholder='username' />
+                {<input className='outline-none bg-slate-900 bg-opacity-50 rounded-lg  hover:bg-opacity-70 px-3 py-2 text-center border-b border-slate-600'  onChange={onChangeHandlerInput} name='name' type='text' placeholder='full name'/>}
+                <input className='outline-none bg-slate-900 bg-opacity-50 rounded-lg  hover:bg-opacity-70 px-3 py-2 text-center border-b border-slate-600'  onChange={onChangeHandlerInput} name='password' type='password' placeholder='password'/>
+                {<input className='outline-none bg-slate-900 bg-opacity-50 rounded-lg  hover:bg-opacity-70 px-3 py-2 text-center  border-b border-slate-600'  onChange={onChangeHandlerInput} name='cnfpassword' type='password' placeholder='confirm password'/>}
+                {<button id="submitbtn" className='bg-slate-900 bg-opacity-50 hover:bg-opacity-80 rounded-md p-1 text-slate-200 cursor-pointer disabled:opacity-50 disabled:hover:bg-opacity-50 disabled:cursor-not-allowed' type='submit' disabled>Signup</button>}
             </form>
         </>
     )

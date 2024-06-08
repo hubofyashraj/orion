@@ -44,7 +44,6 @@ export default function Edit(props: { user: string , setPage: Function }) {
     const [gender, setGender] = useState('');
     const [email, setEmail] = useState('');
     const [contact, setContact] = useState('');
-    const [profilepic, setProfilepic] = useState('');
 
 
 
@@ -116,20 +115,20 @@ export default function Edit(props: { user: string , setPage: Function }) {
                 closeOnClick: true,
                 pauseOnHover: true,
                 draggable: true,
-                theme: "light",
+                theme: "dark",
                 transition: Bounce,
             })
         })
     }
 
-    const roundButton = "rounded-full text-white bg-orange-500 active:bg-orange-700 hover:shadow-md outline-none"
+    const roundButton = "rounded-full text-slate-200 bg-slate-900 active:bg-slate-950 hover:shadow-md outline-none"
 
     return (
-        <div className=" w-full py-12 h-full flex justify-center  md:items-center overflow-y-scroll">
-            <div className="w-2/3 max-w-[calc(40rem)] h-max shadow-lg px-5 sm:px-8 md:px-10 py-6 shrink transition-all ">
+        <div className=" w-full py-12 h-full text-white flex justify-center  md:items-center overflow-y-scroll bg-slate-700">
+            <div className="w-[calc(90svw)] max-w-[calc(40rem)] h-max shadow-lg px-5 sm:px-8 md:px-10 py-6 shrink transition-all bg-slate-800 rounded-lg ">
 
                 <div className="flex gap-2 justify-between">
-                    <div className="flex gap-1 bg-orange-500 px-4 rounded-full text-white font-bold">
+                    <div className="flex gap-1 bg-slate-900 px-4 rounded-full text-slate-300 font-bold">
                         <CIcon className="w-4 h-full"   icon={cilAt}/>
                         <p className="h-full flex items-center text-lg ">{props.user}</p>
                     </div>
@@ -164,9 +163,9 @@ export default function Edit(props: { user: string , setPage: Function }) {
 
 function EditInput(props: {type: string, label: string, name: string, value: string, disabled: boolean, onChange: ChangeEventHandler}) {
     return (
-        <div className="py-2 shrink flex gap-5 justify-between items-center">
+        <div className="py-2 shrink text-slate-300 flex gap-5 justify-between items-center">
             <label className="shrink-0 w-14 sm:w-16 md:w-20 text-xs sm:text-sm md:text-base" htmlFor={props.name}>{props.label}</label>
-            <input type={props.type} className="min-w-20 border-b-2 shrink grow outline-none px-2 py-1 shadow-sm focus:shadow-md  text-xs sm:text-sm md:text-base" id={props.name} disabled={props.disabled} value={props.value} onChange={props.onChange}/>
+            <input type={props.type} className="min-w-20 border-b shrink grow outline-none px-2 py-1 shadow-sm focus:shadow-md  text-xs sm:text-sm md:text-base bg-slate-800 disabled:text-slate-500 disabled:border-slate-700" id={props.name} disabled={props.disabled} value={props.value} onChange={props.onChange}/>
         </div>
     )
 }

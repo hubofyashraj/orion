@@ -55,8 +55,8 @@ export default function Feed() {
     const ImagePost = dynamic(()=>import('./imagepost'), {ssr: false})
 
     return (
-        <div className=" relative h-full w-full flex flex-col items-center">
-            <div className="w-full max-w-[calc(640px)] h-full flex flex-col justify-start gap-0 overflow-y-auto scrollbar-none">
+        <div className="bg-slate-700 relative h-full w-full flex flex-col items-center">
+            <div className="w-full max-w-[calc(560px)] h-full flex flex-col justify-start gap-0 overflow-y-auto scrollbar-none">
                 {posts.map(post=>{
                     if(post.post_type=='image') return <ImagePost key={post.post_id} post={post} />
                 })}

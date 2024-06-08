@@ -2,12 +2,12 @@
 
 # dependencies
 /node_modules
-/backend/node_modules
 /.pnp
 .pnp.js
 .yarn/install-state.gz
 
-# devfiles
+#backend
+/backend/node_modules
 /backend/uploads
 
 # testing

@@ -1,51 +1,11 @@
-import { throws } from "assert";
-import { error } from "console";
-import { FindCursor, MongoClient, ObjectId, PushOperator, WithId } from "mongodb";
+import { MongoClient, ObjectId, PushOperator, WithId } from "mongodb";
 import { Collection } from "mongodb";
-import { resolve } from "path";
 import { readImage } from "../readFile";
+import { Connections, Post, PostComments, PostOptions, PostStats } from "../types/db_schema";
 
 const client = new MongoClient(process.env.MONGO_LOCAL as string);
 
 client.connect();
-
-export type Post = {
-    _id?: ObjectId,
-    post_user: string,
-    post_id: string,
-    post_type: 'image' | 'video' | 'text',
-    post_length: number, 
-    post_content?: Array<string>,
-    post_caption: string
-}
-
-export type PostStats = {
-    _id?: ObjectId,
-    post_id: string,
-    post_likes_count: number,
-    post_comments_count: number,
-    post_save_count: number,
-}
-
-export type PostOptions = {
-    _id?: ObjectId,
-    post_id: string,
-    post_liked_by: Array<string>,
-    post_saved_by: Array<string>
-}
-
-export type PostComments = {
-    _id?: ObjectId,
-    comment_id: string,
-    post_id: string,
-    post_comment: string,
-    post_comment_by: string
-}
-
-type SecondaryStats = {
-    liked: boolean,
-    saved: boolean
-}
 
 const db = client.db('demo');
 const collection: Collection<Post> = db.collection('post');
@@ -53,10 +13,11 @@ const postStatsCollection: Collection<PostStats> = db.collection('post_stats');
 const postOptionsCollection: Collection<PostOptions> = db.collection('post_options');
 const postCommentsCollection: Collection<PostComments> = db.collection('post_comments');
 
-type Body = {post_user: string, type: 'image' | 'video' | 'text', length: number, caption: string, ts: number}
+const connectionsCollection: Collection<Connections> = db.collection('connections');
 
-export async function upload(body: Body){
-        
+interface Data {post_user: string, type: 'image' | 'video' | 'text', length: number, caption: string, ts: number}
+
+export async function upload(body: Data){
     const session = client.startSession()
     try{
         session.startTransaction();
@@ -83,8 +44,6 @@ export async function upload(body: Body){
             post_saved_by: []
         }
 
-        
-        
         await collection.insertOne(post);
         await postStatsCollection.insertOne(post_stats);
         await postOptionsCollection.insertOne(post_options);
@@ -101,247 +60,201 @@ export async function upload(body: Body){
     
 }
 
-export function fetchRecentPosts(user: string, sorted: boolean): Promise<Array<{post_id: string, post_user: string, post_type: 'image' | 'video' | 'text'}>> {
-    return new Promise(async (resolve, reject)=>{
-        var list: Array<{post_id: string, post_user: string, post_type: 'image' | 'video' | 'text'}> = [];
 
-        let posts= await collection.find({post_user: user}).project({post_id: 1, post_user: 1, post_type: 1}).toArray()
-        
-        for (const post of posts ) {
-            list.push({post_id: post.post_id, post_user: post.post_user, post_type: post.post_type})
-        }
-        
-        if(!sorted) resolve(list)
-        else {
+export async function fetchRecentPosts(user: string, sorted: boolean){
+    let posts = await collection.find({post_user: user}).project({post_id: 1, post_user: 1, post_type: 1}).toArray()
+    
+    var list = posts.map((post)=>{
+        return {post_id: post.post_id, post_user: post.post_user, post_type: post.post_type}
+    })
+
+    if(!sorted) return (list)
+ 
+    list.sort((a,b)=>{
+        let id1 = a.post_id.replace(user,'')
+        let id2 = b.post_id.replace(user,'')
+        return parseInt(id1)-parseInt(id2)
+    })
+
+    return (list)
+}
+
+
+export async function fetchPosts(user: string) {
+    
+        const connections = (await connectionsCollection.findOne({user}))!.connections
+        if(connections.length) {
+            let list: {
+                post_id: any;
+                post_user: any;
+                post_type: any;
+            }[] = []
+            let promises = connections.map(async (connection)=>{
+                const usersPosts = await fetchRecentPosts(connection, false);
+                list.push(...usersPosts)
+            })
+            
+            await Promise.all(promises)
             list.sort((a,b)=>{
-                let id1 = a.post_id.replace(user,'')
-                let id2 = b.post_id.replace(user,'')
+                let id1 = a.post_id.replace(a.post_user,'')
+                let id2 = b.post_id.replace(b.post_user,'')
                 return parseInt(id1)-parseInt(id2)
             })
-    
-            resolve(list)
-        }
-        
-    })
-}
 
-
-export function fetchPosts(user: string): Promise<Array<{post_id: string, post_user: string, post_type: 'image' | 'video' | 'text'}>> {
-    
-    return new Promise(async (resolve, reject)=>{
-        const connections: Array<string> = (await db.collection('connections').findOne({user}))!.connections
-        if(connections.length) {
-            let list: Array<{post_id: string, post_user: string, post_type: 'image' | 'video' | 'text'}> = [];
-            let promises =[]
-            
-            for(const connection of connections) {
-                promises.push(fetchRecentPosts(connection, false).then((posts)=>{
-                    list.push(...posts)
-                }))
-            }
-
-            Promise.all(promises).then(()=>{
-                list.sort((a,b)=>{
-                    let id1 = a.post_id.replace(a.post_user,'')
-                    let id2 = b.post_id.replace(b.post_user,'')
-                    return parseInt(id1)-parseInt(id2)
-                })
-        
-                resolve(list)                                           
-            })
+            return list
 
         }else {
-            resolve([])
+            return []
         }
-    })
 }
 
-export function likePost(post_id: string, liked_by: string): Promise<void> {
-    return new Promise(async (resolve, reject)=>{
-        const session = client.startSession();
+export async function likePost(post_id: string, liked_by: string) {
+    const session = client.startSession();
+    try {
+        session.startTransaction();
+        await postStatsCollection.findOneAndUpdate(
+            {post_id}, 
+            {$inc: {post_likes_count: 1}},
+            {session}
+        )
+        await postOptionsCollection.findOneAndUpdate(
+            {post_id},
+            {$push: { post_liked_by: liked_by} },
+            {session}
+        )
+        await session.commitTransaction();
+    } catch (err) {
+        console.log(err);
+        await session.abortTransaction()
+    } finally {
+        await session.endSession()
+    }
+}
+
+export async function unlikePost(post_id: string, liked_by: string) {
+    const session = client.startSession();
+    try {
+        session.startTransaction();
+        await postStatsCollection.findOneAndUpdate(
+            {post_id}, 
+            {$inc: {post_likes_count: -1}},
+            {session}
+        )
+        await postOptionsCollection.findOneAndUpdate(
+            {post_id},
+            {$pull: { post_liked_by: liked_by} },
+            {session}
+        )
+        await session.commitTransaction();
+    } catch (err) {
+        await session.abortTransaction()
+    } finally {
+        await session.endSession()
+    }
+}
+
+export async function savePost(post_id: string, saved_by: string) {
+    const session = client.startSession();
+    try {
+        session.startTransaction();
         
-        try {
-            session.startTransaction();
-            await postStatsCollection.findOneAndUpdate(
-                {post_id}, 
-                {$inc: {post_likes_count: 1}},
-                {session}
-            )
+        await postStatsCollection.findOneAndUpdate(
+            {post_id}, 
+            {$inc: {post_save_count: 1}},
+            {session}
+        )
 
-            await postOptionsCollection.findOneAndUpdate(
-                {post_id},
-                {$push: { post_liked_by: liked_by} },
-                {session}
-            )
-            
-            await session.commitTransaction();
+        await postOptionsCollection.findOneAndUpdate(
+            {post_id},
+            {$push: { post_saved_by: saved_by} },
+            {session}
+        )
+        await session.commitTransaction();
+    } catch (err) {
+        console.log(err);
+        await session.abortTransaction()
+    } finally {
+        await session.endSession()
+    }
+    
+}
 
-            resolve()
-        } catch (err) {
-            console.log(err);
-            
-            await session.abortTransaction()
-            reject()
-        } finally {
-            await session.endSession()
-        }
+export async function unsavePost(post_id: string, saved_by: string) {
+    const session = client.startSession();
+    try {
+        session.startTransaction();
+        await postStatsCollection.findOneAndUpdate(
+            {post_id}, 
+            {$inc: {post_save_count: -1}},
+            {session}
+        )
+
+        await postOptionsCollection.findOneAndUpdate(
+            {post_id},
+            {$pull: { post_saved_by: saved_by} },
+            {session}
+        )
+        await session.commitTransaction();
+
+    } catch (err) {
+        await session.abortTransaction()
+    } finally {
+        await session.endSession()
+    }
+}
+
+export async function addNewComment(post_id: string, comment_by: string, comment: string) {
+    const session = client.startSession();
+    try {
+        session.startTransaction();
+        await postStatsCollection.findOneAndUpdate(
+            {post_id}, 
+            {$inc: {post_comments_count: 1}},
+            {session}
+        )
         
-    })
+        await postCommentsCollection.insertOne(
+            {comment_id: post_id+Date.now(), post_id, post_comment_by: comment_by, post_comment: comment }
+        )
+        await session.commitTransaction();
+
+    } catch (err) {
+        await session.abortTransaction()
+    } finally {
+        await session.endSession()
+    }
 }
 
-export function unlikePost(post_id: string, liked_by: string): Promise<void> {
-    return new Promise(async (resolve, reject)=>{
-        const session = client.startSession();
-        try {
-            session.startTransaction();
-            await postStatsCollection.findOneAndUpdate(
-                {post_id}, 
-                {$inc: {post_likes_count: -1}},
-                {session}
-            )
-
-            await postOptionsCollection.findOneAndUpdate(
-                {post_id},
-                {$pull: { post_liked_by: liked_by} },
-                {session}
-            )
-            await session.commitTransaction();
-            resolve()
-        } catch (err) {
-            await session.abortTransaction()
-            reject()
-        } finally {
-            await session.endSession()
-        }
+export async function deleteComment(post_id: string, comment_id: string, comment_by: string) {
+    const session = client.startSession();
+    try {
+        session.startTransaction();
+        await postStatsCollection.findOneAndUpdate(
+            {post_id}, 
+            {$inc: {post_comments_count: -1}},
+            {session}
+        )
         
-    })
+        await postCommentsCollection.deleteOne(
+            { post_id, comment_id , post_comment_by: comment_by }
+        )
+        await session.commitTransaction();
+    } catch (err) {
+        await session.abortTransaction()
+    } finally {
+        await session.endSession()
+    }
 }
 
-export function savePost(post_id: string, saved_by: string): Promise<void> {
-    return new Promise(async (resolve, reject)=>{
-        const session = client.startSession();
-        try {
-            session.startTransaction();
-            
-            await postStatsCollection.findOneAndUpdate(
-                {post_id}, 
-                {$inc: {post_save_count: 1}},
-                {session}
-            )
-
-            await postOptionsCollection.findOneAndUpdate(
-                {post_id},
-                {$push: { post_saved_by: saved_by} },
-                {session}
-            )
-            await session.commitTransaction();
-            resolve()
-        } catch (err) {
-            console.log(err);
-
-            await session.abortTransaction()
-            reject()
-        } finally {
-            await session.endSession()
-        }
-        
-    })
-}
-
-export function unsavePost(post_id: string, saved_by: string): Promise<void> {
-    return new Promise(async (resolve, reject)=>{
-        const session = client.startSession();
-        try {
-            session.startTransaction();
-            await postStatsCollection.findOneAndUpdate(
-                {post_id}, 
-                {$inc: {post_save_count: -1}},
-                {session}
-            )
-
-            await postOptionsCollection.findOneAndUpdate(
-                {post_id},
-                {$pull: { post_saved_by: saved_by} },
-                {session}
-            )
-            await session.commitTransaction();
-
-            resolve()
-        } catch (err) {
-            await session.abortTransaction()
-            reject()
-        } finally {
-            await session.endSession()
-        }
-        
-    })
-}
-
-export function addNewComment(post_id: string, comment_by: string, comment: string): Promise<void> {
-    return new Promise(async (resolve, reject)=>{
-        const session = client.startSession();
-        try {
-            session.startTransaction();
-            await postStatsCollection.findOneAndUpdate(
-                {post_id}, 
-                {$inc: {post_comments_count: 1}},
-                {session}
-            )
-            
-            await postCommentsCollection.insertOne(
-                {comment_id: post_id+Date.now(), post_id, post_comment_by: comment_by, post_comment: comment }
-            )
-            await session.commitTransaction();
-
-            resolve()
-        } catch (err) {
-            await session.abortTransaction()
-            reject()
-        } finally {
-            await session.endSession()
-        }
-    })
-}
-
-export function deleteComment(post_id: string, comment_id: string, comment_by: string): Promise<void> {
-    return new Promise(async (resolve, reject)=>{
-        const session = client.startSession();
-        try {
-            session.startTransaction();
-            await postStatsCollection.findOneAndUpdate(
-                {post_id}, 
-                {$inc: {post_comments_count: -1}},
-                {session}
-            )
-            
-            await postCommentsCollection.deleteOne(
-                { post_id, comment_id , post_comment_by: comment_by }
-            )
-            await session.commitTransaction();
-
-            resolve()
-        } catch (err) {
-            await session.abortTransaction()
-            reject()
-        } finally {
-            await session.endSession()
-        }
-    })
-}
-
-export function fetchComments(post_id: string): Promise<Array<PostComments>> {
-    return new Promise(async (resolve, reject)=>{
-        let list: Array<PostComments> = [];
-
-        list =  await postCommentsCollection.find({post_id}).toArray()
-        list.sort((a,b)=>parseInt(b.comment_id.replace(a.post_id, ''))-parseInt(a.comment_id.replace(a.post_id, '')))
-        resolve(list)
-    })
+export async function fetchComments(post_id: string) {
+    let list =  await postCommentsCollection.find({post_id}).toArray()
+    list.sort((a,b)=>parseInt(b.comment_id.replace(a.post_id, ''))-parseInt(a.comment_id.replace(a.post_id, '')))
+    return (list)
 }
 
 
 export async function fetchPost(post_id: string, cur_user: string) {
-        const session = client.startSession()
+    const session = client.startSession()
     try {
         session.startTransaction();
         
@@ -355,7 +268,6 @@ export async function fetchPost(post_id: string, cur_user: string) {
                 .catch((err)=>{}))
             
         }
-
 
         const stats = (await postStatsCollection.findOne({post_id}))!;
         
@@ -379,27 +291,23 @@ export async function fetchPost(post_id: string, cur_user: string) {
     }
 }
 
-export function deletePost(post_id: string) : Promise<void> {
-    return new Promise(async (resolve, reject)=>{
-        const session = client.startSession()
-        try {
-            session.startTransaction();
-            
-            await collection.deleteOne({post_id});
-            await postStatsCollection.deleteOne({post_id});
-            await postOptionsCollection.deleteOne({post_id});
-            await postCommentsCollection.deleteMany({post_id})
+export async function deletePost(post_id: string) {
+    const session = client.startSession()
+    try {
+        session.startTransaction();
+        
+        await collection.deleteOne({post_id});
+        await postStatsCollection.deleteOne({post_id});
+        await postOptionsCollection.deleteOne({post_id});
+        await postCommentsCollection.deleteMany({post_id})
 
-            session.commitTransaction();
+        session.commitTransaction();
 
-            resolve()
-        } catch (err) {
-            session.abortTransaction();
-            reject()
-        } finally {
-            session.endSession();
-        }
-    })
+    } catch (err) {
+        session.abortTransaction();
+    } finally {
+        session.endSession();
+    }
 }
 
 

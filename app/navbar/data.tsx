@@ -77,3 +77,13 @@ export function handleRequest(_id: string,resp: boolean) {
       })
     }
   }
+
+
+  export const pagetitle: any = {
+    'feed': 'Home',
+    'profile': 'Your Profile',
+    'search': 'Search',
+    'chat': 'Inbox',
+    'edit': 'Edit Profile',
+
+  }

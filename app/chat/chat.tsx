@@ -12,7 +12,7 @@ var activeChat: Function=()=>{};
 type User = {_id: string, username: string, fullname: string}
 
 
-export default function Chat() {
+export default function Chat(props: {interval: React.MutableRefObject<any>}) {
     const [screenWidth, setWidth] = useState(0);
     const primary = useRef<'connections'|'chatbox'>('connections');
     const [chatUser, setChatUser] = useState<User | null>(null);
@@ -32,15 +32,10 @@ export default function Chat() {
 
     return ( 
         <div className="h-full w-[calc(200vw)] grow" >
-            { <div className="flex h-full w-full ">
+            <div className="flex h-full w-full ">
                 <Connections screenWidth={screenWidth} setPrimary={()=>primary.current='chatbox'} setChatUser={setChatUser}  />
-                <ChatBox screenWidth={screenWidth} setPrimary={()=>{primary.current='connections'; setChatUser(null)}} user={chatUser} />
-            </div> }
-            {/* { screenWidth<=640 && <div className=" h-full">
-                { primary.current=='connections' 
-                ? <Connections screenWidth={screenWidth} setPrimary={()=>primary.current='chatbox'} setChatUser={setChatUser} /> 
-                : <ChatBox screenWidth={screenWidth} setPrimary={()=>primary.current='connections'} user={chatUser} /> }
-            </div> } */}
+                <ChatBox screenWidth={screenWidth} setPrimary={()=>{primary.current='connections'; setChatUser(null)}} user={chatUser} interval={props.interval} />
+            </div> 
         </div>
     );
 }
