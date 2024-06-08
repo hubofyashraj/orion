@@ -1,4 +1,4 @@
-export function getCroppedImage(image: HTMLImageElement, startX: number, startY: number, endX: number, endY: number) : Promise<string> {
+export function getCroppedImage(image: HTMLImageElement, startX: number, startY: number, _width: number, _height: number) : Promise<string> {
     const canvas = document.createElement('canvas')
     const ctx = canvas.getContext('2d')!
 
@@ -8,16 +8,12 @@ export function getCroppedImage(image: HTMLImageElement, startX: number, startY:
     const scaleX = naturalWidth/image.width;
     const scaleY  = naturalHeight/image.height;
 
-    const width = (endX-startX) * scaleX;
-    const height = (endY-startY) * scaleY;
+    const width = (_width) * scaleX;
+    const height = (_height) * scaleY;
 
     canvas.width=width;
     canvas.height=height;
-    console.log(image.height, image.width);
-    console.log('new dimestions', width, height);
     
-
-
     ctx.drawImage(
         image,
         scaleX*startX,

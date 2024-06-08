@@ -50,8 +50,6 @@ export default function Profile(props: { setPage: Function }) {
         axios.get(
             address + '/profile/fetchinfo',
         ).then((result) => {
-            console.log(result);
-            
             const info = result.data.info as Info;
             setInfo(info);
             if(info.pfp_uploaded) fetchPfp()
@@ -93,8 +91,8 @@ export default function Profile(props: { setPage: Function }) {
                             </div>
                         </div>
                         <div className="absolute  sm:text-left w-full h-full text-center  bottom-0 flex justify-center gap-36 items-end  sm:flex-col sm:justify-end sm:items-start sm:gap-0  sm:w-1/2 md:w-3/5 lg:w-2/3 xl:w-3/4 sm:right-0 sm:px-10 sm:text-slate-400">
-                            <p className="w-1/2 sm:w-32 sm:flex justify-between">Connections<p>12</p></p>
-                            <p className=" w-1/2 sm:w-32 sm:flex justify-between">posts<p>12</p></p>
+                            <p className="w-1/2 sm:w-32 sm:flex justify-between">Connections<span>12</span></p>
+                            <p className=" w-1/2 sm:w-32 sm:flex justify-between">posts<span>12</span></p>
                         </div>
                     </div>
                     
