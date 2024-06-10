@@ -1,7 +1,17 @@
+'use server'
 import axios from "axios";
 import { address } from "../api";
+import { cookies } from "next/headers";
 
-export function login(data: {username:string, password: string}): Promise<any> {
+async function saveToken(token: string) {
+    cookies().set('authorization', token, {
+        secure: true,
+        httpOnly: true,
+        expires: new Date(Date.now() + 60 * 60 * 1000),
+    });
+}
+
+export async function login(data: {username:string, password: string}): Promise<any> {
     return new Promise((resolve, reject)=>{
         axios.defaults.auth = { username: data.username , password: data.password};
         axios.post(
@@ -9,11 +19,10 @@ export function login(data: {username:string, password: string}): Promise<any> {
         ).then((result) => {
             axios.defaults.auth=undefined
             if (result.data.verified == true) {
-                localStorage.setItem('token', result.data.token);
-                localStorage.setItem('user', data.username);
-                sessionStorage.setItem('user', data.username);
+                saveToken(result.data.token)
+                
                 console.log('login success: ', result);
-                resolve(true);
+                resolve(result.data.token);
             } else {
                 reject('wrong credentials');
             }
@@ -22,4 +31,12 @@ export function login(data: {username:string, password: string}): Promise<any> {
             reject('Server error');
         });
     })
+}
+
+
+export async function getToken() {
+    const token  = cookies().get('authorization')?.value
+    if(token) return token;
+        
+    throw Error('NoTokenErr', {cause: 'Token Not Present'})
 }

@@ -1,16 +1,22 @@
 import { Collection, MongoClient, ObjectId } from "mongodb";
 import { readImage } from "../readFile";
-import { Info } from '../types/db_schema'
+import { Info, UserStats } from '../types/db_schema'
 const client = new MongoClient(process.env.MONGO_LOCAL as string);
 
 client.connect();
 const db = client.db('demo');
 const infoCollection: Collection<Info> = db.collection('info');
-
+const userStatsCollection: Collection<UserStats> = db.collection('user_stats');
 
 export async function getInfo(user: string) {
     var info = await infoCollection.findOne({username: user})
-    if(info) return info;
+    if(info){
+        const userStats = await userStatsCollection.findOne({username: user});
+        return {
+            ...info,
+            ...userStats
+        }
+    }
     else throw 'User not found'
 }
 

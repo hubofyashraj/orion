@@ -31,7 +31,7 @@ init(io)
 app.use(express.json({limit: '20mb'}));
 app.use(express.urlencoded({extended: true}));
 app.use(cors());
-app.use(morgan('combined'));
+// app.use(morgan('combined'));
 app.use(jwt_middleware)
 
 app.use('/', rootRouter);
@@ -44,16 +44,6 @@ app.use('/post', postRouter)
 server.listen(PORT, ()=>{
     console.log('listning on port', PORT);    
 })
-
-
-
-type Message = {
-    sender: string,
-    receiver: string,
-    msg: string,
-    ts: string,
-    id: string
-}
 
 
 

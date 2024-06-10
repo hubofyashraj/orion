@@ -48,7 +48,7 @@ export default function Search() {
     }
     
     return (
-        <div className="text-slate-200 flex overflow-hidden flex-col w-full h-full gap-10 justify-start items-center bg-slate-700">
+        <div className="text-slate-200 ease-in flex overflow-hidden flex-col w-full h-full gap-10 justify-start items-center bg-slate-700">
             <div className=" max-w-96 mt-2 bg-slate-600  rounded-xl">
                 <input className="bg-inherit h-8   rounded-lg outline-none text-center" onKeyDown={keyPressed}  placeholder="Search"/>
                 {/* <button><CIcon className="h-5 " icon={cilSearch }/></button> */}

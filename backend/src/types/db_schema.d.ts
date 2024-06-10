@@ -23,6 +23,12 @@ export type Info = {
     pfp_uploaded: boolean,
 }
 
+export type UserStats = {
+    username: string,
+    postsCount: number,
+    connectionsCount: number
+}
+
 
 export type Connections = {
     _id?: ObjectId

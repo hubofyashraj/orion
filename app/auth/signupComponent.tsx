@@ -1,144 +1,83 @@
 import { ChangeEvent, FormEvent, SetStateAction, useEffect, useState } from "react";
 import { checkUserNameAvailability, signup } from "../api/events/signup";
+import { useFormStatus } from "react-dom";
 
 export default function SignupComponent(props: {setPage: React.Dispatch<SetStateAction<number>>}) {
 
-    const [available, setAvailable] = useState(false);
-    const [filled, setFilled] = useState(false);
-
-    
-
-    type Formdata = {
-        username: string,
-        fullname: string,
-        password: string,
-        cnfpassword: string
-    }
-
-    const [formdata, setFormdata] = useState({
-        username: '',
-        password: '',
-        cnfpassword: '',
-        fullname: ''
-    } as Formdata)
-
-    useEffect(()=>{
-        console.log('abcd');
-
-    }, [])
-
-    useEffect(()=>{
-        
-        const btn = document.getElementById('submitbtn')! as HTMLButtonElement;
-
-        const res = Object.values(formdata).some(value=>value.trim()==='');
-        
-        setFilled(!res)
-        btn.disabled = res && available
-
-        const ele = document.getElementById('warning')!
-
-        if(res) {
-            if(ele.innerHTML=='')
-                ele.innerHTML = 'Please fill all the fields'
-            return;
-        }
-
-        if(formdata.password!=formdata.cnfpassword) {
-            ele.innerHTML = 'passwords do not match'
-            btn.disabled=true
-        }else {
-            ele.innerHTML = ''
-        }
-
-        
-        
-    }, [available, formdata])
-
-    function submit(event: FormEvent<HTMLFormElement>) {
-        event.preventDefault();
-        const ele = document.getElementById('warning')!
-        ele.innerHTML = ''
-        const data = {
-            username: formdata.username.trim(),
-            password: formdata.password.trim(),
-            fullname: formdata.fullname.trim()
-        }
-        
-        console.log(data);
-        
-        signup(data).then((result)=>{
-            ele.innerHTML = '';
-            props.setPage(0)
-        }).catch((result)=>{
-            // console.log(result);
-            ele.innerHTML = result.data.reason;
-        })
-        
-    }
-
-
-
-    
-
-    let timer: ReturnType<typeof setTimeout>
-
-
-  
-
-    function onChangeHandlerInput(event: ChangeEvent<HTMLInputElement>): void {
-        
-        clearTimeout(timer)
-            timer = setTimeout(()=>{
-            const form = document.getElementById('inputform')! as HTMLFormElement;
-            const formData = new FormData(form);
-            const entries = Array.from(formData.entries());
-
-            const newFormData: Formdata = {
-                username: entries[0][1].toString(),
-                fullname: entries[1][1].toString(),
-                password: entries[2][1].toString(),
-                cnfpassword: entries[3][1].toString()
-            }
-
-            const ele = document.getElementById('warning')!
-            if(event.target.name==='username') {
-                var uInput = event.target
-                
-                if(uInput.value=='') return;
-
-                checkUserNameAvailability(uInput.value).then((available: boolean)=>{
-                    if(!available) {
-                        ele.innerHTML = 'Username not available'
-                        setAvailable(false)
-                    }
-                    else {
-                        ele.innerHTML = ''
-                        setAvailable(true)
-                    }
-                }).catch((err)=>{
-                    ele.innerHTML = 'API err'
-                    setAvailable(false)
-                })
-            
-            }
-
-            setFormdata(newFormData);
-            
-        }, 1000)
-    }
-
-
     return (
         <>
-            <form onSubmit={submit} autoComplete="off" id="inputform" className={' overflow-hidden flex flex-col gap-2'}>
-                <input className='outline-none bg-slate-900 bg-opacity-50 rounded-lg  hover:bg-opacity-70 px-3 py-2 text-center border-b border-slate-600' onChange={onChangeHandlerInput} name='username' type='text' placeholder='username' />
-                {<input className='outline-none bg-slate-900 bg-opacity-50 rounded-lg  hover:bg-opacity-70 px-3 py-2 text-center border-b border-slate-600'  onChange={onChangeHandlerInput} name='name' type='text' placeholder='full name'/>}
-                <input className='outline-none bg-slate-900 bg-opacity-50 rounded-lg  hover:bg-opacity-70 px-3 py-2 text-center border-b border-slate-600'  onChange={onChangeHandlerInput} name='password' type='password' placeholder='password'/>
-                {<input className='outline-none bg-slate-900 bg-opacity-50 rounded-lg  hover:bg-opacity-70 px-3 py-2 text-center  border-b border-slate-600'  onChange={onChangeHandlerInput} name='cnfpassword' type='password' placeholder='confirm password'/>}
-                {<button id="submitbtn" className='bg-slate-900 bg-opacity-50 hover:bg-opacity-80 rounded-md p-1 text-slate-200 cursor-pointer disabled:opacity-50 disabled:hover:bg-opacity-50 disabled:cursor-not-allowed' type='submit' disabled>Signup</button>}
+            <form action={signup} autoComplete="off" id="inputform" className={' overflow-hidden flex flex-col gap-2'}>
+                <FormBody />
             </form>
         </>
     )
 }
 
+
+
+function FormBody() {
+
+    const [ userNameAvailability, setAvailability ] = useState(false);
+    const [ filled, setFilled ]= useState(false);
+    const [ passwordsMatch, setIfMatch ] = useState(false);
+
+    const { pending, data, action, method } = useFormStatus();
+
+    let timeout: NodeJS.Timeout | null = null;
+
+    function onChangeHandlerInput(event: ChangeEvent<HTMLInputElement>) {
+        setFilled(false)
+        const form = event.target.parentElement as HTMLFormElement
+        const formData = new FormData(form);
+        setTimeout(()=>{
+            if(event.target.name=='password' || event.target.name=='cnfpassword')
+                setIfMatch(formData.get('password')==formData.get('cnfpassword'))
+
+            setFilled( 
+                    formData.get('username')?.toString()!='' 
+                &&  formData.get('name')?.toString()!='' 
+                &&  formData.get('password')?.toString()!='' 
+                &&  formData.get('cnfpassword')?.toString()!=''
+            )
+        }, 1000)
+    }
+    
+    useEffect(()=>{
+        if(data) {
+            const form = document.getElementById('inputform') as HTMLFormElement;
+            form.reset();
+            setFilled(false);
+            setAvailability(false)
+            setIfMatch(false)
+        }        
+    }, [data])
+
+    function userNameOnChangedHandler(event: ChangeEvent<HTMLInputElement>) {
+        if(timeout) clearTimeout(timeout);
+        timeout=setTimeout(async ()=>{
+            var uInput = event.target
+            if(!uInput.value) return
+
+            const ele = document.getElementById('warning')!
+            const available = await checkUserNameAvailability(uInput.value)
+            
+            if(available) ele.innerHTML = ''
+            else ele.innerHTML = 'Username not available'
+            setAvailability(available)
+        }, 1000)
+
+        onChangeHandlerInput(event)
+    }
+
+    const common = 'outline-none bg-slate-900 bg-opacity-50 rounded-lg  hover:bg-opacity-70 px-3 py-2 text-center border-b border-slate-600'
+    const btn=' cursor-pointer disabled:opacity-50 disabled:hover:bg-opacity-50 disabled:cursor-not-allowed'
+    return (
+        <>
+            <input className={common}  onChange={userNameOnChangedHandler} name='username' type='text' placeholder='username' />
+            <input className={common}  onChange={onChangeHandlerInput} name='name' type='text' placeholder='full name'/>
+            <input className={common}  onChange={onChangeHandlerInput} name='password' type='password' placeholder='password'/>
+            <input className={common}  onChange={onChangeHandlerInput} name='cnfpassword' type='password' placeholder='confirm password'/>
+            <button id="submitbtn" className={ common + btn } disabled={!(userNameAvailability && filled && passwordsMatch )}>{pending?'Wait':'Signup'}</button>
+        </>
+    )
+}

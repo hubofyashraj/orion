@@ -34,7 +34,9 @@ interface Info {
     contact: string, 
     contact_privacy: boolean
     pfp_uploaded: boolean,
-    pfp?: string
+    pfp?: string,
+    postsCount?: number,
+    connectionsCount?: number
 }
 
 

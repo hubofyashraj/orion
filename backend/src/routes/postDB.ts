@@ -1,7 +1,7 @@
 import { MongoClient, ObjectId, PushOperator, WithId } from "mongodb";
 import { Collection } from "mongodb";
 import { readImage } from "../readFile";
-import { Connections, Post, PostComments, PostOptions, PostStats } from "../types/db_schema";
+import { Connections, Post, PostComments, PostOptions, PostStats, User, UserStats } from "../types/db_schema";
 
 const client = new MongoClient(process.env.MONGO_LOCAL as string);
 
@@ -12,7 +12,7 @@ const collection: Collection<Post> = db.collection('post');
 const postStatsCollection: Collection<PostStats> = db.collection('post_stats');
 const postOptionsCollection: Collection<PostOptions> = db.collection('post_options');
 const postCommentsCollection: Collection<PostComments> = db.collection('post_comments');
-
+const userStatsCollection: Collection<UserStats> = db.collection('user_stats');
 const connectionsCollection: Collection<Connections> = db.collection('connections');
 
 interface Data {post_user: string, type: 'image' | 'video' | 'text', length: number, caption: string, ts: number}
@@ -47,6 +47,7 @@ export async function upload(body: Data){
         await collection.insertOne(post);
         await postStatsCollection.insertOne(post_stats);
         await postOptionsCollection.insertOne(post_options);
+        await userStatsCollection.updateOne({username: body.post_user}, {$inc: {postsCount: 1}});
 
         await session.commitTransaction();
         return ({post_id})
@@ -296,10 +297,13 @@ export async function deletePost(post_id: string) {
     try {
         session.startTransaction();
         
+        const post = await collection.findOne({post_id});
+
         await collection.deleteOne({post_id});
         await postStatsCollection.deleteOne({post_id});
         await postOptionsCollection.deleteOne({post_id});
         await postCommentsCollection.deleteMany({post_id})
+        await userStatsCollection.updateOne({username: post!.post_user}, {$inc: {postsCount: -1}});
 
         session.commitTransaction();
 

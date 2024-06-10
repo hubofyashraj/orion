@@ -21,6 +21,8 @@ module.exports = profileRouter;
 
 profileRouter.get('/fetchinfo', (req: RequestExtended, res: Response)=>{
     getInfo(req.query.user as string??req.user!).then(async (result: Info)=>{
+        console.log(result);
+        
         if(result.pfp_uploaded) {
             const pfp = await readImage(result.username, 'pfp')
             result.pfp=pfp;
@@ -45,6 +47,8 @@ profileRouter.get('/fetchinfo', (req: RequestExtended, res: Response)=>{
             location: '',
             profession: '',
             pfp_uploaded: false,
+            postsCount: 0,
+            connectionsCount: 0
         }
         res.json({success: true, info: info});
         

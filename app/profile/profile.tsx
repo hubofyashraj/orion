@@ -1,14 +1,13 @@
 import axios from "axios";
-import { ChangeEvent, Component, MouseEvent, MouseEventHandler, useEffect, useRef, useState } from "react";
 import { address } from "../api/api";
 import Image from "next/image";
 import CIcon from "@coreui/icons-react";
-import { cilArrowLeft, cilArrowThickLeft, cilAt, cilBackspace, cilBirthdayCake, cilEnvelopeClosed, cilEnvelopeLetter, cilLocationPin, cilPhone, cilPlus, cilSettings, cilUser, cilUserFemale, cilUserX, cilX } from "@coreui/icons";
-import { Blob } from "buffer";
 import CropComponent from "./CropComponent";
 import { Bounce, ToastContainer, toast } from "react-toastify";
 import CircularLoader from "../Loader/Loader";
 import UserPosts from "./userPosts";
+import { cilAt, cilSettings, cilUser, cilUserFemale } from "@coreui/icons";
+import { useState, useRef, useEffect, ChangeEvent } from "react";
 
 
 
@@ -17,12 +16,15 @@ type Info = {
     location: string, bio: string, gender: string,
     email: string, contact: string, contact_privacy: boolean
     pfp_uploaded: boolean,
-    [key: string]: string | boolean | Blob | null
 }
 
+type ProfileInfo = Info & {
+    connectionsCount: number,
+    postsCount: number
+}
 
 export default function Profile(props: { setPage: Function }) {
-    const [info, setInfo] = useState<null | Info>(null)
+    const [info, setInfo] = useState<null | ProfileInfo>(null)
     const [imgsrc, setSrc] = useState<null | string>(null);
     
     const [imageChosen, setImageChosen] = useState(false)
@@ -50,7 +52,9 @@ export default function Profile(props: { setPage: Function }) {
         axios.get(
             address + '/profile/fetchinfo',
         ).then((result) => {
-            const info = result.data.info as Info;
+            const info = result.data.info as ProfileInfo;
+            console.log(info);
+            
             setInfo(info);
             if(info.pfp_uploaded) fetchPfp()
         }).catch((err)=>{
@@ -91,8 +95,8 @@ export default function Profile(props: { setPage: Function }) {
                             </div>
                         </div>
                         <div className="absolute  sm:text-left w-full h-full text-center  bottom-0 flex justify-center gap-36 items-end  sm:flex-col sm:justify-end sm:items-start sm:gap-0  sm:w-1/2 md:w-3/5 lg:w-2/3 xl:w-3/4 sm:right-0 sm:px-10 sm:text-slate-400">
-                            <p className="w-1/2 sm:w-32 sm:flex justify-between">Connections<span>12</span></p>
-                            <p className=" w-1/2 sm:w-32 sm:flex justify-between">posts<span>12</span></p>
+                            <p className="w-1/2 sm:w-32 sm:flex justify-between">Connections<span>{info.connectionsCount}</span></p>
+                            <p className=" w-1/2 sm:w-32 sm:flex justify-between">posts<span>{info.postsCount}</span></p>
                         </div>
                     </div>
                     

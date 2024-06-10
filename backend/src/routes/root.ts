@@ -41,17 +41,15 @@ rootRouter.post('/login', async (req: RequestExtended, res: Response)=>{
 
 
 rootRouter.get('/checkusernameavailability', async (req: RequestExtended, res: Response)=>{
-    // console.log(req.query.username);
     var result = await checkUserNameAvailable(req.query.username+'');
-    
-    res.json({result: result})
-
-    return true;
+    res.json({available: result})
 })
 
 rootRouter.post('/signup', (req: RequestExtended, res: Response)=>{
-    signup(req.body).then((_id)=>{
-        res.json({success: true, _id});
+    console.log(req.body);
+    
+    signup(req.body).then(()=>{
+        res.json({success: true});
     }).catch((reason)=>{
         res.json({success: false, reason});
     });

@@ -1,8 +1,6 @@
 import { useEffect, useState } from "react";
 import FloatingActionButton from "./floatingActionButton";
 // import ImagePost from "./imagepost";
-import SelectImagesComponent from "./selectImageComponent";
-import CreatePost from "./createpost";
 import { ObjectId } from "mongoose";
 import axios from "axios";
 import { address } from "../api/api";
@@ -20,24 +18,8 @@ export type Post = {
 }
 
 
-export default function Feed() {
-    
-
-    const [showSelectComponent, setShowSelectComponent] = useState(false);
-    const [showCreatePost, setShowCreatePost] = useState(false);
-    const [images, setImages] = useState(new Array<File>())
-
+export default function Feed( { setPage } : { setPage: Function } ) {
     const [posts, setPost] = useState(new Array<{post_id: string, post_user: string, post_type: 'image' | 'video'}>())
-
-    // var images: Array<string> = [];
-
-
-    function setShowCreatePostPage(img: Array<File>) {
-        console.log('img',img);
-        
-        setImages(img);
-        setShowCreatePost(true);
-    }
 
     useEffect(()=>{
         axios.defaults.headers.common['Authorization'] = `Bearer ${localStorage.getItem('token')}`
@@ -62,11 +44,11 @@ export default function Feed() {
                 })}
             </div>
 
-            <FloatingActionButton setShowSelectComponent={()=>setShowSelectComponent(true)} />
-            {!showCreatePost && <SelectImagesComponent
+            <FloatingActionButton setShowSelectComponent={()=>setPage('create')} />
+            {/* {!showCreatePost && <SelectImagesComponent
                 curState={showSelectComponent} toggleState={()=>setShowSelectComponent(false)} 
                 fnCreatePost={setShowCreatePostPage} />}
-            {showCreatePost && <CreatePost fileList={images} cancel={()=>{setShowCreatePost(false); setShowSelectComponent(false)}} />}
+            {showCreatePost && <CreatePost fileList={images} cancel={()=>{setShowCreatePost(false); setShowSelectComponent(false)}} />} */}
         </div>
     );
 }

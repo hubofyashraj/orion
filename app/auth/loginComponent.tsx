@@ -34,7 +34,10 @@ export default function LoginComponent() {
             password: password.trim(),
         }
 
-        login(data).then((result:boolean) =>{
+        login(data).then((result:string) =>{
+            localStorage.setItem('token', result);
+            localStorage.setItem('user', data.username);
+            sessionStorage.setItem('user', data.username);
             ele!.innerHTML = ''
             setIsLoggedIn(true)
             sockInit()
