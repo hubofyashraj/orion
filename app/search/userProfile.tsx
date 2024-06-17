@@ -1,13 +1,15 @@
-import axios from "axios";
-import { useEffect, useState } from "react";
-import { address } from "../api/api";
+import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import CIcon from "@coreui/icons-react";
-import { cilAt, cilBirthdayCake, cilEnvelopeClosed, cilEnvelopeLetter, cilLocationPin, cilPhone, cilSettings, cilUser, cilUserFemale, cilUserX } from "@coreui/icons";
-import { pullbackReq, sendConnectionRequest } from "./events";
-import { handleRequest } from "../navbar/data";
-import CircularLoader from "../Loader/Loader";
-
+import { AlternateEmail, ArrowBack, Cancel, CheckCircle, ContactPhone, Delete, Email, Note, Notes, PeopleAlt, PersonAdd, PersonAddAlt, PersonPinCircle, PersonRemove, Phone, Pin, PinDrop, RoundaboutLeft, Work } from "@mui/icons-material";
+import { Match } from "./search";
+import { ToastContainer } from "react-toastify";
+import UserPosts from "./userPosts";
+import { cilUser, cilUserFemale } from "@coreui/icons";
+import { fetchInfo } from "../api/profile/profile";
+import { validSession } from "../api/actions/authentication";
+import { acceptReq, cancelRequest, sendRequest } from "../api/db_queries/search";
+import ProfilePictureComponent from "../components/pfp";
 
 interface Info {
     username: string, fullname: string, dob: string, profession: string, 
@@ -18,122 +20,122 @@ interface Info {
 }
 
 
-export default function UserProfile({ user } : {user: string}) {
-    const [loggedIn, setLoggedIn] = useState(false);
-    const [userData, setUserData] = useState({} as Info)
-    const [connectionStatus, setStatus] = useState('none');
-    const [imgsrc, setSrc] = useState('');
-    const [fetched, setFetched] = useState(false);
-    const [err, setErr] = useState(false);
-    const [req_id, setReqId] = useState('');
+export default function UserProfile({ 
+    user, close, action
+} : {
+    user: Match, close: () => void, action: (action: string, _id?: string) => void
+}) {
+    const [info, setInfo] = useState<ProfileInfo | undefined>()
 
 
     useEffect(()=>{
-
-
-        function fetchInfo() :Promise<void>{
-            return new Promise((resolve, reject)=>{
-                axios.get(
-                    address+`/profile/fetchinfo?user=${user}`,
-                ).then((result)=>{
-                    console.log(result.data);
-                    
-                    if(result.data.success) {
-                        const info = result.data.result.info
-                        setUserData(info);
-                        if(info.pfp_uploaded)   setSrc(`data:image/png;base64,${info.pfp}`);
-                        setStatus(result.data.result.status);
-                        setReqId(result.data.result.id);
-                        resolve()
-                    }else {
-                        reject()
-                    }
-
-                })
-            })
-        }
-
-        if(localStorage.getItem('token')){
-            setLoggedIn(true);
-            fetchInfo().then(()=>{
-                setFetched(true);
-                setErr(false)
-            }).catch(()=>{
-                setErr(true);
-                setFetched(true)
-            })
-            
-        }
+        fetchInfo(user.username).then((info)=>{
+            if(info) setInfo(JSON.parse(info))
+        })
     }, [user])
 
 
+    if(!info) return <></>
 
-    if(err) return (<div className="h-full w-full flex justify-center items-center "><p className="text-5xl">Error!!</p></div>)
-    if(!fetched) return (<CircularLoader />);
-    
     return (
-        <div className=" bg-slate-700 h-full w-full  scrollbar-thin ">
-            <div className="flex flex-col  justify-center md:justify-start md:items-start  items-center gap-5 ">
-                <div className="details w-full   flex flex-col justify-center md:items-start items-center grow">
-                    <div className="flex bg-slate-800 w-full h-36  flex-col md:gap-6  md:flex-row-reverse  justify-between items-center">
-                        <div className="flex w-full self-end md:mb-2 mt-2  flex-col justify-center items-center md:items-start">
-                            <p className="text-xl font-light ">{userData.fullname}</p>
-                            <p className="text-sm  font-extralight flex justify-center items-center gap-1"><CIcon className="h-3 text-red-500" size={"sm"}  icon={cilAt}/>{userData.username}</p>
-                        </div>
-                        <div className="p-2 bg-inherit  md:mt-20 rounded-full">
-                            <div className="h-32 w-32 shrink-0  border-2 border-slate-900  profile-img rounded-full  overflow-hidden flex justify-center items-center">
-                                { imgsrc==''?<CIcon  className="text-black h-2/3" icon={userData.gender=='Male'?cilUser:cilUserFemale} size="xxl"/>:<Image width={100} height={100} className="w-full h-full" alt="" src={imgsrc}/> }
+        <div className="relative bg-slate-700 text-slate-300 h-full w-full ">
+            {<div className="flex flex-col h-full relative  justify-start sm:justify-start sm:items-start  items-center gap-5  overflow-y-auto scrollbar-none">
+                <div className="details w-full flex flex-col gap-3 justify-start sm:items-start items-center grow">
+                    <div className="relative flex w-full h-36 bg-slate-800 flex-col sm:gap-6 sm:flex-row-reverse  justify-between items-center">
+                        <div className="flex w-full  self-end flex-col justify-center items-center sm:items-start">
+                            <p className="text-xl">{info.fullname } {user.status=='connected' && <PeopleAlt/>}</p>
+                            
+                            <div className="text-base flex justify-center items-center gap-1 ">
+                                <AlternateEmail className="text-red-600 " fontSize="inherit" />
+                                <p>{info.username}</p>
                             </div>
                         </div>
-                    </div>
-                    <div className="flex md:flex-row mt-20 flex-col w-full md:px-6   items-center gap-5">
                         
-                        <div className="w-full flex flex-col items-center md:items-start md:text-start">
-                            <p className="  text-lg">About Me</p>
-                            <p className="  text-sm"> {userData.bio }</p>
-                            <div className="  w-max   mt-5  flex flex-col  gap-2 text-sm">
-                                <p className="w-max flex justify-center items-center gap-1"><CIcon className="h-3 text-red-500" size={"sm"} icon={cilLocationPin} />{userData.location}</p>
-                                {/* {!userData.contact_privacy &&  <a href={"tel:"+userData.contact} type="tel" className="flex gap-1 items-center"><CIcon className="h-4 text-orange-500" icon={cilPhone} />{userData.contact}</a>} */}
-                                {/* <a href={"mailto:"+userData.email} type="email" className="flex gap-1 items-center"><CIcon className="h-4 text-orange-500" icon={cilEnvelopeClosed} />{userData.email}</a> */}
-                                <p className="flex gap-1 items-center"><CIcon className="h-4 text-orange-500" icon={cilBirthdayCake} />{userData.dob}</p>
-                                <p className="flex gap-1 items-center"><CIcon className="h-4 text-orange-500" icon={userData.gender=='Male'?cilUser:cilUserFemale} />{userData.gender}</p>
+                        <div className=" sm:ml-10 sm:mt-20 p-2  rounded-full bg-inherit">
+                            <div className="h-32 w-32 shrink-0  profile-img relative rounded-full bg-slate-800 overflow-hidden flex justify-center items-center">
+                                <ProfilePictureComponent size={128} user={info.username} />
                             </div>
                         </div>
-                        <div className="connection-status text-sm md:absolute right-12">
-                            <div className="shrink-0   hover:bg-opacity-30 flex ">
-                                {
-                                    connectionStatus=='none' 
-                                    &&
-                                    <a onClick={async ()=>{var id = await sendConnectionRequest(user);  setStatus('outgoing'); setReqId(id.insertedId)}} className='hover:text-violet-500 cursor-pointer'>Connect</a>
-
-                                }
-                                {
-                                    connectionStatus=='connected' && <p>Connected</p>
-                                }
-                                {
-                                    connectionStatus=='incoming' 
-                                    && 
-                                    <div className="flex gap-5">
-                                        <a onClick={()=>{handleRequest(req_id, true)}} className='hover:text-violet-500 cursor-pointer'>Accept</a>
-                                        <a onClick={()=>{handleRequest(req_id, false)}} className='hover:text-violet-500 cursor-pointer'>Decline</a>
-                                    </div>
-
-                                }
-                                {
-                                    connectionStatus=='outgoing'
-                                    &&
-                                    <div>
-                                        <a onClick={async ()=>{await pullbackReq(req_id); setStatus('none')}} className='hover:text-violet-500 cursor-pointer'>Cancel</a>
-                                    </div>
-                                }
-                            </div>
-                        </div>
+                        <ArrowBack className="absolute top-2 left-2 hover:scale-105" onClick={close} />
+                        
                     </div>
+                    <div className=" pl-12 mt-9 select-none flex flex-col gap-2">
+                        <p className="flex gap-1 items-center text-sm"><Notes className="text-red-300 " fontSize="small"/>   {info.bio}</p>
+                        {
+                            user.status=='connected' && 
+                            <>
+                                <p className="flex gap-1 items-center text-sm"><Phone className="text-red-300 " fontSize="small" /> {info.contact}</p>
+                                <p className="flex gap-1 items-center text-sm"><Email className="text-red-300 " fontSize="small"  /> {info.email}</p>
+                                    
+                                <p className="flex gap-1 items-center text-sm"><PinDrop className="text-red-300 " fontSize="small"  /> {info.location}</p>
+                                <p className="flex gap-1 items-center text-sm"><Work className="text-red-300 " fontSize="small"  /> {info.profession}</p>
+                            </>
+                        }
+                    </div>
+                    { user.status=='connected' 
+                    ? <div className="grow px-2  w-full ">
+                        <p className="text-xl py-2 sm:ml-16 sm:px-2 text-center sm:text-left">Posts</p>
+                        <UserPosts user={info.username} />
+                      </div>    
+                    : <ConnectionComponent user={user} action={action} />}
+
+
                 </div>
-                
-                
-            </div>
-        </div>
-    );
+                <ToastContainer />
+            </div>}
+        
+          </div>
+    )
+
 }
 
+function ConnectionComponent({
+    user, action
+}: {
+    user: Match, action: (action:string, _id?: string) => void
+}) {
+    
+    async function sendrequest() {
+        const self = await validSession();
+        if(self) {
+            const req_id = await sendRequest(self, user.username)
+            console.log(req_id);
+            if(req_id) action('send', req_id)
+        }
+    }
+
+    async function cancelrequest() {
+        const result = await cancelRequest(user._id!);
+        console.log(result);
+        
+        if(result) action('cancel')
+    }
+
+    async function acceptRequest() {
+        const result = await acceptReq(user._id!);
+        console.log(result);
+        if(result) action('accept')
+    }
+
+    async function declineRequest() {
+        const result = await cancelRequest(user._id!);
+        console.log(result);
+        if(result) action('cancel')
+    }
+    
+    const btnStyle = 'w-max bg-slate-800 bg-opacity-70 hover:bg-opacity-100 py-2 px-5 rounded-full hover:scale-105 flex justify-center items-center gap-2'
+    return (
+        <div className="mt-5 flex gap-2 justify-center items-center w-full flex-col sm:flex-row">
+            { user.status=='none' && <button onClick={sendrequest}  className={btnStyle}><PersonAdd  /><p className="text-sm">Send Request</p></button>}
+            { user.status=='incoming' 
+                && <div className="flex flex-col gap-2 items-center justify-center">
+                    <p>{user.fullname} wants to connect</p>
+                    <div className="flex gap-2 sm:gap-5 max-w-[calc(80svw)] flex-col sm:flex-row ">
+                        <button onClick={acceptRequest} className={btnStyle}><CheckCircle /><p className="text-sm">Accept Request</p></button>
+                        <button onClick={declineRequest} className={btnStyle}><Delete /><p className="text-sm">Delete Request</p></button>
+                    </div>    
+                </div> }
+            { user.status=='outgoing' && <button onClick={cancelrequest} className={btnStyle}><Cancel /><p className="text-sm">Cancel Request</p></button> } 
+        </div> 
+    )
+}

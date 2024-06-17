@@ -5,6 +5,9 @@ import { ObjectId } from "mongoose";
 import axios from "axios";
 import { address } from "../api/api";
 import dynamic from "next/dynamic";
+import useSSE from "../sseProvider/sse";
+import { fetchPosts } from "../api/feed/feed";
+import ImagePost from "./imagepost";
 
 
 export type Post = {
@@ -13,42 +16,47 @@ export type Post = {
     post_id: string,
     post_type: 'image' | 'video' | 'text',
     post_length: number, 
-    post_content: Array<string>,
+    post_content?: Array<string>,
     post_caption: string
 }
 
 
 export default function Feed( { setPage } : { setPage: Function } ) {
-    const [posts, setPost] = useState(new Array<{post_id: string, post_user: string, post_type: 'image' | 'video'}>())
+    const [posts, setPost] = useState<Post[]>([]);
+    const {newPosts, setNewPosts} = useSSE();
 
     useEffect(()=>{
-        axios.defaults.headers.common['Authorization'] = `Bearer ${localStorage.getItem('token')}`
-        axios.post(
-            address+'/post/fetchPosts', 
-        ).then((result)=>{
-            if(result.data.success) {
-                setPost(result.data.posts);
-                
+        console.log('hhhhh');
+        
+        fetchPosts().then((jsonString) => {
+            if(jsonString) {
+                const posts = JSON.parse(jsonString).posts as Post[];
+                setPost(posts);
             }
         })
     }, [])
 
+    function refresh() {
+        
+    }
 
-    const ImagePost = dynamic(()=>import('./imagepost'), {ssr: false})
+
 
     return (
         <div className="bg-slate-700 relative h-full w-full flex flex-col items-center">
-            <div className="w-full max-w-[calc(560px)] h-full flex flex-col justify-start gap-0 overflow-y-auto scrollbar-none">
-                {posts.map(post=>{
-                    if(post.post_type=='image') return <ImagePost key={post.post_id} post={post} />
-                })}
+            { newPosts && <div className="w-full">
+                <p>New Posts</p>
+                <button onClick={refresh}>Refresh</button>
+                </div> }
+            <div className="w-full max-w-xl h-full flex flex-col justify-start gap-0 overflow-y-auto scrollbar-none">
+                {posts.map(post=>
+                    post.post_type=='image'
+                    ? <ImagePost key={post.post_id} post={post} />
+                    : <></>
+                )}
             </div>
 
             <FloatingActionButton setShowSelectComponent={()=>setPage('create')} />
-            {/* {!showCreatePost && <SelectImagesComponent
-                curState={showSelectComponent} toggleState={()=>setShowSelectComponent(false)} 
-                fnCreatePost={setShowCreatePostPage} />}
-            {showCreatePost && <CreatePost fileList={images} cancel={()=>{setShowCreatePost(false); setShowSelectComponent(false)}} />} */}
         </div>
     );
 }

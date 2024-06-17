@@ -62,27 +62,32 @@ profileRouter.post('/saveinfo', (req: RequestExtended, res: Response)=>{
     })
 })
 
-profileRouter.post('/saveimage', pfpUploadMiddleware.single('file'), (req:RequestExtended, res: Response)=>{
+profileRouter.post('/savePFP', pfpUploadMiddleware.single('file'), (req:RequestExtended, res: Response)=>{
     console.log('profile image save request', req.user);
     saveImage(req.user!).then(async ()=>{
+        try {
+            await sharp(req.file!.buffer)
+                .resize(512)
+                .jpeg({quality: 80})
+                .toFile(path.join(srcpath, '..', 'uploads', 'pfp', req.user!))
+            req.file=undefined
+            res.json({success: true});
+            console.log('image saved', req.user);
+        } catch (error) {
+            res.json({success: false})           
+            console.log('image saved', error);
 
-        await sharp(req.file!.buffer)
-        .resize(512)
-        .jpeg({quality: 80})
-        .toFile(path.join(srcpath, '..', 'uploads', 'pfp', req.user!))
-        req.file=undefined
-        res.json({success: true});
-        console.log('image saved', req.user);
+        }
     })
 })
 
 profileRouter.get('/fetchPFP', (req: RequestExtended, res: Response)=>{
     let user = req.user!;  
-
     if(req.query.user) user = req.query.user as string
+    console.log('pfp requested for ', user);
     
     getInfo(user).then((result)=>{
-        if(result.pfp_uploaded) {
+    if(result.pfp_uploaded) {
             readImage(user, 'pfp').then((result)=>{
                 res.json({success: true, image: result})
             }).catch((err)=>{

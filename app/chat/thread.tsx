@@ -1,27 +1,33 @@
 import { Send } from "@mui/icons-material";
 import { Message } from "./types";
-import { FormEvent, startTransition, useEffect, useOptimistic, useRef } from "react";
+import { useOptimistic, useRef } from "react";
 import MessageComp from "./message";
+import { sendMessage } from "../api/chat/chat";
+import { Connection } from "../api/db_queries/chat";
 
 
-export default function Thread(props : { messages: Message[], user: any, send: Function}) {
-    const [optimisticMessages, addMessageOptimistically]: [Array<Message>, Function] = useOptimistic(
-        props.messages,
-        (state: Message[], newMessage: Message): Array<Message> => [
-            ...state, newMessage
-        ]
-    );
+export default function Thread({
+    messages, user, updateMessageList
+}: {
+    messages: Message[], user: Connection, updateMessageList: (newMessage: Message) => void
+}) {
 
+    const [optimisticMessages, addMessageOptimistically] 
+    = useOptimistic( messages, ( state: Message[], newMessage: Message ) => [ ...state, newMessage ] );
+ 
     async function sendOptimistically(text: string) {
-        const msg: Message = {sender: localStorage.getItem('user')!, receiver: props.user.username, msg: text, ts: Date.now().toString(), sending: true}
-        
-        try {
-            addMessageOptimistically(optimisticMessages, msg);
-            setTimeout(async ()=>{
-                await props.send(msg);
+        let msg: Message = {
+            sender:'ToBeSet',  
+            receiver: user.username, 
+            msg: text, 
+            ts: Date.now().toString(), 
+            sending: true
+        };
 
-            }, 0)
-            
+        try {
+            addMessageOptimistically(msg);
+            const message = await sendMessage(msg);
+            if(message) updateMessageList(JSON.parse(message));
         } catch (err) {
 
         }
@@ -31,15 +37,16 @@ export default function Thread(props : { messages: Message[], user: any, send: F
         <>
             <div id="msgs" className="grow w-full flex flex-col items-start justify-start overflow-y-auto scrollbar-none scrollbar-track-white">
                 { optimisticMessages.map((msg, idx)=>{
-                    // console.log(idx, msg);
-                    
-                    if(msg.sender == localStorage.getItem('user') || msg.sender==props.user.username) 
-                        return <MessageComp key={idx}  msg={msg} sender={props.user.username} />
+                    if(msg.receiver == user.username || msg.sender==user.username) 
+                        return ( <>
+                            {msg.sender==user.username && msg.unread && ((idx>0 && (!optimisticMessages[idx-1].unread || optimisticMessages[idx-1].sender!=user.username))  || idx==0) && <p key={'unread tag '} className="text-lg text-center self-center px-5 border-b text-slate-600 border-slate-700">Unread</p>}
+                            <MessageComp key={idx}  msg={msg} user={user.username} />
+                        </> )
                     
                 })}
             </div>
-            <div className="h-16 shrink-0 flex justify-center items-center w-[calc(100svw)] sm:w-[calc(66svw)] bg-slate-800 border-t border-slate-600">
-                <MessageForm send={sendOptimistically}/>
+            <div className="h-16 shrink-0 flex justify-center items-center w-[calc(100svw)] sm:w-[calc(66svw)] bg-slate-800  border-slate-600">
+                <MessageForm sendMessage={sendOptimistically}/>
             </div>       
         </>
     )
@@ -48,12 +55,16 @@ export default function Thread(props : { messages: Message[], user: any, send: F
 
 
 
-function MessageForm(props: {send: Function}) {
+function MessageForm({
+    sendMessage
+}: {
+    sendMessage: (text: string) => void
+}) {
     const form  = useRef<HTMLFormElement | null>(null);
 
-    function send(formData: FormData) {
+    async function send(formData: FormData) {
         const msg = formData.get('msg')?.toString();
-        if(msg) props.send(msg);
+        if(msg) sendMessage(msg);
         form.current?.reset();
     }
 

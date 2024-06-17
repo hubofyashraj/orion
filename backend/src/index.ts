@@ -14,6 +14,7 @@ const profileRoutes = require('./routes/profile');
 const notificationRouter = require('./routes/notifications');
 const postRouter = require('./routes/post');
 
+const sse = require('./sse/sse');
 
 const PORT = process.env.PORT || 6789;
 const app = express();
@@ -34,6 +35,8 @@ app.use(cors());
 // app.use(morgan('combined'));
 app.use(jwt_middleware)
 
+app.use('/sse', sse);
+
 app.use('/', rootRouter);
 app.use('/chats', chatRoutes);
 app.use('/profile', profileRoutes);
@@ -46,7 +49,9 @@ server.listen(PORT, ()=>{
 })
 
 
-
+setInterval(()=>{
+    console.clear();
+}, 30000)
 
 
 

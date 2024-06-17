@@ -2,7 +2,7 @@ import express, { Response } from "express";
 import { addNewComment, deleteComment, deletePost, fetchPost, fetchPosts, likePost, savePost, unlikePost, unsavePost, upload } from "./postDB";
 import { postUploadMiddleware } from './upload';
 import { RequestExtended } from "../types/types_local";
-import { srcpath } from "../readFile";
+import { readImage, srcpath } from "../readFile";
 import path from "path";
 import sharp from 'sharp';
 
@@ -12,28 +12,54 @@ const postRouter = express.Router();
 module.exports = postRouter;
 
 
-postRouter.post('/upload', postUploadMiddleware.array('files'), (req: RequestExtended, res: Response, next: Function)=>{
-    upload({post_user: req.user!, ...req.body}).then(async (result)=>{
-        const files = req.files!
-        if(Array.isArray(files)) {
-            const dest = path.join(srcpath, '..', 'uploads')
+postRouter.post('/upload', postUploadMiddleware.array('files'), async (req: RequestExtended, res: Response, next: Function)=>{
+    console.log('saving images', req.files);
+    
+    const files = req.files!
+    if(Array.isArray(files)) {
+        const post_id = req.body.post_id;
 
-            const promises = files.map( async (file, idx)=>{
-                const filename = result.post_id+'-'+idx
-                await sharp(file.buffer)
-                    .resize(1024)
-                    .jpeg({ quality: 80 })
-                    .toFile(path.join(dest, filename));
-            })
+        const storageDestination = path.join(srcpath, '..', 'uploads')
 
-            await Promise.all(promises)
-            req.files=undefined            
-        }
-        res.json({success: true})
-    }).catch((reason)=>{
-        res.json({success: false, reason})
-    })
+        const promises = files.map( 
+            async (file, idx)=>{
+                const filename = post_id+'-'+idx
+                return await sharp(file.buffer)
+                .resize(1024)
+                .jpeg({ quality: 80 })
+                .toFile(path.join(storageDestination, filename));
+            }
+        )
+
+        await Promise.all(promises)
+        req.files=undefined            
+    }
+    res.json({success: true})
 })
+    
+
+// postRouter.post('/upload', postUploadMiddleware.array('files'), (req: RequestExtended, res: Response, next: Function)=>{
+//     upload({post_user: req.user!, ...req.body}).then(async (result)=>{
+//         const files = req.files!
+//         if(Array.isArray(files)) {
+//             const dest = path.join(srcpath, '..', 'uploads')
+
+//             const promises = files.map( async (file, idx)=>{
+//                 const filename = result.post_id+'-'+idx
+//                 await sharp(file.buffer)
+//                     .resize(1024)
+//                     .jpeg({ quality: 80 })
+//                     .toFile(path.join(dest, filename));
+//             })
+
+//             await Promise.all(promises)
+//             req.files=undefined            
+//         }
+//         res.json({success: true})
+//     }).catch((reason)=>{
+//         res.json({success: false, reason})
+//     })
+// })
 
 
 postRouter.post('/fetchPosts', (req: RequestExtended, res: Response)=>{
@@ -105,6 +131,22 @@ postRouter.get('/fetchPost', (req: RequestExtended, res: Response)=>{
         res.json(resp)
     })
     
+})
+
+
+postRouter.get('/fetchPostAssets', (req: RequestExtended, res: Response) => {
+    const asset_id = req.query.asset_id;
+    if(!asset_id) {res.status(404); return;}
+
+    readImage(asset_id+'')
+    .then((imgsrc)=>{
+        res.json({asset: imgsrc})
+    })
+    .catch((err)=>{
+        console.error('while reading images to send');
+        console.error(err);
+        res.status(404);        
+    })
 })
 
 postRouter.post('/deletePost', (req: RequestExtended, res:Response)=>{

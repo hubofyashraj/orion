@@ -1,20 +1,19 @@
 import { ArrowBack } from "@mui/icons-material";
 import axios from "axios";
 import Image from "next/image";
-import { MutableRefObject, useEffect, useRef, useState } from "react";
+import { LegacyRef, MutableRefObject, RefObject, useEffect, useRef, useState } from "react";
 import { address } from "../api/api";
 import CropComponentPost from "./CropComponent";
+import { createPost } from "../api/create/createImagePost";
 
-export default function CreatePost(props: {fileList: MutableRefObject<Array<File>>, cancel: Function}) {
+export default function CreatePost({
+    fileList, cancel
+}: {fileList: MutableRefObject<Array<File>>, cancel: Function}) {
 
-    var caption: string='';
-
-    function setCaption(str: string): void {
-        caption=str;
-    }
+    var caption = useRef<HTMLInputElement | null>(null);
 
     const images = useRef(new Array<string>());
-    const files = props.fileList
+    const files = fileList
     const [refresh, setRefresh] = useState(false);
     const [croppedImages, setCroppedImages] = useState(new Array<string>());
     const croppedImageFiles = useRef(new Array<Blob>())
@@ -39,37 +38,24 @@ export default function CreatePost(props: {fileList: MutableRefObject<Array<File
     }, [files, refresh])
     
 
-    function post(caption: string) {
-        if(localStorage.getItem('token')) {
+    function post() {
+        console.log('caption',caption);
+        
+        const formData = new FormData();
+        for(const file of croppedImageFiles.current) formData.append('files', file);
+        formData.append('caption', caption.current?.value?? '')
+        formData.append('type', 'image')
+        formData.append('length', files.current.length + '')
 
-            const formData = new FormData();
-            for(const file of croppedImageFiles.current) formData.append('files', file);
-            formData.append('caption', caption)
-            formData.append('type', 'image')
-            formData.append('length', files.current.length + '')
-            formData.append('ts', Date.now()+'')
+        createPost(formData).then((result)=>{
+            if(result) {
+                cancel()
+            }
+        })
+
+
             
-            axios.defaults.headers.common['Authorization']=`Bearer ${localStorage.getItem('token')}`
-            axios.post(
-                address+'/post/upload',
-                formData,
-                {
-                    headers: {
-                        'Content-Type': 'multipart/form-data'
-                    }
-                }
-            ).then((result)=>{
-                if(result.data.success) {
-                    props.cancel();
-                }
-                else  {
-                    console.error('Server Issue', result.data.reason)
-                }
-            }).catch((reason)=>{
-                console.error('Err Couldn\'t Upload',reason)
-            })
     
-        }
     }
 
     const [croppingImg, setCroppingImg] = useState<null | string>(null)
@@ -88,7 +74,7 @@ export default function CreatePost(props: {fileList: MutableRefObject<Array<File
     return (
         <div className=" w-full  h-full top-0 bg-slate-700 text-slate-200 flex flex-col overflow-hidden scrollbar-thin">
             <div className="px-5 pt-3 shrink-0 flex justify-start items-center gap-5 ">
-                <ArrowBack className="hover:scale-110" onClick={()=>props.cancel()}  />
+                <ArrowBack className="hover:scale-110" onClick={()=>cancel()}  />
                 { images.current.length==0
                     ? <p className="text-lg ">Your Images</p>
                     : <p className="text-lg ">Crop these images. {images.current.length}/{croppedImages.length + images.current.length} remaining</p>}
@@ -108,9 +94,9 @@ export default function CreatePost(props: {fileList: MutableRefObject<Array<File
                             <div className="shrink-0 flex flex-col sm:flex-row justify-center items-center gap-2 ">
                                 {/* <p className="text-lg ">Caption</p> */}
                                 <div className="w-full max-w-96  h-10 select-none  border border-slate-900 bg-slate-800 rounded-lg ">
-                                    <input onChange={(e)=>{setCaption(e.target.value)}} type="text" placeholder="Caption" className="px-3 outline-none bg-transparent w-full h-full border-none " />
+                                    <input ref={caption} type="text" placeholder="Caption" className="px-3 outline-none bg-transparent w-full h-full border-none " />
                                 </div>
-                                <button onClick={()=>post(caption)} className="bg-blue-200 hover:bg-blue-300 text-slate-600 hover:text-black  shrink-0 h-10 w-full sm:w-20 max-w-96  rounded-lg ">
+                                <button onClick={()=>post()} className="bg-blue-200 hover:bg-blue-300 text-slate-600 hover:text-black  shrink-0 h-10 w-full sm:w-20 max-w-96  rounded-lg ">
                                 Post
                                 </button>
                             </div>

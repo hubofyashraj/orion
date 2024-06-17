@@ -23,6 +23,22 @@ export type Info = {
     pfp_uploaded: boolean,
 }
 
+
+export type InfoUpdate = {
+    _id?: ObjectId,
+    fullname?: string, 
+    dob?: string, 
+    profession?: string, 
+    location?: string, 
+    bio?: string, 
+    gender?: string, 
+    email?: string, 
+    contact?: string, 
+    contact_privacy?: boolean
+    pfp_uploaded?: boolean,
+}
+
+
 export type UserStats = {
     username: string,
     postsCount: number,
@@ -47,7 +63,8 @@ export type Messages = {
     receiver: string,
     msg: string,
     ts: string,
-    id?: string
+    id?: string,
+    unread?: boolean
 }
 
 
@@ -55,7 +72,7 @@ export type Post = {
     _id?: ObjectId,
     post_user: string,
     post_id: string,
-    post_type: 'image' | 'video' | 'text',
+    post_type: string,
     post_length: number, 
     post_content?: Array<string>,
     post_caption: string

@@ -1,14 +1,18 @@
 import CIcon from "@coreui/icons-react"
 import Image from "next/image"
 import { getCroppedImage } from "../imageutils/imageUtils"
-import { MouseEvent, TouchEvent, useEffect, useRef, useState } from "react"
+import { useEffect, useState } from "react"
 import { cilX } from "@coreui/icons"
-import axios from "axios"
-import { address } from "../api/api"
 import ReactCrop, { type Crop } from 'react-image-crop';
 import 'react-image-crop/src/ReactCrop.scss'
+import { uploadPFP } from "../api/profile/profile"
+import { toast } from "react-toastify"
 
-export default function CropComponent({file, close, setFetch}: {file: File, close: () => void, setFetch: Function}) {
+export default function CropComponent({
+    file, close
+}: {
+    file: File, close: (uploadSuccess: boolean) => void
+}) {
     const [imgSrc, setSrc] = useState('')
     const [crop, setCrop] = useState<Crop>({x: 0, y: 0, height: 200, width: 200, unit: 'px'});
 
@@ -26,23 +30,19 @@ export default function CropComponent({file, close, setFetch}: {file: File, clos
             const blob: Blob = await (await fetch(value)).blob()
             const formData = new FormData();
             formData.append('file', blob);
-            axios.defaults.headers.common['Authorization'] = `Bearer ${localStorage.getItem('token')}`
-            axios.post(
-                address + '/profile/saveimage',
-                formData
-            ).then((result) => {
-                setFetch()
-                close()    
-                
+
+            uploadPFP(formData).then((success)=>{
+                close(success)
+            }).catch((error)=>{
+                toast('some err')
             })
-            
         })
     }
 
 
     return (
-        <div className="absolute top-0 left-0 w-full h-full overflow-hidden flex flex-col items-center gap-5 backdrop-blur-lg bg-opacity-80 p-5">
-            <CIcon onClick={close} className="w-10 h-10 shrink-0 scale-75 hover:scale-90 self-end" icon={cilX} />
+        <div className="fixed z-10 top-0 left-0 w-full h-full overflow-hidden flex flex-col items-center gap-5 backdrop-blur-lg bg-opacity-80 p-5">
+            <CIcon onClick={()=>close(false)} className="w-10 h-10 shrink-0 scale-75 hover:scale-90 self-end" icon={cilX} />
             <div className="  overflow-hidden ">
                 {imgSrc!='' 
                 &&  <ReactCrop   className="border-8 p-0 m-0 border-slate-800  max-h-full max-w-full" aspect={1} crop={crop} onChange={c=>setCrop(c)}>

@@ -1,7 +1,39 @@
-import { cilAt, cilUser } from "@coreui/icons"
+import { ReactNode, useEffect, useState } from "react"
+import axios from "axios"
+import { address } from "../../api/api"
+import { AppAlert, handleRequest } from "./data"
 import CIcon from "@coreui/icons-react"
 import Image from "next/image"
-import { handleRequest } from "./data"
+import { cilAt, cilUser } from "@coreui/icons"
+
+interface requests {
+    req_id: string,
+    user: string,
+    fullname: string,
+    profile_image: string
+}
+
+interface result {
+    success: boolean,
+    reason?: string,
+    requests?: Array<requests>
+}
+
+export default function Requests({
+  requestsAlerts
+}: {
+  requestsAlerts: AppAlert[]
+}){
+
+  return (
+      <div className=" flex flex-col gap-5  p-3  overflow-y-auto scrollbar-none   ">
+        { requestsAlerts.length==0 
+        ? <p className="text-center text-slate-600">No requests</p>
+        : <></> }
+      </div>
+  )
+}
+
 
 
 interface requests {
@@ -14,7 +46,7 @@ interface requests {
 
 
 
-export default function RequestNotification(props: {key: string, data: requests}) {
+function RequestNotification(props: {key: string, data: requests}) {
     
     return (
       <div className='notification select-none    flex items-center gap-5  bg-white bg-opacity-20 px-4 py-3  rounded-lg'>

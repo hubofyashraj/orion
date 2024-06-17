@@ -1,5 +1,6 @@
+'use client'
 import { ChangeEvent, FormEvent, SetStateAction, useEffect, useState } from "react";
-import { checkUserNameAvailability, signup } from "../api/events/signup";
+import { checkUserNameAvailability, signup } from "../api/actions/signup";
 import { useFormStatus } from "react-dom";
 
 export default function SignupComponent(props: {setPage: React.Dispatch<SetStateAction<number>>}) {

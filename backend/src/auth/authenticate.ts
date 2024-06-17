@@ -15,13 +15,21 @@ export async function verify_token(token: string) {
 export const jwt_middleware = async (req: RequestExtended, res: Response, next: Function)=>{
     const path = req.path;
     console.log('request: '+path);
-    if( path=='/login' || path=='/signup' || path=='/checkusernameavailability' ) next();
+    if( path=='/login' || path=='/signup' || path=='/checkusernameavailability') next();
+    else if( path.startsWith('/sse') ) {
+        req.user = req.query.user as string;
+        next(); 
+    }
     else {
-        const token = req.headers.authorization!;
-        verify_token(token.split(' ')[1]).then((username)=>{
+        let token = req.headers.authorization!;
+        
+        if(token.match(' ')) token = token.split(' ')[1];
+        verify_token(token).then((username)=>{
             req.user=username,
             next();
         }).catch((reason)=>{
+            console.log(reason);
+            
             res.json({success: false, reason: reason.name})
         })
     }

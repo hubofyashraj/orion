@@ -1,4 +1,4 @@
-import { MongoClient, ObjectId, PushOperator, WithId } from "mongodb";
+import { MongoClient } from "mongodb";
 import { Collection } from "mongodb";
 import { readImage } from "../readFile";
 import { Connections, Post, PostComments, PostOptions, PostStats, User, UserStats } from "../types/db_schema";

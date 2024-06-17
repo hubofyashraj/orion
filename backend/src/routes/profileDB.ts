@@ -1,12 +1,14 @@
 import { Collection, MongoClient, ObjectId } from "mongodb";
 import { readImage } from "../readFile";
-import { Info, UserStats } from '../types/db_schema'
+import { ConnectRequest, Connections, Info, UserStats } from '../types/db_schema'
 const client = new MongoClient(process.env.MONGO_LOCAL as string);
 
 client.connect();
 const db = client.db('demo');
 const infoCollection: Collection<Info> = db.collection('info');
 const userStatsCollection: Collection<UserStats> = db.collection('user_stats');
+const connectionsCollection: Collection<Connections> = db.collection('connections');
+const requestsCollection: Collection<ConnectRequest> = db.collection('connect_request');
 
 export async function getInfo(user: string) {
     var info = await infoCollection.findOne({username: user})
@@ -21,44 +23,24 @@ export async function getInfo(user: string) {
 }
 
 
-export function addConnectionStatus(info: Info, user: string, user1: string): Promise<object> {
-    return new Promise(
-        async (resolve, reject)=>{
-            var collection = db.collection('connections');
-            var conn = await collection.findOne({user: user1});
-            if(!conn) {
-                await collection.insertOne({user: user1, connections: []})
-            }
-            conn = await collection.findOne({user: user1});
-            const connections: Array<string> = conn!.connections
-            // console.log(connections.includes(ob!.username));
-            
-            
-            if(connections.includes(user)) {
-                resolve({info, status: 'connected', id: ''})
-            }
-            else {
-                collection = db.collection('connect_request')
-                var incoming_req=await collection.findOne({sender: user, receiver: user1});
-                if(incoming_req) {
-                    resolve({info, status: 'incoming', id: incoming_req._id})
-
-                }
-                else {
-                    var outgoing = await collection.findOne({sender: user1, receiver: user});
-                    if(outgoing) {
-                        resolve({info, status: 'outgoing', id: outgoing._id})
-                    }
-                    else {
-                        resolve({info, status: 'none', id: ''})
-                    }
-                }
-                
-
-            }
+export async function addConnectionStatus(info: Info, user: string, user1: string) {
+    var conn = await connectionsCollection.findOne({user: user1});
+    
+    if(!conn) await connectionsCollection.insertOne({user: user1, connections: []})
+    conn = await connectionsCollection.findOne({user: user1});
+    
+    const connections = conn!.connections
+    
+    if(connections.includes(user)) return ({info, status: 'connected', id: ''})
+    else {
+        var incoming_req=await requestsCollection.findOne({sender: user, receiver: user1});
+        if(incoming_req) return ({info, status: 'incoming', id: incoming_req._id.toString()})
+        else {
+            var outgoing = await requestsCollection.findOne({sender: user1, receiver: user});
+            if(outgoing) return ({info, status: 'outgoing', id: outgoing._id.toString()})
+            else return ({info, status: 'none', id: ''})
         }
-    )
-
+    }
 }
 
 

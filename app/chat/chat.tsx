@@ -1,21 +1,17 @@
 'use client'
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Connections from "./connections";
 import ChatBox from "./chatbox";
 
 
-import "./style.css";
-
-var  userClickedEvent: Function=()=>{}
-var activeChat: Function=()=>{};
-
-type User = {_id: string, username: string, fullname: string}
+import { Connection } from "../api/db_queries/chat";
+import { SSEProvider } from "../sseProvider/sse";
 
 
 export default function Chat(props: {interval: React.MutableRefObject<any>}) {
     const [screenWidth, setWidth] = useState(0);
     const primary = useRef<'connections'|'chatbox'>('connections');
-    const [chatUser, setChatUser] = useState<User | null>(null);
+    const [chatUser, setChatUser] = useState<Connection | null>(null);
 
     useEffect(()=>{
         setWidth(window.innerWidth)
@@ -33,8 +29,8 @@ export default function Chat(props: {interval: React.MutableRefObject<any>}) {
     return ( 
         <div className="h-full w-[calc(200vw)] grow" >
             <div className="flex h-full w-full ">
-                <Connections screenWidth={screenWidth} setPrimary={()=>primary.current='chatbox'} setChatUser={setChatUser}  />
-                <ChatBox screenWidth={screenWidth} setPrimary={()=>{primary.current='connections'; setChatUser(null)}} user={chatUser} interval={props.interval} />
+                <Connections screenWidth={screenWidth} focus={()=>primary.current='chatbox'} focusUser={(user) => setChatUser(user)}  />
+                <ChatBox screenWidth={screenWidth} focus={()=>{primary.current='connections'; setChatUser(null)}} user={chatUser} interval={props.interval} />
             </div> 
         </div>
     );

@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "dev:https": "next dev --https",
     "build": "next build",
     "start": "next start",
     "lint": "next lint"
@@ -17,10 +18,14 @@
     "@mui/icons-material": "^5.15.18",
     "@mui/material": "^5.15.18",
     "axios": "^1.6.5",
+    "bcrypt": "^5.1.1",
     "bcryptjs": "^2.4.3",
     "cropperjs": "^1.6.2",
     "crypto-js": "^4.2.0",
     "framer-motion": "^11.2.10",
+    "ioredis": "^5.4.1",
+    "jsonwebtoken": "^9.0.2",
+    "mongodb": "^6.7.0",
     "next": "^14.2.1",
     "next-pwa": "^5.6.0",
     "nextjs": "^0.0.3",
@@ -34,10 +39,12 @@
     "sass": "^1.77.4",
     "sharp": "^0.33.4",
     "shepherd.js": "^12.0.5",
-    "socket.io-client": "^4.7.4"
+    "socket.io-client": "^4.7.4",
+    "zod": "^3.23.8"
   },
   "devDependencies": {
     "@types/bcrypt": "^5.0.2",
+    "@types/jsonwebtoken": "^9.0.6",
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",

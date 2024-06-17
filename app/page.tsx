@@ -1,31 +1,25 @@
-'use client'
-import { AuthProvider } from './auth/ds';
-import App from './app';
-import { useEffect } from 'react';
+import App from "./app";
+import { CSSProperties } from "react";
+import { redirect } from "next/navigation";
+import { validSession } from "./api/actions/authentication";
+import { SSEProvider } from "./sseProvider/sse";
+import SSE from "./SSE";
 
-// var n = 1;
+export default async function Home(){
+  await validSession();
 
-// const socket = io(address);
-
-
-
-
-
-
-export default function Home() {
-  // const [showLogin, setShowLogin] = useState(false);
-  // const [loginState, setLoginState] = useState(false);
-
-  useEffect(()=>{
-    console.log('Home');
-    
-  }, [])
+  const style: CSSProperties = {
+    display: "flex",
+    flexDirection: 'column',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    overflow: 'hidden',
+    height: '100%',
+  }
 
   return (
-    <AuthProvider>
-      <App />
-    </AuthProvider>
-  )
+    <main style={style}>
+      <SSE/>
+    </main>
+  );
 }
-
-

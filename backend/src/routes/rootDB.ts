@@ -139,7 +139,7 @@ export async function search(txt: string, user: string): Promise<Array<Match>> {
             
             if(incomingReq) {
                 obj.status = 'incoming'
-                obj.id = incomingReq._id
+                obj._id = incomingReq._id.toString()
                 list.push(obj);
                 continue;
             }
@@ -149,7 +149,7 @@ export async function search(txt: string, user: string): Promise<Array<Match>> {
 
             if(sentReq) {
                 obj.status = 'outgoing';
-                obj.id = sentReq._id;
+                obj._id = sentReq._id.toString();
                 list.push(obj);
                 continue;
             }

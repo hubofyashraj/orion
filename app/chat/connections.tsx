@@ -1,49 +1,67 @@
-import axios from "axios";
 import { useEffect, useState } from "react";
-import { address } from "../api/api";
-import Image from "next/image";
-import CIcon from "@coreui/icons-react";
-import { cilUser } from "@coreui/icons";
+import { fetchConnections } from "../api/chat/chat";
+import { Connection } from "../api/db_queries/chat";
+import useSSE from "../sseProvider/sse";
+import ProfilePictureComponent from "../components/pfp";
 
-function Connections(props: {screenWidth:number, setPrimary:Function, setChatUser: Function}) {
+function Connections({
+    screenWidth, focus, focusUser
+}: {
+    screenWidth:number, focus:() => void, focusUser: (user: Connection) => void
+}) {
 
-    const [connections, setConnections] = useState([] as Array<any>)
+
+    const [connections, setConnections] = useState<Connection[] | undefined>(undefined)
+
+    const { messages } = useSSE();
+
 
     useEffect(()=>{
-        function getConnections() {
-            // console.log('test');
-            axios.defaults.headers.common['Authorization'] = `Bearer ${localStorage.getItem('token')}`
-            axios.get(
-                address+'/chats/getConnections',
-    
-            ).then((result)=>{
-                const users : Array<any> = result.data.connections;
-                setConnections(users)
+        setConnections(prev=>{
+            let updatedConnections = prev?.map((connection) => {
+                if(messages.has(connection.username)) {
+                    connection.lastmsg=messages.get(connection.username)!;
+                }
+                return connection;
             })
-        }
+    
+            updatedConnections?.sort((a, b) => {
+                const tsa = parseInt(a.lastmsg?.ts??'0');
+                const tsb = parseInt(b.lastmsg?.ts??'0');
+    
+                return tsb-tsa;
+            })
 
-        getConnections()
-    }, [props])
+            return updatedConnections
+        });
+        
+    }, [messages])
 
-    function onClickOnUser(user: any) {
-        props.setPrimary(); 
-        props.setChatUser(user)
-        if(props.screenWidth<=640) {
+    useEffect(()=>{
+        fetchConnections().then( connections => setConnections(connections) )
+    }, [])
+
+    function onClickOnUser(user: Connection) {
+        focus(); 
+        focusUser(user);
+        if(screenWidth<=640) {
             const div = document.getElementById('connections') as HTMLDivElement
             div.style.marginLeft='-100vw'
         }
+        setConnections( prev => prev?.map(
+            connection => connection.username==user.username
+                ? {...connection, lastmsg: {...connection.lastmsg, unread: false}} as Connection 
+                : connection) )
     }
+
+
 
     return (
         <div id="connections" className="connections  border-r border-slate-500 transition-all  text-white bg-slate-700 flex flex-col w-[calc(100svw)] sm:m-0 sm:w-[calc(34svw)] shrink-0 h-full ">
-            {/* <div className=" text-center flex justify-center items-center  bg-slate-800">
-                <p className="text-lg">Your Connections</p> 
-            </div> */}
-            <div className="grow flex  flex-col gap-px overflow-y-auto scrollbar-none ">
-                { connections.map(
-                    (user, idx)=><ClickableUser onClick={()=>onClickOnUser(user)} key={idx} info={user}/>
-                )}
-                
+            <div className="grow flex  flex-col overflow-y-auto scrollbar-none ">
+                { connections 
+                ? connections.map( (user, idx)=><UserComponent onClick={()=>onClickOnUser(user)} key={user.lastmsg?.ts+user.username} info={user}/>)
+                : <p>No Connections</p> }
             </div>
         </div>
     )
@@ -51,37 +69,25 @@ function Connections(props: {screenWidth:number, setPrimary:Function, setChatUse
 
 
 
-function ClickableUser(props: any) {
 
-    const [photo, setPhoto] = useState(null);
 
-    
-
-    useEffect(()=>{
-        axios.defaults.headers.common['Authorization'] = `Bearer ${localStorage.getItem('token')}`
-        axios.get(
-            address+'/profile/fetchPFP?user='+props.info.username,
-        ).then((result)=>{
-            if(result.data.success) {
-                setPhoto(result.data.image)
-            }
-        })
-    },[props.info.username])
-
+function UserComponent({
+    info, onClick
+}: {
+    info: Connection, onClick: () => void
+}) {
     return (
-        <div onClick={props.onClick} className="clickableuser px-2 py-2 flex gap-5 justify-start items-center bg-slate-800 shadow-md">
+        <div onClick={onClick} className="clickableuser  cursor-pointer px-2 py-2 flex gap-5 justify-start items-center bg-slate-800 shadow-md">
             <div className="h-12 w-12 bg-slate-900 rounded-full p-[calc(3px)] shrink-0">
                 <div className="h-full w-full rounded-full overflow-hidden ">
-                    {(photo=='' || photo==null)
-                    ?<CIcon className="h-full w-full p-1 bg-slate-950" icon={cilUser} />
-                    :<Image className="h-full w-full" alt="img" height={100} width={100} src={'data:image/png;base64,'+photo} /> }
+                    <ProfilePictureComponent size={100} user={info.username} />
                 </div>
             </div>
             <div className="grow max-w-[calc(50%)]  h-full ">
                 <div className="flex h-full flex-col justify-center gap-1 ">
-                    <p>{props.info.fullname}</p>
-                    <div className="text-xs grow-0 max-h-4 text-slate-400 overflow-clip text-ellipsis">
-                        {props.info.lastmsg!=null && <p className="">{props.info.lastmsg}</p>}
+                    <p>{info.fullname}</p>
+                    <div className="text-xs grow-0  text-slate-400 overflow-clip text-ellipsis">
+                        { info.lastmsg!=null && <p className={info.lastmsg.unread?"font-bold text-sm":""}>{info.lastmsg.msg}</p> }
                     </div>
                 </div>                
             </div>

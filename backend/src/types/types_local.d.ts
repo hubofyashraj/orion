@@ -9,7 +9,7 @@ interface Match {
     username: string, 
     fullname: string, 
     status?: string, 
-    id?: ObjectId
+    _id?: string
 }
 
 

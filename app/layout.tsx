@@ -1,7 +1,6 @@
 import type { Metadata, Viewport } from 'next'
 import { Inter } from 'next/font/google'
 import './globals.css'
-import { Provider } from "react-redux";
 import { AuthProvider } from './auth/ds';
 
 const inter = Inter({ subsets: ['latin'] })
@@ -21,13 +20,14 @@ export const metadata: Metadata = {
     default: APP_DEFAULT_TITLE,
     template: APP_TITLE_TEMPLATE,
   },
+  icons: ['./icon.png'],
   description: APP_DESCRIPTION,
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
     title: APP_DEFAULT_TITLE,
-    // startUpImage: [],
+    startupImage: ['./icon.png'],
   },
   formatDetection: {
     telephone: false,
@@ -51,16 +51,19 @@ export const metadata: Metadata = {
   },
 }
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
 
+
   return (
     <html lang="en">
-      
-      <body className={inter.className} >{children}</body>
+      <AuthProvider>
+        <body className={inter.className} >{children}</body>
+
+      </AuthProvider>
     </html>
   )
 }
