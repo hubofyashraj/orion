@@ -5,6 +5,7 @@ const client = collections.client;
 const infoCollection = collections.infoCollection;
 const userStatsCollection = collections.userStatsCollection;
 const usersCollection = collections.userCollection;
+const postCollection = collections.postCollection;
 
 export async function getInfo(user: string) {
     var info = await infoCollection.findOne({username: user})
@@ -33,6 +34,13 @@ export async function saveInfo(user: string, updatedInfo: InfoUpdate) {
 }
 
 
-export async function getUserPosts(user: string) {
-
+export async function readUserPostFromDb(user: string) {
+    try {
+        const posts = await postCollection.find({post_user: user}).toArray();
+        return posts.map(post=>post.post_id);
+    } catch (error) {
+        console.error('while reading users posts for user:', user);
+        console.error(error);
+    }
+    return [];
 }

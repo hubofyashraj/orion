@@ -43,12 +43,12 @@ export default function Feed( { setPage } : { setPage: Function } ) {
 
 
     return (
-        <div className="bg-slate-700 relative h-full w-full flex flex-col items-center">
+        <div className="bg-slate-800 relative h-full w-full flex flex-col items-center">
             { newPosts && <div className="w-full">
                 <p>New Posts</p>
                 <button onClick={refresh}>Refresh</button>
                 </div> }
-            <div className="w-full max-w-xl h-full flex flex-col justify-start gap-0 overflow-y-auto scrollbar-none">
+            <div className="drop-shadow-lg w-full max-w-xl h-full flex flex-col justify-start gap-0 overflow-y-auto scrollbar-none">
                 {posts.map(post=>
                     post.post_type=='image'
                     ? <ImagePost key={post.post_id} post={post} />

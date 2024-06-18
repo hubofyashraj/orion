@@ -49,6 +49,7 @@ export const metadata: Metadata = {
     },
     description: APP_DESCRIPTION,
   },
+  
 }
 
 export default async function RootLayout({
@@ -60,6 +61,7 @@ export default async function RootLayout({
 
   return (
     <html lang="en">
+      {/* <meta name='viewport' content='width=device-width, initial-scale=1, viewport-fit=cover' /> */}
       <AuthProvider>
         <body className={inter.className} >{children}</body>
 

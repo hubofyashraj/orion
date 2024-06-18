@@ -1,71 +1,60 @@
-import { ReactNode, useEffect, useState } from "react"
-import axios from "axios"
-import { address } from "../../api/api"
-import { AppAlert, handleRequest } from "./data"
-import CIcon from "@coreui/icons-react"
-import Image from "next/image"
-import { cilAt, cilUser } from "@coreui/icons"
+import ProfilePictureComponent from "@/app/components/pfp"
+import { acceptRequestFromUser, rejectRequestFromUser } from "@/app/api/navbar/navbar"
+import useSSE from "@/app/sseProvider/sse";
 
-interface requests {
-    req_id: string,
-    user: string,
-    fullname: string,
-    profile_image: string
-}
-
-interface result {
-    success: boolean,
-    reason?: string,
-    requests?: Array<requests>
-}
 
 export default function Requests({
   requestsAlerts
 }: {
-  requestsAlerts: AppAlert[]
+  requestsAlerts: ConnectRequestAlert[]
 }){
 
+  const { setAlerts } = useSSE();
+
+  async function acceptRequest(from: string) {
+    const result = await acceptRequestFromUser(from);
+    if(result) {
+      setAlerts(prev => prev.filter(alert => {
+        if(alert.from==from && 'fullname' in alert) return false;
+        return true;
+      }))
+    }
+  }
+
+  async function declineRequest(from: string) {
+    const result = await rejectRequestFromUser(from);
+    setAlerts(prev => prev.filter(alert => {
+      if(alert.from==from && 'fullname' in alert) return false;
+      return true;
+    }))
+  }
+
   return (
-      <div className=" flex flex-col gap-5  p-3  overflow-y-auto scrollbar-none   ">
+      <div className=" flex flex-col gap-3 p-3   h-[calc(88%)] overflow-y-auto scrollbar-none   ">
         { requestsAlerts.length==0 
         ? <p className="text-center text-slate-600">No requests</p>
-        : <></> }
+        : <>
+            {requestsAlerts
+            .map( request => 
+              <div className="flex gap-2 items-center  " key={request.from}>
+                <div className="rounded-full overflow-hidden">
+                <ProfilePictureComponent size={32} user={request.from} />
+                </div>
+                <div className="flex   flex-col items-start ">
+                  <p className="text-wrap"><span className="hover:text-white  cursor-pointer">{request.from}</span> want to connect</p>
+                  <div className=" flex gap-5 text-xs ">
+                    <button onClick={()=>acceptRequest(request.from)} className="hover:scale-105 hover:text-white">Accept</button>
+                    <button onClick={()=>declineRequest(request.from)} className="hover:scale-105 hover:text-white">Decline</button>
+                  </div>
+                </div>
+              </div>)}
+              
+          </> }
       </div>
   )
 }
 
 
 
-interface requests {
-    req_id: string,
-    user: string,
-    fullname: string,
-    profile_image: string
-}
 
 
-
-
-function RequestNotification(props: {key: string, data: requests}) {
-    
-    return (
-      <div className='notification select-none    flex items-center gap-5  bg-white bg-opacity-20 px-4 py-3  rounded-lg'>
-        <div className='flex w-12 h-full shrink-0 items-center justify-center'>
-          <div className='rounded-full border-2 w-full h-12 flex justify-center drop-shadow-md bg-inherit items-center overflow-hidden '>
-            { props.data.profile_image==''
-            ?<CIcon className="h-full w-full m-2" icon={cilUser} />
-            :<Image className='w-full bg-white' alt='user' width={2} height={2} src={props.data.profile_image}/> }
-          </div>
-        </div>
-        <div className='grow relative text-slate-700'>
-          <p className='text-base'>{props.data.fullname}</p>
-          <p className='text-sm m-0 flex gap-1 items-center'><CIcon className="h-3" icon={cilAt} />{props.data.user}</p>
-          <div className='flex justify-end gap-5 absolute bottom-0 right-0'>
-            <a onClick={()=>{handleRequest(props.data.req_id, true)}} className='hover:text-slate-800 drop-shadow-lg cursor-pointer'>Accept</a>
-            <a onClick={()=>{handleRequest(props.data.req_id, false)}} className='hover:text-slate-800 drop-shadow-lg cursor-pointer'>Decline</a>
-          </div>
-        </div>
-  
-      </div>
-    )
-  }

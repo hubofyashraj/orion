@@ -1,21 +1,11 @@
-import { cilBookmark, cilUser } from "@coreui/icons"
+import { cilUser } from "@coreui/icons"
 import CIcon from "@coreui/icons-react"
-import axios from "axios"
 import Image from "next/image"
-import { MouseEvent, Suspense, TouchEvent, UIEvent, useEffect, useOptimistic, useRef, useState } from "react"
-import { address } from "../api/api"
-import { ArrowLeft, ArrowRight, Bookmark, BookmarkAddOutlined, BookmarkOutlined, BookmarkSharp, Close, Comment, Favorite, FavoriteBorder, FavoriteBorderOutlined, FavoriteBorderSharp, FavoriteBorderTwoTone, FavoriteOutlined, Light, RateReviewOutlined, Send, SendSharp, Share, ShareSharp } from "@mui/icons-material"
-import assert from "assert"
-import { fetchComments, fetchPostStats, sendComment, togglePostLike, togglePostSave } from "../api/feed/feed"
+import { Suspense, TouchEvent, useEffect, useOptimistic, useRef, useState } from "react"
+import { ArrowLeft, ArrowRight, BookmarkAddOutlined, BookmarkSharp, Close, Comment, Delete, Favorite, FavoriteBorderOutlined, RateReviewOutlined, Send } from "@mui/icons-material"
+import { deleteComment, fetchComments, fetchPostStats, sendComment, togglePostLike, togglePostSave } from "../api/feed/feed"
 import { Skeleton } from "@mui/material"
 import ProfilePictureComponent from "../components/pfp"
-
-type PostIdentifier = {
-    post_id: string,
-    post_user: string,
-    post_type: 'image' | 'video'
-}
-
 
 export type Post = {
     post_user: string,
@@ -54,6 +44,7 @@ export type SelfStats = {
 
 export type Comment = {
     post_id: string,
+    post_user: string,
     comment_id: string,
     comment_by: string,
     comment: string,
@@ -65,8 +56,11 @@ export default function ImagePost({ post }: {post: Post}) {
 
     const [stats, setStats] = useState<PostStats>({post_id: '-1', post_comments_count: 0, post_likes_count: 0, post_save_count: 0})
     const [selfStats, setSelfStats] = useState<SelfStats>({liked: false, saved: false})
+    
+    const imageInViewRef = useRef(0);
+    
     const [comments, setComments] = useState<Comment[]>([]);
-    const commentsRef = useRef<Comment[]>([{comment: 'demo', comment_by: 'test', comment_id: '22', post_id: post.post_id}]);
+    const commentsRef = useRef<Comment[]>([]);
     const [displayComments, toggleCommentSection] = useState(false);
     type Stats = {
         stats: PostStats | null;
@@ -95,7 +89,7 @@ export default function ImagePost({ post }: {post: Post}) {
     function toggleLike() {
         const cur = selfStats.liked;
         setSelfStats(prev => {return {...prev, liked: !prev.liked}})
-        togglePostLike(post.post_id, cur)
+        togglePostLike(post.post_id, post.post_user, cur)
         .then((success) => { 
             if(!success) setSelfStats(prev => {return {...prev, liked: cur}});
             else setStats(prev => {return {...prev, post_likes_count: prev.post_likes_count+(cur?-1:1)}})
@@ -125,37 +119,40 @@ export default function ImagePost({ post }: {post: Post}) {
     function closeComments() {
         toggleCommentSection(false);
     }
+    
     function addComment(comment: Comment) {
         setComments(prev=>[...prev, comment])
         commentsRef.current=comments;
     }
-    let currentImgInView=0;
 
     function swipe(direction: 'left' | 'right') {
         const div: HTMLDivElement = document.getElementById('imageContainer'+post?.post_id) as HTMLDivElement; 
         const progressDots: HTMLDivElement = document.getElementById('progressDots'+post?.post_id) as HTMLDivElement
         
-        if(direction=='left' && currentImgInView>0) {
-            div.scrollTo({behavior: 'smooth', left: (currentImgInView-1)*(div.clientWidth+4)})
-            progressDots.children.item(currentImgInView)?.setAttribute('style', '')
-            currentImgInView--;
-            progressDots.children.item(currentImgInView)?.setAttribute('style', 'width: 8px; height: 8px')
+        if(direction=='left' && imageInViewRef.current>0) {
+            div.scrollTo({behavior: 'smooth', left: (imageInViewRef.current-1)*(div.clientWidth+4)})
+            progressDots.children.item(imageInViewRef.current)?.setAttribute('style', '')
+            imageInViewRef.current--;
+            progressDots.children.item(imageInViewRef.current)?.setAttribute('style', 'width: 8px; height: 8px')
             return;
         }
-        if(direction=='right' && currentImgInView<div.children.length-1) {
-            div.scrollTo({behavior: 'smooth', left: (currentImgInView+1)*(div.clientWidth+4)})
-            progressDots.children.item(currentImgInView)?.setAttribute('style', '');
-            currentImgInView++;
-            progressDots.children.item(currentImgInView)?.setAttribute('style', 'width: 8px; height: 8px')
+        if(direction=='right' && imageInViewRef.current<div.children.length-1) {
+            div.scrollTo({behavior: 'smooth', left: (imageInViewRef.current+1)*(div.clientWidth+4)})
+            progressDots.children.item(imageInViewRef.current)?.setAttribute('style', '');
+            imageInViewRef.current++;
+            progressDots.children.item(imageInViewRef.current)?.setAttribute('style', 'width: 8px; height: 8px')
             return;
         }
 
     }
 
+    function delete_comment(comment_id: string) {
+        setComments(prev => prev.filter(comment => comment.comment_id!=comment_id))
+    }
     
 
     return (
-        <div className={"flex w-full   border-r border-l  border-slate-600 text-slate-200  bg-slate-800"}>
+        <div className={"flex w-full relative shrink-0   border-slate-600 text-slate-200  bg-slate-800"}>
             { screen.width>0 && <button onClick={()=>swipe('left')}  className={post.post_length==1?"invisible":"  "}><ArrowLeft /></button>}
             <div className={(displayComments?"blur ":"")+"w-full "}>
                 <div className="flex items-center  w-full gap-3 py-2 ">
@@ -199,7 +196,7 @@ export default function ImagePost({ post }: {post: Post}) {
 
             </div>
             { screen.width>0  && <button onClick={()=>swipe('right')} className={post.post_length==1?"invisible":""}><ArrowRight /></button>}
-            { displayComments && <CommentSection post={post} comments={comments} close={closeComments} addComment={addComment} />}
+            { displayComments && <CommentSection post={post} comments={comments} close={closeComments} addComment={addComment} delete_comment={delete_comment} />}
         </div>
     )
 }
@@ -260,9 +257,9 @@ function PfpFallback() {
 
 
 function CommentSection({
-    post, comments, addComment, close
+    post, comments, addComment, delete_comment, close
 }: {
-    post: Post, comments: Comment[], addComment: (comment: Comment)=>void, close: () => void
+    post: Post, comments: Comment[], addComment: (comment: Comment)=>void, delete_comment: (comment_id: string)=>void, close: () => void
 }) {
 
     const divRef=useRef<HTMLDivElement | null>(null);
@@ -287,6 +284,7 @@ function CommentSection({
             comment_by: 'me',
             comment_id: 'me'+Date.now(),
             post_id: post.post_id,
+            post_user: post.post_user,
             sending: true
         }
 
@@ -304,9 +302,9 @@ function CommentSection({
         <div ref={ref} style={{height: '3rem'}} className="absolute z-50  transition-all bottom-0 overflow-hidden   w-full max-w-xl flex flex-col bg-slate-800 rounded-t-2xl drop-shadow-lg border border-b-0 border-slate-950">
             <p className="w-full p-2 text-center text-lg underline-offset-8 underline ">Comments <Close onClick={close} className="float-right hover:scale-105 "/></p>
             <div ref={divRef} className="flex grow w-full  flex-col-reverse overflow-y-auto scrollbar-none">
-                {optimisticComments.map(comment => <CommentComponent comment={comment} key={comment.comment_id} />)}
+                {optimisticComments.map(comment => <CommentComponent comment={comment} post_user={post.post_user} delete_comment={()=>delete_comment(comment.comment_id)} key={comment.comment_id} />)}
             </div>
-            <form action={action} autoComplete="off" className="w-full p-2 select-none bg-inherit  flex gap-2 justify-center items-center">
+            <form action={action} autoComplete="off" className="w-full  p-2 select-none bg-inherit  flex gap-2 justify-center items-center">
                 <input ref={inputRef} name="commentbox" placeholder="Comment" className="bg-inherit outline-none grow shrink border rounded-full p-1 hover:bg-slate-700 focus:bg-slate-700 active:bg-slate-700 px-5"/>
                 <button><Send className="" /></button>
             </form>
@@ -314,12 +312,23 @@ function CommentSection({
     )
 }
 
-function CommentComponent({comment}: {comment: Comment}){
+function CommentComponent({comment, post_user, delete_comment}: {comment: Comment, post_user: string, delete_comment: Function}){
+    const self = sessionStorage.getItem('self');
+    if(!self) window.location.href='/auth';
+
+    async function attemptDelete() {
+        const result = await deleteComment(comment.comment_id, comment.comment_by, post_user);
+        if(result) {
+            delete_comment();
+        }
+    }
+
     return (
         <div className="p-2">
             <div className="flex gap-2 text-wrap justify-start items-start">
                 <p className="font-semibold">{comment.comment_by}</p>
-                <p>{comment.comment}</p>
+                <p className="grow">{comment.comment}</p>
+                {!comment.sending && (comment.comment_by==self || self==post_user) && <Delete onClick={attemptDelete} className="text-slate-400 hover:text-slate-300 hover:scale-105"/>}
             </div>
             {comment.sending && <p className="text-sm animate-pulse">Posting</p>}
         </div>

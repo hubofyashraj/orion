@@ -6,10 +6,7 @@ import CircularLoader from "./Loader/Loader";
 import Create from "./create/create";
 import Chat from "./chat/chat";
 import { useEffect, useRef, useState } from "react";
-import { getToken } from "./api/actions/cookie_store";
 import Navbar from "./navbar/navbar";
-import AlertsProvider from "./navbar/alerts/data";
-import { SSEProvider } from "./sseProvider/sse";
 import Ping from "./sseProvider/ping";
 import { validSession } from "./api/actions/authentication";
 
@@ -45,7 +42,7 @@ useEffect(()=>{
   if(showLoader) return (<CircularLoader />)
 
   return (
-    <div className='w-full h-full flex flex-col justify-start'>
+    <div className='w-full h-full relative top-0 overflow-hidden flex flex-col justify-start'>
         <div style={{height: 64}} className='w-full fixed z-20 shadow-sm border-b border-slate-700'>
           <Navbar page={route} router={(route: string)=>setRoute(route)}  />
         </div>

@@ -1,6 +1,6 @@
 import express, { Response } from "express";
 import { getConnections, getTexts, sendText } from "./chatDb";
-import { socketSendMsg } from "../socket/functions";
+// import { socketSendMsg } from "../socket/functions";
 import { RequestExtended } from "../types/types_local";
 import { Messages } from "../types/db_schema";
 
@@ -22,7 +22,7 @@ router.post('/sendText', (req: RequestExtended, res: Response)=>{
     }
     sendText(ob).then((insertID)=>{
         ob.id=insertID
-        socketSendMsg(ob)
+        // socketSendMsg(ob)
         res.json({success: true, insertID});
     }).catch((error)=>{
         res.json({success: false, reason: error});

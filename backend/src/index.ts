@@ -2,10 +2,10 @@ import express from "express";
 import { createServer } from 'node:http';
 import cors from 'cors';
 import morgan from 'morgan';
-import { Server } from "socket.io";
+// import { Server } from "socket.io";
 
 import { jwt_middleware } from './auth/authenticate';
-import init from "./socket/init_socket";
+// import init from "./socket/init_socket";
 
 
 const rootRouter = require('./routes/root');
@@ -20,14 +20,14 @@ const PORT = process.env.PORT || 6789;
 const app = express();
 const server = createServer(app);
 
-const io = new Server(
-    server, 
-    { cors: {
-        origin: '*',
-        methods: ['GET', 'POST']
-    }}
-);
-init(io)
+// const io = new Server(
+//     server, 
+//     { cors: {
+//         origin: '*',
+//         methods: ['GET', 'POST']
+//     }}
+// );
+// init(io)
 
 app.use(express.json({limit: '20mb'}));
 app.use(express.urlencoded({extended: true}));

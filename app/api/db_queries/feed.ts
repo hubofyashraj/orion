@@ -132,3 +132,14 @@ export async function saveCommentToDB(comment: PostComments) {
 
     return false;
 }
+
+export async function removeCommentFromDb(comment_id: string) {
+    try {
+        const result = await commentsCollection.deleteOne({comment_id});
+        if(result.acknowledged && result.deletedCount==1) return true;
+    } catch (error) {
+        console.error('while deleting comment from db:', comment_id);
+        console.error(error);
+    }
+    return false;
+}

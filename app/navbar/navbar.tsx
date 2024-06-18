@@ -1,12 +1,13 @@
 "use client"
-import { cilBell, cilCircle, cilCommentBubble, cilMenu, cilX } from "@coreui/icons";
+import { cilCircle, cilMenu, cilX } from "@coreui/icons";
 import CIcon from "@coreui/icons-react";
-import { useContext, useState } from "react";
-import { pagetitle, useAlerts } from "./alerts/data";
+import { useEffect, useState } from "react";
+import { pagetitle } from "./alerts/data";
 import { logout } from "../api/actions/authentication";
 import Alerts from "./alerts/alerts";
 import useSSE from "../sseProvider/sse";
-import { ChatBubble, ChatBubbleOutline, ChatBubbleOutlineOutlined, MarkChatUnreadOutlined, NotificationsActive, NotificationsNone } from "@mui/icons-material";
+import { ChatBubbleOutlineOutlined, MarkChatUnreadOutlined, NotificationsActive, NotificationsNone } from "@mui/icons-material";
+import { fetchAlerts } from "../api/navbar/navbar";
 
 interface NavBarProps {
     router: (route: string)=>void, 
@@ -17,6 +18,18 @@ export default function Navbar({ router, page }: NavBarProps) {
     
     const [isCollapsed, setCollapsed] = useState(true);
     const { messages, alerts } = useSSE();
+    const [renderAlerts, setRenderAlertsValue] = useState(false);
+    const { setAlerts } = useSSE();
+    
+    
+    
+    useEffect(()=>{
+        fetchAlerts().then((requests) => {
+            setAlerts(prev=> [...requests, ...prev]);
+        })
+    }, [setAlerts]);
+
+    
     function toggleCollapse() {
         setCollapsed(!isCollapsed);
     }
@@ -26,11 +39,25 @@ export default function Navbar({ router, page }: NavBarProps) {
         router('chat')
     }
     
-    function toggleNotifiacations(): void {
+    function setAlertsMargin () {
         const div_notifications = document.getElementById('notifications') ;
         if(div_notifications) {
             const marginTop = div_notifications.style.marginTop;
             (div_notifications as HTMLDivElement).style.marginTop=(marginTop=='-150vh'?'5rem':'-150vh');
+        }
+    }
+
+    function toggleNotifiacations(): void {
+        if(!renderAlerts) {
+            setRenderAlertsValue(true)
+            setTimeout(()=>{
+                setAlertsMargin();
+            }, 100)
+        }else {
+            setAlertsMargin();
+            setTimeout(()=>{
+                setRenderAlertsValue(false);
+            }, 100)
         }
     }
 
@@ -40,7 +67,7 @@ export default function Navbar({ router, page }: NavBarProps) {
 
     return (
         <>
-            <Alerts alerts={[]} />
+            {renderAlerts && <Alerts />}
             <div id="navbar" className="h-full  top-0 md:p-0 text-slate-200  bg-slate-800 w-full flex justify-between items-center">
                 <div className="cursor-pointer bg-slate-900 w-max h-full flex justify-center items-center rounded-r-lg  ">
                     <CIcon onClick={()=>router('feed')}  className="h-8 w-8 m-4" icon={cilCircle}/>

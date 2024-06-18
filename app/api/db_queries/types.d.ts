@@ -96,6 +96,7 @@ type PostComments = {
     _id?: ObjectId,
     comment_id: string,
     post_id: string,
+    post_user: string,
     comment: string,
     comment_by: string,
     sending?: undefined | boolean

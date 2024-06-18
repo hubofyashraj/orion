@@ -2,7 +2,7 @@ import express, { Response } from 'express';
 import { acceptReq, cancelRequest, checkCredentials, checkUserNameAvailable, getRequestsData, search, sendNotification, sendRequest, signup } from './rootDB';
 import { sign } from 'jsonwebtoken';
 import { RequestExtended } from '../types/types_local';
-import { removeUser } from '../socket/socket';
+// import { removeUser } from '../socket/socket';
 
 const rootRouter = express.Router();
 module.exports = rootRouter;
@@ -58,7 +58,7 @@ rootRouter.post('/signup', (req: RequestExtended, res: Response)=>{
 })
 
 rootRouter.post('/logout', (req: RequestExtended, res: Response)=>{
-    removeUser(req.user!)
+    // removeUser(req.user!)
     res.json({});
 })
 

@@ -79,7 +79,7 @@ export async function searchUser(keyword: string, user: string) {
  * @param receiver 
  * @returns insert id for request document if successfully inserted else false
  */
-export async function sendRequest(sender: string, receiver: string) {
+export async function saveRequestInDb(sender: string, receiver: string) {
     const document = { sender, receiver };
     try {
         const result = await requestsCollection.insertOne(document);
@@ -96,7 +96,7 @@ export async function sendRequest(sender: string, receiver: string) {
  * @param req_id request id { insertId for request document }
  * @returns return true or false depending on if the transaction was success
  */
-export async function cancelRequest(req_id: string) {
+export async function deleteRequestFromDb(req_id: string) {
     try {
         const result = await requestsCollection.deleteOne({_id: new ObjectId(req_id)});
         return result.acknowledged
@@ -132,7 +132,7 @@ async function connectUsers(u1: string, u2:string) {
  * @param id request id
  * @returns success of transaction
  */
-export async function acceptReq(id: string) {
+export async function resolveRequestInDb(id: string) {
     const oid=new ObjectId(id)
     try {
         const request = await requestsCollection.findOne({_id: oid});

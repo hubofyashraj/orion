@@ -1,23 +1,11 @@
-import { useEffect, useRef, useState } from "react";
-import Image from "next/image";
-import CIcon from "@coreui/icons-react";
-import { AlternateEmail, ArrowBack, Cancel, CheckCircle, ContactPhone, Delete, Email, Note, Notes, PeopleAlt, PersonAdd, PersonAddAlt, PersonPinCircle, PersonRemove, Phone, Pin, PinDrop, RoundaboutLeft, Work } from "@mui/icons-material";
+import { useEffect, useState } from "react";
+import { AlternateEmail, ArrowBack, Cancel, CheckCircle, Delete, Email, Notes, PeopleAlt, PersonAdd, Phone, PinDrop, Work } from "@mui/icons-material";
 import { Match } from "./search";
 import { ToastContainer } from "react-toastify";
 import UserPosts from "./userPosts";
-import { cilUser, cilUserFemale } from "@coreui/icons";
 import { fetchInfo } from "../api/profile/profile";
-import { validSession } from "../api/actions/authentication";
-import { acceptReq, cancelRequest, sendRequest } from "../api/db_queries/search";
 import ProfilePictureComponent from "../components/pfp";
-
-interface Info {
-    username: string, fullname: string, dob: string, profession: string, 
-    location: string, bio: string, gender: string, 
-    email: string, contact: string, contact_privacy: boolean
-    profile_image: string | null,
-    [key: string]: string | boolean | Blob | null
-}
+import { acceptRequest, cancelRequest, sendRequest } from "../api/search/search";
 
 
 export default function UserProfile({ 
@@ -59,7 +47,7 @@ export default function UserProfile({
                         <ArrowBack className="absolute top-2 left-2 hover:scale-105" onClick={close} />
                         
                     </div>
-                    <div className=" pl-12 mt-9 select-none flex flex-col gap-2">
+                    <div className=" pl-12 mt-10 self-start select-none flex flex-col gap-2">
                         <p className="flex gap-1 items-center text-sm"><Notes className="text-red-300 " fontSize="small"/>   {info.bio}</p>
                         {
                             user.status=='connected' && 
@@ -96,30 +84,22 @@ function ConnectionComponent({
 }) {
     
     async function sendrequest() {
-        const self = await validSession();
-        if(self) {
-            const req_id = await sendRequest(self, user.username)
-            console.log(req_id);
-            if(req_id) action('send', req_id)
-        }
+        const req_id = await sendRequest(user.username);
+        if(req_id) action('send', req_id);
     }
 
     async function cancelrequest() {
         const result = await cancelRequest(user._id!);
-        console.log(result);
-        
         if(result) action('cancel')
     }
 
-    async function acceptRequest() {
-        const result = await acceptReq(user._id!);
-        console.log(result);
+    async function acceptrequest() {
+        const result = await acceptRequest(user._id!);
         if(result) action('accept')
     }
 
-    async function declineRequest() {
+    async function declinerequest() {
         const result = await cancelRequest(user._id!);
-        console.log(result);
         if(result) action('cancel')
     }
     
@@ -131,8 +111,8 @@ function ConnectionComponent({
                 && <div className="flex flex-col gap-2 items-center justify-center">
                     <p>{user.fullname} wants to connect</p>
                     <div className="flex gap-2 sm:gap-5 max-w-[calc(80svw)] flex-col sm:flex-row ">
-                        <button onClick={acceptRequest} className={btnStyle}><CheckCircle /><p className="text-sm">Accept Request</p></button>
-                        <button onClick={declineRequest} className={btnStyle}><Delete /><p className="text-sm">Delete Request</p></button>
+                        <button onClick={acceptrequest} className={btnStyle}><CheckCircle /><p className="text-sm">Accept Request</p></button>
+                        <button onClick={declinerequest} className={btnStyle}><Delete /><p className="text-sm">Delete Request</p></button>
                     </div>    
                 </div> }
             { user.status=='outgoing' && <button onClick={cancelrequest} className={btnStyle}><Cancel /><p className="text-sm">Cancel Request</p></button> } 
