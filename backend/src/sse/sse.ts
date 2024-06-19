@@ -42,28 +42,10 @@ sse.post('/sendMessage', (req: RequestExtended, res: Response) => {
     res.status(200);
 })
 
-type Notification = {
-    post_id: string;
-    post_user: string;
-    liked_by?: string;
-    comment_by?: string;
-};
-
-type ConnectionRequest = {
-    from: string;
-    fullname: string;
-    to: string;
-}
-
-type Alert = {
-    type: string;
-    content: Notification | ConnectionRequest;
-}
 
 sse.post('/sendAlert', (req: RequestExtended, res: Response) => {
     const alert = req.body.alert as Alert;
     if(!alert) res.status(404);
-    console.log({alert});
     
     if(alert.type=='notification') {
         const content = alert.content as Notification
@@ -91,3 +73,23 @@ sse.post('/sendAlert', (req: RequestExtended, res: Response) => {
     }
 
 })
+
+
+
+type Notification = {
+    post_id: string;
+    post_user: string;
+    liked_by?: string;
+    comment_by?: string;
+};
+
+type ConnectionRequest = {
+    from: string;
+    fullname: string;
+    to: string;
+}
+
+type Alert = {
+    type: string;
+    content: Notification | ConnectionRequest;
+}

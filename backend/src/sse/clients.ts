@@ -1,5 +1,4 @@
 import { Response } from "express";
-import axios from 'axios';
 
 const clients = new Map<string, Response>();
 const encoder = new TextEncoder();
@@ -33,9 +32,9 @@ export function startInterval() {
         clients.forEach(async (response, user)=>{
             const servertime = Date.now();
             if(response.writable) response.write(encoder.encode(`ping${servertime}\n\n`));
-            else console.log('possible destryed stream ', user);
+            else console.log('possible destroyed stream ', user);
             
-            console.log('pinged', user);
+            // console.log('pinged', user);
             
         })
     }, 3000)

@@ -19,10 +19,10 @@ const postSortComparator = (a: Post,b: Post) => {
 }
 
 export async function getPostsFromDB() {
-    const self = await validSession();
-    if(!self) return;
+    const {user, status} = await validSession();
+    if(status==401) return;
 
-    const document = await connectionsCollection.findOne({user: self})
+    const document = await connectionsCollection.findOne({user})
     const connections = document?.connections;
 
     const posts: Post[] = [];
@@ -39,6 +39,16 @@ export async function getPostsFromDB() {
     return posts;
 }
 
+export async function getPostFromDb(post_id: string) {
+    try {
+        const post = await postCollection.findOne({post_id});
+        return post;
+    } catch (error) {
+        console.log('error while reading post data from db, postid: ',post_id);
+        console.log(error);
+    }
+    return false;
+}
 
 export async function getPostsOfUser(user: string, sorted: boolean) {
     const posts = await postCollection.find({post_user: user}).toArray();
@@ -52,13 +62,13 @@ export async function getPostsOfUser(user: string, sorted: boolean) {
 
 
 export async function getPostStats(post_id: string) {
-    const self = await validSession();
-    if(!self) return;
+    const {user, status} = await validSession();
+    if(status==401) return;
     const stats = await postStatsCollection.findOne({post_id});
     const options = await postOptions.findOne({post_id});
     const selfStats = {
-        liked: options?.post_liked_by.indexOf(self)!=-1,
-        saved: options?.post_saved_by.indexOf(self)!=-1
+        liked: options?.post_liked_by.indexOf(user!)!=-1,
+        saved: options?.post_saved_by.indexOf(user!)!=-1
     }
     return {
         stats,

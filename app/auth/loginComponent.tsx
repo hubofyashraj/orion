@@ -1,29 +1,18 @@
 'use client'
 import { ChangeEvent, FormEvent, useEffect, useState } from "react";
 import { login } from "../api/actions/authentication";
-import { useAuth } from "./ds";
-import { sockInit } from "../handleSocket";
-import { revalidateTag } from "next/cache";
-import { redirect } from "next/navigation";
 import { useFormStatus } from "react-dom";
 
 export default function LoginComponent() {
-    function submit(formData: FormData) {
+
+    async function submit(formData: FormData) {
         const ele = document.getElementById('warning')
-
-        login(formData).then((result) =>{
-            if(result) {
-                ele!.innerHTML = ''
-                sockInit()
-                // window.location.href='/'
-            }else {
-
-                if(result==false ) ele!.innerHTML = 'Wrong Credentials';        
-            }
-        }).catch((reason: string)=>{
-            console.log(reason);
-        });
-        
+        const result  = await login(formData)
+        if(result) {
+            ele!.innerHTML = ''
+        }else {
+            if(result==false ) ele!.innerHTML = 'Wrong Credentials';        
+        }
     }
 
     
@@ -36,7 +25,6 @@ export default function LoginComponent() {
 
 function FormBody() {
     const { pending } = useFormStatus();
-
     const [filled, setFilled] = useState(false);
 
     function onChangeHandler(event: ChangeEvent<HTMLInputElement>) {

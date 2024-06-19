@@ -68,7 +68,7 @@ export default function Navbar({ router, page }: NavBarProps) {
     return (
         <>
             {renderAlerts && <Alerts />}
-            <div id="navbar" className="h-full  top-0 md:p-0 text-slate-200  bg-slate-800 w-full flex justify-between items-center">
+            <div id="navbar" className="h-full z-50  top-0 md:p-0 text-slate-200  bg-slate-800 w-full flex justify-between items-center">
                 <div className="cursor-pointer bg-slate-900 w-max h-full flex justify-center items-center rounded-r-lg  ">
                     <CIcon onClick={()=>router('feed')}  className="h-8 w-8 m-4" icon={cilCircle}/>
                 </div>

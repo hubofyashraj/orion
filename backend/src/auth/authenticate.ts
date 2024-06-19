@@ -4,7 +4,7 @@ import { RequestExtended } from "../types/types_local";
 
 export async function verify_token(token: string) {
     try {
-        const data = verify(token, process.env.JWT_SECRET as string) as JwtPayload & {username: string}
+        const data = verify(token, 'MY_JWT_SECRET') as JwtPayload & {username: string}
         return data.username
     }
     catch (err) {
@@ -28,8 +28,9 @@ export const jwt_middleware = async (req: RequestExtended, res: Response, next: 
             req.user=username,
             next();
         }).catch((reason)=>{
-            console.log(reason);
+            console.log(token);
             
+            console.log(reason);
             res.json({success: false, reason: reason.name})
         })
     }

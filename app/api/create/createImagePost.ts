@@ -2,15 +2,16 @@
 import { validSession } from "../actions/authentication";
 import { getToken } from "../actions/cookie_store";
 import { address } from "../api";
-import { uploadPostData } from "../db_queries/create";
+import { deletePostData, uploadPostData } from "../db_queries/create";
 
 
 export async function createPost(formData: FormData) {
-    const user = await validSession();
-    if(!user) return false;
+    const {user, status} = await validSession();
+    if(status==401) return false;
+    
     const token = await getToken();
     try {
-        const post_id = user+Date.now();
+        const post_id = user!+Date.now();
         formData.append('post_id', post_id);
         const result = await fetch( address+'/post/upload', 
         { 
@@ -27,7 +28,7 @@ export async function createPost(formData: FormData) {
         if(json.success) {
             const result = await uploadPostData({
                 post_id, 
-                post_user: user, 
+                post_user: user!, 
                 post_type: formData.get('type')!.toString(), 
                 post_caption: formData.get('caption')!.toString(), 
                 post_length: parseInt(formData.get('length')!.toString()) })
@@ -40,4 +41,23 @@ export async function createPost(formData: FormData) {
         console.log(error);
     }
     return false;
+}
+
+
+export async function deletePost(post_id: string) {
+    const token = await getToken();
+    if(token) {
+        const result  = await deletePostData(post_id);
+        if(result) {
+            fetch(address+'/post/deletePost?post_id='+post_id,
+                { 
+                    headers: { 
+                        'Authorization': token!
+                    } 
+                }
+            )
+            return true;
+        }
+    
+    } else return false;
 }

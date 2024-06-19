@@ -29,7 +29,7 @@ export async function logout(username?: string) {
 
 /**
  * 
- * @returns username, if a valid cookie is present containing valid token else false
+ * @returns username, if a valid cookie is present containing valid token else status 401
  */
 
 export async function validSession() {
@@ -37,11 +37,9 @@ export async function validSession() {
     if(token) {
         try {
             const payload = verify(token, 'MY_JWT_SECRET') as {username: string} & JwtPayload;
-            return payload.username;
+            return {status: 200, user: payload.username};
         }
         catch (error) { console.log('Error while verifying token\n', error) } 
-
-        redirect('/auth');
     } 
-    else redirect('/auth');
+    return {status: 401};
 }

@@ -10,7 +10,7 @@ export default function ProfilePictureComponent({
     const [src, setSrc] = useState(`/api/images?type=pfp&user=${user}`)
 
     useEffect(()=>{
-        self.current = sessionStorage.getItem('self');
+        self.current = sessionStorage.getItem('user');
     }, [])
 
     return (

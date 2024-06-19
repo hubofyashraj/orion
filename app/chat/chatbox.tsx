@@ -8,7 +8,6 @@ import images from "../images";
 import Image from "next/image";
 import { Message } from "./types";
 import Thread from "./thread";
-import useSocketEvent, { pingServer } from "../handleSocket";
 import { Connection } from "../api/db_queries/chat";
 import { getMessages, sendMessage, setAllRead } from "../api/chat/chat";
 import useSSE from "../sseProvider/sse";
@@ -64,15 +63,6 @@ function ChatBox({
     
 
 
-
-    // useSocketEvent('new message', (msg: string)=>{
-    //     const message = JSON.parse(msg);
-    //     addNewMessage(message)
-    // })
-
-    // function addNewMessage(msg: Message) {
-    //     setMsgList((msgs)=>[...msgs, msg])
-    // }
 
 
     function onBack(){

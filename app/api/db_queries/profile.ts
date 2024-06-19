@@ -7,6 +7,17 @@ const userStatsCollection = collections.userStatsCollection;
 const usersCollection = collections.userCollection;
 const postCollection = collections.postCollection;
 
+export async function hasPFP(user: string) {
+    try {
+        var info = await infoCollection.findOne({username: user});
+        if(info && info.pfp_uploaded) return true;
+    } catch (error) {
+        console.error('while cheking if user', user, ' has pfp, ');
+        console.error(error);
+    }
+    return false;
+}
+
 export async function getInfo(user: string) {
     var info = await infoCollection.findOne({username: user})
     const userStats = await userStatsCollection.findOne({username: user});

@@ -99,6 +99,8 @@ export async function saveRequestInDb(sender: string, receiver: string) {
 export async function deleteRequestFromDb(req_id: string) {
     try {
         const result = await requestsCollection.deleteOne({_id: new ObjectId(req_id)});
+        console.log({result});
+        
         return result.acknowledged
     } catch (error) {
         console.log('error while deleting a record from requests collection with _id', req_id);
@@ -107,7 +109,7 @@ export async function deleteRequestFromDb(req_id: string) {
     return false
 }
 
-async function connectUsers(u1: string, u2:string) {
+async function connectUsers(u1: string, u2:string, _id: ObjectId) {
     const session = client.startSession();
     try {
         session.startTransaction();
@@ -115,6 +117,7 @@ async function connectUsers(u1: string, u2:string) {
         await connectionsCollection.updateOne({user: u2}, {$push: {connections: u1} })
         await userStatsCollection.updateOne({username: u1}, {$inc: {connectionsCount: 1}})
         await userStatsCollection.updateOne({username: u2}, {$inc: {connectionsCount: 1}})
+        await requestsCollection.deleteOne({_id});
         await session.commitTransaction();
         return true;
     } catch (error) {
@@ -137,7 +140,7 @@ export async function resolveRequestInDb(id: string) {
     try {
         const request = await requestsCollection.findOne({_id: oid});
         if(request) {
-            const connected = await connectUsers(request.sender, request.receiver);
+            const connected = await connectUsers(request.sender, request.receiver, oid);
             return connected
         }        
     } catch (error) {

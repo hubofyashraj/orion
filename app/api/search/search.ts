@@ -7,49 +7,44 @@ import { address } from "../api";
 import { fetchInfo } from "../profile/profile";
 
 export async function searchUsers(keyword: string) {
-    const username = await validSession();
-    if(!username) return;
+    const {status, user} = await validSession();
+    if(status==401) return;
     try {
-        const users = await searchUser(keyword, username);
+        const users = await searchUser(keyword, user!);
         return users;
     } catch(error) {
         return [];
     }
 }
 
-export async function sendRequest(user: string) {
-    const self = await validSession();
-    if(self) {
-        const req_id = await saveRequestInDb(self, user);
-        if(req_id) {
-            const info = JSON.parse((await fetchInfo())!) as ProfileInfo
-            axios.post(address+'/sse/sendAlert?user='+self, {alert: {
-                type: 'request',
-                content: {
-                    from: self,
-                    fullname: info.fullname,
-                    to: user,
-                }
-            }})        }
-        return req_id;
+export async function sendRequest(receiver: string) {
+    const {status, user} = await validSession();
+    if(status==401) return false;
+    const req_id = await saveRequestInDb(user!, receiver);
+    if(req_id) {
+        const info = JSON.parse((await fetchInfo())!) as ProfileInfo
+        axios.post(address+'/sse/sendAlert?user='+user, {alert: {
+            type: 'request',
+            content: {
+                from: user,
+                fullname: info.fullname,
+                to: receiver,
+            }
+        }})
     }
-    return false;
+    return req_id;
 }
 
 export async function cancelRequest(req_id: string) {
-    const self = await validSession();
-    if(self) {
-        const result = await deleteRequestFromDb(req_id);
-        return result;
-    }
-    return false;
+    const {status} = await validSession();
+    if(status==401) return false;
+    const result = await deleteRequestFromDb(req_id);
+    return result;
 }
 
 export async function acceptRequest(req_id: string) {
-    const self = await validSession();
-    if(self) {
-        const result = await resolveRequestInDb(req_id);
-        return result;
-    }
-    return false;
+    const {status}= await validSession();
+    if(status==401) return false;
+    const result = await resolveRequestInDb(req_id);
+    return result;
 }

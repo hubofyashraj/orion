@@ -1,8 +1,7 @@
 'use server'
 import axios from "axios";
 import { validSession } from "../actions/authentication";
-import { getCommentsFromDb, getPostStats, getPostsFromDB, removeCommentFromDb, saveCommentToDB, toggleLikeInDB, toggleSaveInDB } from "../db_queries/feed";
-import { fetchPFP } from "../profile/profile";
+import { getCommentsFromDb, getPostFromDb, getPostStats, getPostsFromDB, removeCommentFromDb, saveCommentToDB, toggleLikeInDB, toggleSaveInDB } from "../db_queries/feed";
 import { address } from "../api";
 
 
@@ -12,8 +11,8 @@ import { address } from "../api";
 
 
 export async function fetchPosts() {
-    const user = await validSession();
-    if(!user) return; 
+    const {status} = await validSession();
+    if(status==401) return; 
 
     const posts = await getPostsFromDB();
     if(!posts) return;
@@ -21,10 +20,15 @@ export async function fetchPosts() {
 
 }
 
+export async function fetchPost(post_id: string) {
+    const post = await getPostFromDb(post_id);    
+    if(post) return JSON.stringify(post);
+    else return false;
+} 
 
 export async function fetchPostStats(post_id: string) {
-    const user = await validSession();
-    if(!user) return;
+    const {status} = await validSession();
+    if(status==401) return;
     const stats = await getPostStats(post_id);
     if(!stats) return;
     return JSON.stringify(stats);
@@ -49,32 +53,28 @@ type Alert = {
 }
 
 export async function togglePostLike(post_id: string, post_user: string, current: boolean) {
-    const user = await validSession();
-    if(user) {
-        const result =  await toggleLikeInDB(post_id, user, current);
-        if(result) {
-            axios.post(address+'/sse/sendAlert?user='+user, {alert: {
-                type: 'notification',
-                content: {
-                    post_id,
-                    post_user,
-                    liked_by: user
-                }
-            }})
-        }
-        return result;
+    const {user, status} = await validSession();
+    if(status==401) return false;
+    const result =  await toggleLikeInDB(post_id, user!, current);
+    if(result && !current) {
+        axios.post(address+'/sse/sendAlert?user='+user, {alert: {
+            type: 'notification',
+            content: {
+                post_id,
+                post_user,
+                liked_by: user
+            }
+        }})
     }
-    return false;
+    return result;
 }  
 
 
 
 export async function togglePostSave(post_id: string, current: boolean) {
-    const user = await validSession();
-    if(user) {
-        return await toggleSaveInDB(post_id, user, current);
-    }
-    return false;
+    const {user, status} = await validSession();
+    if(status==401) return false;
+    return await toggleSaveInDB(post_id, user!, current);
 }  
 
 
@@ -86,25 +86,25 @@ export async function fetchComments(post_id: string) {
 
 
 export async function sendComment(comment: PostComments) {
-    const self = await validSession();
-    if(!self) return false;
-    const comment_id = self+comment.post_id+Date.now();
+    const {user, status} = await validSession();
+    if(status==401) return false;
+    const comment_id = user+comment.post_id+Date.now();
 
     const obj: PostComments = {
         ...comment,
         comment_id: comment_id,
-        comment_by: self,
+        comment_by: user!,
         sending: false
     }
 
     const result  = await saveCommentToDB(obj);
-    if(result && self!=comment.post_user) {
-        axios.post(address+'/sse/sendAlert?user='+self, {alert: {
+    if(result && user!=comment.post_user) {
+        axios.post(address+'/sse/sendAlert?user='+user, {alert: {
             type: 'notification',
             content: {
                 post_id: comment.post_id,
                 post_user: comment.post_user,
-                comment_by: self
+                comment_by: user
             }
         }})
     }
@@ -114,10 +114,10 @@ export async function sendComment(comment: PostComments) {
 
 
 export async function deleteComment(comment_id: string, comment_by: string, post_user: string) {
-    const self = await validSession();
-    if(!self) return false;
+    const {user, status} = await validSession();
+    if(status==401) return false;
 
-    if(self==post_user || self==comment_by) {
+    if(user==post_user || user==comment_by) {
         const result   = removeCommentFromDb(comment_id);
         return result;
     }

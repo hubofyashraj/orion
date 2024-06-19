@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { ChangeEvent, useEffect, useRef, useState } from "react";
 import { fetchConnections } from "../api/chat/chat";
 import { Connection } from "../api/db_queries/chat";
 import useSSE from "../sseProvider/sse";
@@ -10,8 +10,10 @@ function Connections({
     screenWidth:number, focus:() => void, focusUser: (user: Connection) => void
 }) {
 
-
-    const [connections, setConnections] = useState<Connection[] | undefined>(undefined)
+    console.log('rendered');
+    
+    const allConnections = useRef<Connection[]>([]);
+    const [connections, setConnections] = useState<Connection[]>([]);
 
     const { messages } = useSSE();
 
@@ -38,7 +40,10 @@ function Connections({
     }, [messages])
 
     useEffect(()=>{
-        fetchConnections().then( connections => setConnections(connections) )
+        fetchConnections().then( connections => {
+            allConnections.current=connections;
+            setConnections(connections)
+        } )
     }, [])
 
     function onClickOnUser(user: Connection) {
@@ -54,10 +59,23 @@ function Connections({
                 : connection) )
     }
 
+    function searchOnChange(event: ChangeEvent<HTMLInputElement>) {
+        const val = event.target.value;
+        if(val=='') setConnections(allConnections.current);
+        else {
+            let pattern = RegExp(val,'i')
+            setConnections(allConnections.current.filter(
+                (connection)=>connection.fullname.match(pattern) || connection.username.match(pattern)
+            ))
+        }
+    }
 
 
     return (
-        <div id="connections" className="connections  border-r border-slate-500 transition-all  text-white bg-slate-700 flex flex-col w-[calc(100svw)] sm:m-0 sm:w-[calc(34svw)] shrink-0 h-full ">
+        <div id="connections" className="connections  select-none border-r border-slate-500 transition-all  text-white bg-slate-700 flex flex-col w-[calc(100svw)] sm:m-0 sm:w-[calc(34svw)] shrink-0 h-full ">
+            <div className="w-full bg-slate-800 flex first-line justify-center py-2">
+                <input onChange={searchOnChange} placeholder="search" type="text" className="px-4 py-1 bg-transparent border drop-shadow-sm hover:bg-slate-600 focus:bg-slate-600 focus:border-slate-700 select-none border-slate-700 outline-none rounded-full" />
+            </div>
             <div className="grow flex  flex-col overflow-y-auto scrollbar-none ">
                 { connections 
                 ? connections.map( (user, idx)=><UserComponent onClick={()=>onClickOnUser(user)} key={user.lastmsg?.ts+user.username} info={user}/>)

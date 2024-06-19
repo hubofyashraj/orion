@@ -1,0 +1,49 @@
+import ImagePost from "../feed/imagepost"
+import { useState } from "react"
+import { deletePost } from "../api/create/createImagePost";
+import { Close } from "@mui/icons-material";
+
+export default function PostView({
+    post, post_type, close
+}: {
+    post: Post, post_type: string, close: (deleted?: string)=>void
+}) {
+
+    const [deleteWarning, setWarning] = useState(false);
+
+    async function deletePostAction() {
+        const result = await deletePost(post.post_id);
+        setWarning(false);
+        close('deleted');
+    }
+
+    if(post_type=='image') return (
+        <div className="absolute z-30  top-0 left-0 w-full h-[calc(100svh-64px)]  flex  backdrop-blur-md justify-center items-start">
+            <div className="h-full w-full relative ">
+                <Close onClick={()=>close()} className="m-4 h-8 w-8 hover:scale-105 absolute right-0" />
+                <div className="max-w-xl h-full bg-slate-800 m-auto flex flex-col items-center justify-center ">
+                    <ImagePost post={post} />
+                    <button onClick={()=>setWarning(true)} className="self-end m-6 p-2 rounded-xl border border-slate-700 hover:bg-slate-700 hover:shadow-lg">Delete Post</button>
+                    {deleteWarning && <DeleteWarning post_id={post.post_id} cancel={()=>setWarning(false)} deletePost={deletePostAction} />}
+                </div>
+
+            </div>
+        </div>
+    )
+    else return (<></>)
+}
+
+
+function DeleteWarning({post_id, cancel ,deletePost}: {post_id: string, cancel: ()=>void, deletePost: ()=>void}) {
+
+   
+    return (
+        <div className="bg-slate-900 absolute w-60 h-32 rounded">
+            <div className=" w-full h-full relative flex flex-col gap-2 justify-center items-center ">
+                <Close onClick={cancel} className="absolute right-0 top-0 m-3" />
+                <p>Confirm Deletion</p>
+                <button className=" border border-slate-700 rounded-xl px-2 py-1  hover:bg-slate-700" onClick={deletePost}>Delete</button>
+            </div>
+        </div>
+    )
+}

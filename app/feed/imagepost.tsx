@@ -10,7 +10,7 @@ import ProfilePictureComponent from "../components/pfp"
 export type Post = {
     post_user: string,
     post_id: string,
-    post_type: 'image' | 'video' | 'text',
+    post_type: string,
     post_length: number, 
     post_content?: Array<string>,
     post_caption: string,
@@ -53,6 +53,7 @@ export type Comment = {
 
 
 export default function ImagePost({ post }: {post: Post}) {
+    console.log(post);
 
     const [stats, setStats] = useState<PostStats>({post_id: '-1', post_comments_count: 0, post_likes_count: 0, post_save_count: 0})
     const [selfStats, setSelfStats] = useState<SelfStats>({liked: false, saved: false})
@@ -69,7 +70,7 @@ export default function ImagePost({ post }: {post: Post}) {
             saved: boolean;
         };
     }
-
+    
     useEffect(()=>{
         fetchPostStats(post.post_id).then(
             jsonString => {
@@ -150,9 +151,9 @@ export default function ImagePost({ post }: {post: Post}) {
         setComments(prev => prev.filter(comment => comment.comment_id!=comment_id))
     }
     
-
+    
     return (
-        <div className={"flex w-full relative shrink-0   border-slate-600 text-slate-200  bg-slate-800"}>
+        <div className={"flex w-full  relative shrink-0   border-slate-600 text-slate-200  bg-slate-800"}>
             { screen.width>0 && <button onClick={()=>swipe('left')}  className={post.post_length==1?"invisible":"  "}><ArrowLeft /></button>}
             <div className={(displayComments?"blur ":"")+"w-full "}>
                 <div className="flex items-center  w-full gap-3 py-2 ">
@@ -299,7 +300,7 @@ function CommentSection({
 
 
     return (
-        <div ref={ref} style={{height: '3rem'}} className="absolute z-50  transition-all bottom-0 overflow-hidden   w-full max-w-xl flex flex-col bg-slate-800 rounded-t-2xl drop-shadow-lg border border-b-0 border-slate-950">
+        <div ref={ref} style={{height: '3rem'}} className="absolute z-50  transition-all bottom-0 overflow-hidden   w-full max-w-xl flex flex-col bg-slate-800 rounded-t-2xl  border border-b-0 border-slate-950">
             <p className="w-full p-2 text-center text-lg underline-offset-8 underline ">Comments <Close onClick={close} className="float-right hover:scale-105 "/></p>
             <div ref={divRef} className="flex grow w-full  flex-col-reverse overflow-y-auto scrollbar-none">
                 {optimisticComments.map(comment => <CommentComponent comment={comment} post_user={post.post_user} delete_comment={()=>delete_comment(comment.comment_id)} key={comment.comment_id} />)}
@@ -313,7 +314,7 @@ function CommentSection({
 }
 
 function CommentComponent({comment, post_user, delete_comment}: {comment: Comment, post_user: string, delete_comment: Function}){
-    const self = sessionStorage.getItem('self');
+    const self = sessionStorage.getItem('user');
     if(!self) window.location.href='/auth';
 
     async function attemptDelete() {

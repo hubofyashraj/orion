@@ -4,30 +4,30 @@ import { acceptRequest, cancelRequest } from "../search/search";
 
 
 export async function fetchAlerts() {
-    const self = await validSession();
-    if(!self) return [];
+    const {user, status} = await validSession();
+    if(status==401) return [];
 
-    const requests = await readAlertsFromDb(self);
+    const requests = await readAlertsFromDb(user!);
     return requests;
 }
 
 
-export async function acceptRequestFromUser(user: string) {
-    const self = await validSession();
-    if(!self) return false;
+export async function acceptRequestFromUser(sender: string) {
+    const {user, status} = await validSession();
+    if(status==401) return false;
 
-    const req_id = await readRequestId(user, self);
+    const req_id = await readRequestId(sender, user!);
     if(!req_id) return false;
 
     const result = await acceptRequest(req_id);
     return result;
 }
 
-export async function rejectRequestFromUser(user: string) {
-    const self = await validSession();
-    if(!self) return false;
+export async function rejectRequestFromUser(sender: string) {
+    const {user, status} = await validSession();
+    if(status==401) return false;
 
-    const req_id = await readRequestId(user, self);
+    const req_id = await readRequestId(sender, user!);
     if(!req_id) return false;
 
     const result = await cancelRequest(req_id);

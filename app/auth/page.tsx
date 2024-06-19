@@ -1,15 +1,14 @@
 import './login.css';
 import { Form } from './form';
 import { CircleOutlined } from '@mui/icons-material';
-import { getToken } from '../api/actions/cookie_store';
 import { redirect } from 'next/navigation';
+import { validSession } from '../api/actions/authentication';
 
 export default async function Auth() {
-    const token = await getToken();
+    const {status} = await validSession();
 
-    if (token) {
+    if (status==200) {
         redirect('/');
-        return null; 
     }
 
     return (

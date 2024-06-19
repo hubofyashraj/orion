@@ -31,8 +31,12 @@ useEffect(()=>{
   window.addEventListener('resize', documentHeight)
   documentHeight()    
   
-  validSession().then((user)=>{
-    sessionStorage.setItem('self', user);
+  validSession().then(({status, user})=>{
+    if(status==401) {
+      window.location.href='/auth';
+      return;
+    }
+    sessionStorage.setItem('user', user!);
     setShowLoader(false);
   })
   
@@ -43,7 +47,7 @@ useEffect(()=>{
 
   return (
     <div className='w-full h-full relative top-0 overflow-hidden flex flex-col justify-start'>
-        <div style={{height: 64}} className='w-full fixed z-20 shadow-sm border-b border-slate-700'>
+        <div style={{height: 64}} className='w-full fixed z-50 shadow-sm border-b border-slate-700'>
           <Navbar page={route} router={(route: string)=>setRoute(route)}  />
         </div>
         <div style={{height: 'calc( 100vh - 64px )' }} className='h-full bg-slate-700 mt-16 overflow-hidden'>

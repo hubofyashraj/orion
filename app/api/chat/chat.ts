@@ -7,19 +7,17 @@ import axios from "axios";
 import { address } from "../api";
 
 export async function fetchConnections() {
-    const self = await validSession();
-    if(self) {
-        const connections = await getConnections(self);
-        return connections;
-    }
-    return []
+    const {user, status} = await validSession();
+    if(status==401) return [];
+    const connections = await getConnections(user!);
+    return connections;
 }
 
 
-export async function getMessages(user: string) {
-    const self = await validSession();
-    if(!self) return []
-    const messages = await getMessagesFromDb(self, user);
+export async function getMessages(connection: string) {
+    const {user, status} = await validSession();
+    if(status==401) return []
+    const messages = await getMessagesFromDb(user!, connection);
     return messages;
 }
 
@@ -30,18 +28,18 @@ export async function getMessages(user: string) {
  * @returns message object if successfull else false
  */
 export async function sendMessage(msg: Message) {
-    const self = await validSession();
-    if(!self) return false;
+    const {user, status} = await validSession();
+    if(status==401) return false;
     const message: Message = {
         ...msg,
-        sender: self,
+        sender: user!,
         sending: undefined,
         unread: true
     }
     const inserted = await insertMessage(message);
     if(inserted) {
         try {
-            axios.post(address+'/sse/sendMessage?user='+self, {message})
+            axios.post(address+'/sse/sendMessage?user='+user, {message})
             return JSON.stringify(message)
         } catch (error) {
             console.error('while sending sse request to express\n ', error);
@@ -52,10 +50,9 @@ export async function sendMessage(msg: Message) {
 }
 
 
-export async function setAllRead(user: string) {
-    const self = await validSession();
-    if(self) {
-        const modifiedCount = await readMessages(user, self);
-        return modifiedCount;
-    } else return "auth";
+export async function setAllRead(connection: string) {
+    const {user, status} = await validSession();
+    if(status==401) return;
+    const modifiedCount = await readMessages(connection, user!);
+    return modifiedCount;
 }

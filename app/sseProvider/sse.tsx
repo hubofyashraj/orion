@@ -49,17 +49,12 @@ export function SSEProvider({children}: {children: ReactNode}) {
     const [newPosts, setNewPosts] = useState(false);
     const [ping, setPing] = useState<number>(999);
 
-    useEffect(()=>{
-        console.log(messages);
-        
-    }, [messages])
 
     useEffect(()=>{
-        const eventSource = new EventSource(`/api/sse`);
+        let eventSource = new EventSource(`/api/sse`);
 
 
         const handleMessage = async (ev: MessageEvent) => {
-            console.log('event', ev);
             const data = JSON.parse(ev.data as string) as eventMessage;
             if(data.type=='alert') {
                 const alert = data.payload as any;
@@ -89,15 +84,27 @@ export function SSEProvider({children}: {children: ReactNode}) {
             
         }
 
-        eventSource.addEventListener('message', handleMessage)
 
-
-        eventSource.onerror = (ev) => {
+        const handleError = (ev: Event) => {
             console.log('error in eventsource', ev);
         }
+        eventSource.addEventListener('message', handleMessage)
+        eventSource.onerror=handleError;
+
+        //reconnecvtion logic
+        const interval = setInterval(()=>{
+            if(eventSource.readyState==eventSource.CLOSED) {
+                console.log('reconnectin to SSE');
+                
+                eventSource = new EventSource('/api/sse');
+                eventSource.addEventListener('message', handleMessage);
+                eventSource.onerror=handleError;
+            }
+        }, 30000)
 
         return () => {
             eventSource.removeEventListener('message', handleMessage);
+            clearInterval(interval);
             eventSource.close();
         };
     }, [])

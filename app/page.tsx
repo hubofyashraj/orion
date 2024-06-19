@@ -1,12 +1,12 @@
-import App from "./app";
 import { CSSProperties } from "react";
 import { redirect } from "next/navigation";
 import { validSession } from "./api/actions/authentication";
-import { SSEProvider } from "./sseProvider/sse";
 import SSE from "./SSE";
 
 export default async function Home(){
-  await validSession();
+  const {status} = await validSession();
+
+  if(status==401) redirect('/auth');
 
   const style: CSSProperties = {
     display: "flex",
