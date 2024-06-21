@@ -3,7 +3,7 @@ import { collections } from "./collections"
 
 const requestsCollection = collections.connectRequestCollection;
 
-export async function readAlertsFromDb(user: string) {
+export async function readConnectRequestsFromDb(user: string) {
     try {
         const requests = await requestsCollection.find({receiver: user}).toArray();
         const requestAlerts = requests.map(request => {return {from: request.sender, fullname: 'Placeholder'}})

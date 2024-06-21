@@ -2,13 +2,8 @@
 import axios from "axios";
 import { validSession } from "../actions/authentication";
 import { getCommentsFromDb, getPostFromDb, getPostStats, getPostsFromDB, removeCommentFromDb, saveCommentToDB, toggleLikeInDB, toggleSaveInDB } from "../db_queries/feed";
-import { address } from "../api";
 
-
-
-
-
-
+const address = process.env.express_uri as string;
 
 export async function fetchPosts() {
     const {status} = await validSession();

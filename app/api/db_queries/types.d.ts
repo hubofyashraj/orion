@@ -46,7 +46,7 @@ type UserStats = {
 
 type Connections = {
     _id?: ObjectId
-    user: string,
+    username: string,
     connections: Array<string>
 }
 
@@ -107,4 +107,12 @@ type UserSession = {
     _id?: ObjectId, 
     user: string, 
     token: string 
+}
+
+
+type Match = {
+    username: string, 
+    fullname: string, 
+    status?: string, 
+    _id?: string
 }

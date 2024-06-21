@@ -2,7 +2,6 @@ import express, { Response} from "express";
 import { pfpUploadMiddleware } from "./upload";
 import path from "path";
 import { readImage, srcpath } from "../readFile";
-import { RequestExtended } from "../types/types_local";
 import sharp from "sharp";
 const profileRouter = express.Router();
 module.exports = profileRouter;
@@ -33,3 +32,10 @@ profileRouter.get('/fetchPFP', (req: RequestExtended, res: Response)=>{
         res.json({success: true, image: ''})
     })
 })
+
+
+import { Request } from "express"
+
+type RequestExtended = Request & {
+    user?: string
+} 

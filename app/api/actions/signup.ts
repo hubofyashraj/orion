@@ -1,6 +1,5 @@
 'use server';
-import axios from "axios";
-import { address } from "../api";
+import { userExists, userSignup } from "../db_queries/auth";
 
 async function validate(formData: FormData) {
     if(
@@ -20,14 +19,14 @@ export async function signup(formData: FormData) {
     if(!validated) throw 'Data not validated'
 
     const data = {
-        username: formData.get('username'), 
-        fullname: formData.get('name'), 
-        password: formData.get('password')
+        username: formData.get('username')!.toString(), 
+        fullname: formData.get('name')!.toString(), 
+        password: formData.get('password')!.toString()
     }
     
     try {
-        const result : { data: {success: boolean} } = await axios.post( address+'/signup', data )
-        return result.data.success;
+        const result = await userSignup(data);
+        return result;
 
     } catch (error) {
         console.log(error);
@@ -36,12 +35,6 @@ export async function signup(formData: FormData) {
 }
 
 export async function checkUserNameAvailability(username: string) {
-    try {
-        const result = await axios.get( address+'/checkusernameavailability', {params:{username}} )
-        return result.data.available
-    } catch (error) {
-        console.log(error);
-        return false;
-    }
-    
+    const exists = await userExists(username);
+    return !exists;
 }

@@ -3,8 +3,9 @@
 import axios from "axios";
 import { validSession } from "../actions/authentication";
 import { deleteRequestFromDb, resolveRequestInDb, saveRequestInDb, searchUser } from "../db_queries/search";
-import { address } from "../api";
 import { fetchInfo } from "../profile/profile";
+
+const address = process.env.express_uri as string;
 
 export async function searchUsers(keyword: string) {
     const {status, user} = await validSession();

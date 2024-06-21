@@ -8,28 +8,13 @@ const withPWA = require("@ducanh2912/next-pwa").default({
 /** @type {import('next').NextConfig} */
 const nextConfig = {
     async headers() {
-        return [
-            {
-                source: '/api/:path*',
-                headers: [
-                    {
-                        key: 'Cache-Control',
-                        value: 'no-store, max-age=0',
-                    }
-                ]
-            }
-        ]
+        return [{ source: '/api/:path*', headers: [{
+            key: 'Cache-Control',
+            value: 'no-store, max-age=0',
+        }]}]
     },
     reactStrictMode: true,
-    serverRuntimeConfig: {
-        https: {
-            key: fs.readFileSync(path.resolve(__dirname, '192.168.1.21-key.pem')),
-            cert: fs.readFileSync(path.resolve(__dirname, '192.168.1.21.pem')),
-        }
-    }
 }
 
-module.exports = withPWA(
-    
-    nextConfig);
+module.exports = withPWA(nextConfig);
 

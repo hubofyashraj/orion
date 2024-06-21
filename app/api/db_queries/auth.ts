@@ -1,9 +1,14 @@
 'use server';
 import { compareSync } from 'bcrypt';
 import { collections } from './collections';
+import { genSaltSync, hashSync} from 'bcrypt';
 
 const client = collections.client;
 const userCollection =collections.userCollection;
+const infoCollection =collections.infoCollection;
+const userStatsCollection = collections.userStatsCollection;
+const connectionCollection  = collections.connectionsCollection;
+
 const sessions = collections.sessions;
 
 export async function checkCredentials({
@@ -16,6 +21,70 @@ export async function checkCredentials({
     else return false;
 }
 
+
+
+export async function userExists(username: string) {
+    try {
+        const result  =await userCollection.findOne({username});
+        if(result) return true;
+        else return false;
+    } catch (error) {
+        console.error('while checking if username exists,', username);
+        console.error(error);
+    }
+    return true;
+}
+
+export async function userSignup(data: User) {
+
+    var salt = genSaltSync(10);
+    data.password = hashSync(data.password , salt);
+    
+    const session = client.startSession();
+    try {
+        const info: Info = {
+            username: data.username,
+            fullname: data.fullname,
+            bio: '',
+            contact: '',
+            contact_privacy: false,
+            dob: '',
+            email: '',
+            gender: '',
+            location: '',
+            pfp_uploaded: false,
+            profession: '',
+        }
+
+        const stats: UserStats = {
+            username: data.username,
+            postsCount: 0,
+            connectionsCount: 0
+        }
+
+        const connections: Connections = {
+            username: data.username,
+            connections: []
+        }
+
+        session.startTransaction();
+
+        await userCollection.insertOne(data);
+        await infoCollection.insertOne(info);
+        await userStatsCollection.insertOne(stats);
+        await connectionCollection.insertOne(connections);
+
+        await session.commitTransaction();
+        return true;
+    } catch (error) {
+        await session.abortTransaction();
+        console.error('while inserting signup data', data);
+        console.error(error);
+    } finally {
+        await session.endSession();
+    }
+    return false;
+}
 
 
 /**

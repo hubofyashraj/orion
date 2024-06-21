@@ -1,63 +1,27 @@
-import { ChangeEvent, useEffect, useRef, useState } from "react";
+import { ChangeEvent, Dispatch, useEffect, useRef, useState } from "react";
 import { fetchConnections } from "../api/chat/chat";
 import { Connection } from "../api/db_queries/chat";
-import useSSE from "../sseProvider/sse";
 import ProfilePictureComponent from "../components/pfp";
+import { useSelector } from "react-redux";
+import { RootState } from "../sseProvider/store";
 
 function Connections({
-    screenWidth, focus, focusUser
+    setConnections, allConnections, connections, focusUser
 }: {
-    screenWidth:number, focus:() => void, focusUser: (user: Connection) => void
+    setConnections: Dispatch<React.SetStateAction<Connection[]>>, 
+    allConnections: React.MutableRefObject<Connection[]>,
+    connections: Connection[], focusUser: (user: Connection) => void
 }) {
 
     console.log('rendered');
     
-    const allConnections = useRef<Connection[]>([]);
-    const [connections, setConnections] = useState<Connection[]>([]);
-
-    const { messages } = useSSE();
 
 
-    useEffect(()=>{
-        setConnections(prev=>{
-            let updatedConnections = prev?.map((connection) => {
-                if(messages.has(connection.username)) {
-                    connection.lastmsg=messages.get(connection.username)!;
-                }
-                return connection;
-            })
+
     
-            updatedConnections?.sort((a, b) => {
-                const tsa = parseInt(a.lastmsg?.ts??'0');
-                const tsb = parseInt(b.lastmsg?.ts??'0');
+
     
-                return tsb-tsa;
-            })
 
-            return updatedConnections
-        });
-        
-    }, [messages])
-
-    useEffect(()=>{
-        fetchConnections().then( connections => {
-            allConnections.current=connections;
-            setConnections(connections)
-        } )
-    }, [])
-
-    function onClickOnUser(user: Connection) {
-        focus(); 
-        focusUser(user);
-        if(screenWidth<=640) {
-            const div = document.getElementById('connections') as HTMLDivElement
-            div.style.marginLeft='-100vw'
-        }
-        setConnections( prev => prev?.map(
-            connection => connection.username==user.username
-                ? {...connection, lastmsg: {...connection.lastmsg, unread: false}} as Connection 
-                : connection) )
-    }
 
     function searchOnChange(event: ChangeEvent<HTMLInputElement>) {
         const val = event.target.value;
@@ -78,7 +42,7 @@ function Connections({
             </div>
             <div className="grow flex  flex-col overflow-y-auto scrollbar-none ">
                 { connections 
-                ? connections.map( (user, idx)=><UserComponent onClick={()=>onClickOnUser(user)} key={user.lastmsg?.ts+user.username} info={user}/>)
+                ? connections.map( (user, idx)=><UserComponent onClick={()=>focusUser(user)} key={user.lastmsg?.ts+user.username} info={user}/>)
                 : <p>No Connections</p> }
             </div>
         </div>
@@ -101,11 +65,12 @@ function UserComponent({
                     <ProfilePictureComponent size={100} user={info.username} />
                 </div>
             </div>
-            <div className="grow max-w-[calc(50%)]  h-full ">
-                <div className="flex h-full flex-col justify-center gap-1 ">
+            <div className="grow   h-full ">
+                <div className="flex h-full w-full flex-col justify-center gap-1 ">
                     <p>{info.fullname}</p>
-                    <div className="text-xs grow-0  text-slate-400 overflow-clip text-ellipsis">
-                        { info.lastmsg!=null && <p className={info.lastmsg.unread?"font-bold text-sm":""}>{info.lastmsg.msg}</p> }
+                    <div className="text-xs grow-0 flex items-center justify-between text-slate-400 overflow-clip text-ellipsis">
+                        { info.lastmsg!=null && <p className={info.lastmsg.sender==info.username && info.lastmsg.unread?"font-bold text-sm":""}>{info.lastmsg.msg}</p> }
+                        { info.lastmsg?.sender==info.username && info.lastmsg.unread && (<p className="font-semibold animate-pulse">Unread</p>)}
                     </div>
                 </div>                
             </div>

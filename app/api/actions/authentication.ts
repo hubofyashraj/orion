@@ -13,8 +13,6 @@ export async function login(formData: FormData) {
         if (result) {
             const token = sign({ username: username }, 'MY_JWT_SECRET', { expiresIn: '1h' });
             await insertToken(token);
-            // Optionally, you can log this session in your database
-            // await addSession({ user: username, token: token });
             redirect('/');
             return true;
         }

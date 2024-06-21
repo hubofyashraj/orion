@@ -1,10 +1,11 @@
 import { JwtPayload, verify } from 'jsonwebtoken'
 import { Response } from "express";
-import { RequestExtended } from "../types/types_local";
+
+const jwt_secret = process.env.jwt_secret as string;
 
 export async function verify_token(token: string) {
     try {
-        const data = verify(token, 'MY_JWT_SECRET') as JwtPayload & {username: string}
+        const data = verify( token, jwt_secret ) as JwtPayload & {username: string}
         return data.username
     }
     catch (err) {
@@ -35,3 +36,9 @@ export const jwt_middleware = async (req: RequestExtended, res: Response, next: 
         })
     }
 }
+
+import { Request } from "express"
+
+type RequestExtended = Request & {
+    user?: string
+} 

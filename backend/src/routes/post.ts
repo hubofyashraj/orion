@@ -1,6 +1,5 @@
 import express, { Response } from "express";
 import { postUploadMiddleware } from './upload';
-import { RequestExtended } from "../types/types_local";
 import { readImage, srcpath } from "../readFile";
 import { join, resolve } from "path";
 import sharp from 'sharp';
@@ -68,3 +67,10 @@ postRouter.post('/deletePost', (req: RequestExtended, res:Response)=>{
         res.status(500);
     }
 })
+
+
+import { Request } from "express"
+
+type RequestExtended = Request & {
+    user?: string
+} 

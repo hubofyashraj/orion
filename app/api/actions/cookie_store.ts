@@ -12,7 +12,6 @@ export async function insertToken(token: string) {
 
 export async function deleteToken() {
     const cookieStore = cookies();
-    // Setting the cookie to expire immediately to delete it
     cookieStore.set('authorization', '', { expires: new Date(0), httpOnly: true });
 }
 

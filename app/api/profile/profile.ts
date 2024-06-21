@@ -2,12 +2,11 @@
 
 import { getInfo, hasPFP, saveInfo } from "@/app/api/db_queries/profile";
 import { getToken } from "../actions/cookie_store";
-import { verify, JwtPayload } from 'jsonwebtoken'
 import axios from "axios";
-import { address } from "../api";
 import { validSession } from "../actions/authentication";
-import { redirect } from "next/navigation";
 import redis from "../redis/redis_client";
+
+const address = process.env.express_uri as string
 
 /**
  * 

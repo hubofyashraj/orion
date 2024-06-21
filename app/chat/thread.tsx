@@ -35,12 +35,12 @@ export default function Thread({
 
     return (
         <>
-            <div id="msgs" className="grow w-full flex flex-col items-start justify-start overflow-y-auto scrollbar-none scrollbar-track-white">
+            <div id="msgs" key={user.username} className="grow w-full flex flex-col items-start justify-start overflow-y-auto scrollbar-none scrollbar-track-white">
                 { optimisticMessages.map((msg, idx)=>{
                     if(msg.receiver == user.username || msg.sender==user.username) 
                         return ( <>
                             {msg.sender==user.username && msg.unread && ((idx>0 && (!optimisticMessages[idx-1].unread || optimisticMessages[idx-1].sender!=user.username))  || idx==0) && <p key={'unread tag '} className="text-lg text-center self-center px-5 border-b text-slate-600 border-slate-700">Unread</p>}
-                            <MessageComp key={idx}  msg={msg} user={user.username} />
+                            <MessageComp key={idx+msg.ts}  msg={msg} user={user.username} />
                         </> )
                     
                 })}

@@ -22,7 +22,7 @@ export async function getPostsFromDB() {
     const {user, status} = await validSession();
     if(status==401) return;
 
-    const document = await connectionsCollection.findOne({user})
+    const document = await connectionsCollection.findOne({username: user})
     const connections = document?.connections;
 
     const posts: Post[] = [];

@@ -1,18 +1,15 @@
-import { cilArrowLeft } from "@coreui/icons";
-import CIcon from "@coreui/icons-react";
-import axios from "axios";
-import React, { useEffect, useRef } from "react";
+import React, { useEffect } from "react";
 import { useState } from "react";
-import { address } from "../api/api";
-import images from "../images";
 import Image from "next/image";
 import { Message } from "./types";
 import Thread from "./thread";
 import { Connection } from "../api/db_queries/chat";
-import { getMessages, sendMessage, setAllRead } from "../api/chat/chat";
-import useSSE from "../sseProvider/sse";
+import { getMessages, setAllRead } from "../api/chat/chat";
 import ProfilePictureComponent from "../components/pfp";
 import { ArrowBack } from "@mui/icons-material";
+import { useDispatch, useSelector } from "react-redux";
+import { AppDispatch, RootState } from "../sseProvider/store";
+import { setMessages } from "../sseProvider/reducers";
 
 
 function ChatBox({
@@ -23,23 +20,25 @@ function ChatBox({
 
     const [msgList, setMsgList] = useState<Message[]>([]);
 
-    const { messages, setMessages } = useSSE();
+
+    const messages = useSelector((state: RootState)=>state.messages) as Array<[string, Message]>;
+    const dispatch: AppDispatch = useDispatch();
 
     useEffect(()=>{
-        if(user && messages.has(user.username)) {
-            const msg = messages.get(user.username)!;
+        console.log(messages);
+        if(user ) {
+            let index=-1;
+            index = messages.findIndex(([sender, _])=>sender==user.username);
+            if(index==-1) return;
 
-            if(msg) setMsgList(prev=>[...prev, {...msg, unread: false}]);
-    
-            setMessages(prev => {
-                prev.delete(user.username);
-                return new Map<string, Message>(prev.entries());
-            });
-    
+            const msg = messages[index][1];
+
+            setMsgList(prev=>[...prev, {...msg, unread: false}]);
+            dispatch(setMessages(messages.filter((_, idx)=>idx!=index)));
         }
 
         
-    }, [messages, setMessages, user])
+    }, [dispatch, messages, user])
 
     useEffect(()=>{
         if(user) getMessages(user.username!).then( (messages) => { setMsgList(messages) })
@@ -73,13 +72,12 @@ function ChatBox({
 
     if(user==null) return (
         <div className="h-full w-[calc(100svw)] sm:w-[calc(66svw)] bg-slate-700   flex justify-center items-center">
-            <Image alt="Orion logo" className=" opacity-50" width={512} height={512} src={'/icons/icon-512x512.png'}/>
         </div>
     )
 
     
     return (
-        <div id="chatbox" className="h-[calc(100svh-64px)] text-slate-200   overflow-y-auto w-[calc(100svw)] sm:w-[calc(66svw)] bg-slate-800 flex flex-col justify-start">
+        <div id="chatbox" className=" text-slate-200   overflow-y-auto w-[calc(100svw)] sm:w-[calc(66svw)] bg-slate-800 flex flex-col justify-start">
             <div className="h-16 shrink-0 flex gap-2 justify-start items-center px-4 drop-shadow-sm  bg-slate-800 ">
                 <ArrowBack onClick={onBack} />
                 <div className="rounded-full overflow-hidden">

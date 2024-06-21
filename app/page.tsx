@@ -9,12 +9,7 @@ export default async function Home(){
   if(status==401) redirect('/auth');
 
   const style: CSSProperties = {
-    display: "flex",
-    flexDirection: 'column',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    overflow: 'hidden',
-    height: '100%',
+    height: '100svh',
   }
 
   return (

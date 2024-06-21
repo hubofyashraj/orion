@@ -1,13 +1,13 @@
 import { validSession } from "../actions/authentication";
-import { readAlertsFromDb, readRequestId } from "../db_queries/navbar";
+import { readConnectRequestsFromDb, readRequestId } from "../db_queries/navbar";
 import { acceptRequest, cancelRequest } from "../search/search";
 
 
-export async function fetchAlerts() {
+export async function fetchConnectRequests() {
     const {user, status} = await validSession();
     if(status==401) return [];
 
-    const requests = await readAlertsFromDb(user!);
+    const requests = await readConnectRequestsFromDb(user!);
     return requests;
 }
 

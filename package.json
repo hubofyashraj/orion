@@ -1,5 +1,5 @@
 {
-  "name": "orion",
+  "name": "yasmc",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -17,6 +17,7 @@
     "@emotion/styled": "^11.11.5",
     "@mui/icons-material": "^5.15.18",
     "@mui/material": "^5.15.18",
+    "@reduxjs/toolkit": "^2.2.5",
     "axios": "^1.6.5",
     "bcrypt": "^5.1.1",
     "bcryptjs": "^2.4.3",

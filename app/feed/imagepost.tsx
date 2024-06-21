@@ -53,7 +53,6 @@ export type Comment = {
 
 
 export default function ImagePost({ post }: {post: Post}) {
-    console.log(post);
 
     const [stats, setStats] = useState<PostStats>({post_id: '-1', post_comments_count: 0, post_likes_count: 0, post_save_count: 0})
     const [selfStats, setSelfStats] = useState<SelfStats>({liked: false, saved: false})

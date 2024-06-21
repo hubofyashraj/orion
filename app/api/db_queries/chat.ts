@@ -1,18 +1,9 @@
 'use server'
 import assert from "assert";
-import getCollections from "./collections";
 import { collections } from './collections';
 
 
-
-// const client = new MongoClient('mongodb://127.0.0.1:27017/?directConnection=true&serverSelectionTimeoutMS=2000');
-
-// client.connect();
-// const db = client.db('demo');
-
 const infoCollection         = collections.infoCollection;
-const userStatsCollection    = collections.userStatsCollection;
-const usersCollection        = collections.userCollection;
 const connectionsCollection  = collections.connectionsCollection;
 const messagesCollection     = collections.messagesCollection;
 
@@ -25,7 +16,8 @@ export type Connection = {
 
 export async function getConnections(username: string) {
     try {
-        const user = await connectionsCollection.findOne({user: username})
+        const user = await connectionsCollection.findOne({username: username})
+        
         const connections = user?.connections ?? [];
         const list = connections.map( async (connection)=>{
             const info = await infoCollection.findOne({username: connection});
@@ -42,10 +34,10 @@ export async function getConnections(username: string) {
             .find({ 
                 $or: [ {sender: username, receiver: connection}, 
                     {sender: connection, receiver: username} ]
-                }, {projection: {_id: 0}}
+                }, {projection: {_id: 0}, sort: { ts: -1 }, limit: 1}
             ).toArray();
             
-            lastmsg.sort((a,b) => parseInt(b.ts)-parseInt(a.ts))
+            
 
             if(lastmsg.length) ob.lastmsg = lastmsg[0];
             return ob;

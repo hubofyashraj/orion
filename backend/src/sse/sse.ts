@@ -1,5 +1,4 @@
 import express, { Response} from 'express';
-import { RequestExtended } from '../types/types_local';
 import { Messages } from '../types/db_schema';
 import { addClient, getClient, removeClient } from './clients';
 
@@ -73,6 +72,17 @@ sse.post('/sendAlert', (req: RequestExtended, res: Response) => {
     }
 
 })
+
+
+import { Request } from "express"
+
+type RequestExtended = Request & {
+    user?: string
+} 
+
+
+
+
 
 
 

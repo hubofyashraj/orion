@@ -1,11 +1,12 @@
 import { MongoClient } from "mongodb";
 import { Collection } from "mongodb";
 
-const client = new MongoClient('mongodb://127.0.0.1:27017/?directConnection=true&serverSelectionTimeoutMS=2000');
+const mongo_uri = process.env.mongo_uri as string;
+const client = new MongoClient(mongo_uri);
 
 client.connect();
 
-const db = client.db('demo');
+const db = client.db('userscollection');
 const userCollection: Collection<User> = db.collection('users');
 const infoCollection: Collection<Info> = db.collection('info');
 const connectionsCollection: Collection<Connections> = db.collection('connections');

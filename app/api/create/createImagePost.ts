@@ -1,9 +1,10 @@
 'use server';
 import { validSession } from "../actions/authentication";
 import { getToken } from "../actions/cookie_store";
-import { address } from "../api";
 import { deletePostData, uploadPostData } from "../db_queries/create";
 
+
+const address = process.env.express_uri as string
 
 export async function createPost(formData: FormData) {
     const {user, status} = await validSession();

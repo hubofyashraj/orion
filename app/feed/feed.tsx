@@ -20,8 +20,6 @@ export default function Feed( { setPage } : { setPage: Function } ) {
     const [posts, setPost] = useState<Post[]>([]);
 
     useEffect(()=>{
-        console.log('hhhhh');
-        
         fetchPosts().then((jsonString) => {
             if(jsonString) {
                 const posts = JSON.parse(jsonString).posts as Post[];
@@ -43,6 +41,9 @@ export default function Feed( { setPage } : { setPage: Function } ) {
                 <button onClick={refresh}>Refresh</button>
                 </div> } */}
             <div className="drop-shadow-lg w-full max-w-xl h-full bg-slate-800 flex flex-col justify-start gap-0 overflow-y-auto scrollbar-none">
+                {posts.length==0 && (
+                    <p className="text-slate-300 text-xl font-sans font-light text-center mt-52">Feels so empty lets connect to people</p>
+                )}
                 {posts.map(post=>
                     post.post_type=='image'
                     ? <ImagePost key={post.post_id} post={post} />

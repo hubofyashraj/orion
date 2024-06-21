@@ -1,16 +1,15 @@
 import type { Metadata, Viewport } from 'next'
 import { Inter } from 'next/font/google'
 import './globals.css'
-import { AuthProvider } from './auth/ds';
 
 const inter = Inter({ subsets: ['latin'] })
 
 
 
-const APP_NAME = "Orion";
-const APP_DEFAULT_TITLE = "Orion";
-const APP_TITLE_TEMPLATE = "%s - Orion";
-const APP_DESCRIPTION = "Let's Connect";
+const APP_NAME = "Yet Another Social Media Clone";
+const APP_DEFAULT_TITLE = "YASMC";
+const APP_TITLE_TEMPLATE = "%s - YASMC";
+const APP_DESCRIPTION = "A social made for fun.";
 
 
 
@@ -57,20 +56,9 @@ export default async function RootLayout({
 }: {
   children: React.ReactNode
 }) {
-
-
   return (
     <html lang="en">
-      {/* <meta name='viewport' content='width=device-width, initial-scale=1, viewport-fit=cover' /> */}
-      <AuthProvider>
-        <body className={inter.className} >{children}</body>
-
-      </AuthProvider>
+      <body className={inter.className} >{children}</body>
     </html>
   )
 }
-
-
-export const viewport: Viewport = {
-  themeColor: "#FFFFFF",
-};

@@ -1,8 +1,6 @@
 import { ArrowBack } from "@mui/icons-material";
-import axios from "axios";
 import Image from "next/image";
-import { LegacyRef, MutableRefObject, RefObject, useEffect, useRef, useState } from "react";
-import { address } from "../api/api";
+import { MutableRefObject, useEffect, useRef, useState } from "react";
 import CropComponentPost from "./CropComponent";
 import { createPost } from "../api/create/createImagePost";
 

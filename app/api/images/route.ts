@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
-import { address } from "../api";
 import { getToken } from "../actions/cookie_store";
 import { fetchPFP } from "../profile/profile";
 import { validSession } from "../actions/authentication";
 
+const address = process.env.express_uri as string;
 
 export async function GET(req: NextRequest) {
     const {status} = await validSession();

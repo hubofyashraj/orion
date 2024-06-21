@@ -6,7 +6,6 @@
   --foreground-rgb: 0, 0, 0;
   --background-start-rgb: 214, 219, 220;
   --background-end-rgb: 255, 255, 255;
-  --doc-height: 90vh;
 }
 
 /* @media (prefers-color-scheme: dark) {
@@ -23,15 +22,9 @@ html {
 }
 
 body {
-  height: var(--doc-height);
+  height: 100svh;
   width: 100svw;
   color: rgb(var(--foreground-rgb));
   overscroll-behavior-block: none;
-  /* background: linear-gradient(
-      to bottom,
-      transparent,
-      rgb(var(--background-end-rgb))
-    )
-    rgb(var(--background-start-rgb)); */
-  
+ 
 }

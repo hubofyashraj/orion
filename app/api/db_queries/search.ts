@@ -1,10 +1,8 @@
 'use server'
-import { Match } from "@/backend/src/types/types_local";
 import { ObjectId } from "mongodb";
 import { collections } from './collections';
 
 const client  = collections.client;
-const infoCollection = collections.infoCollection;
 const userStatsCollection = collections.userStatsCollection;
 const usersCollection = collections.userCollection;
 const connectionsCollection = collections.connectionsCollection;
@@ -29,7 +27,7 @@ export async function searchUser(keyword: string, user: string) {
 
         for(const result of resultSet) {
             let obj: Match = {username: result.username, fullname: result.fullname};
-            const connections = (await connectionsCollection.findOne({user}))!.connections;
+            const connections = (await connectionsCollection.findOne({username: user}))!.connections;
             
             if(connections.includes(obj.username)) {
                 obj.status = 'connected';
@@ -113,8 +111,8 @@ async function connectUsers(u1: string, u2:string, _id: ObjectId) {
     const session = client.startSession();
     try {
         session.startTransaction();
-        await connectionsCollection.updateOne({user: u1}, {$push: {connections: u2} })
-        await connectionsCollection.updateOne({user: u2}, {$push: {connections: u1} })
+        await connectionsCollection.updateOne({username: u1}, {$push: {connections: u2} })
+        await connectionsCollection.updateOne({username: u2}, {$push: {connections: u1} })
         await userStatsCollection.updateOne({username: u1}, {$inc: {connectionsCount: 1}})
         await userStatsCollection.updateOne({username: u2}, {$inc: {connectionsCount: 1}})
         await requestsCollection.deleteOne({_id});

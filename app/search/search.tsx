@@ -1,4 +1,4 @@
-import { ChangeEvent, useEffect, useState } from "react";
+import { ChangeEvent, useState } from "react";
 import UserProfile from "./userProfile";
 import { searchUsers } from "../api/search/search";
 import ProfilePictureComponent from "../components/pfp";
@@ -75,10 +75,6 @@ export default function Search() {
         setUser(update)
     }
 
-    useEffect(()=>{
-        console.log(user);
-        
-    }, [user])
 
     return (
         user

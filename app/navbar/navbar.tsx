@@ -5,9 +5,12 @@ import { useEffect, useState } from "react";
 import { pagetitle } from "./alerts/data";
 import { logout } from "../api/actions/authentication";
 import Alerts from "./alerts/alerts";
-import useSSE from "../sseProvider/sse";
 import { ChatBubbleOutlineOutlined, MarkChatUnreadOutlined, NotificationsActive, NotificationsNone } from "@mui/icons-material";
-import { fetchAlerts } from "../api/navbar/navbar";
+import { fetchConnectRequests } from "../api/navbar/navbar";
+import { useDispatch, useSelector } from "react-redux";
+import { AppDispatch, RootState } from "../sseProvider/store";
+import { setRequest } from "../sseProvider/reducers";
+import Image from "next/image";
 
 interface NavBarProps {
     router: (route: string)=>void, 
@@ -17,19 +20,25 @@ interface NavBarProps {
 export default function Navbar({ router, page }: NavBarProps) {
     
     const [isCollapsed, setCollapsed] = useState(true);
-    const { messages, alerts } = useSSE();
     const [renderAlerts, setRenderAlertsValue] = useState(false);
-    const { setAlerts } = useSSE();
     
-    
+    const messages = useSelector((state: RootState)=>state.messages)
+    const alerts = useSelector((state: RootState)=>state.alerts)
+    const requests = useSelector((state: RootState)=>state.requests)
+    const [oldRequests, setOldRequests] = useState<{from: string, fullname: string}[]>([]);
+
+    const dispatch: AppDispatch = useDispatch();
     
     useEffect(()=>{
-        fetchAlerts().then((requests) => {
-            setAlerts(prev=> [...requests, ...prev]);
+        fetchConnectRequests().then((older) => {
+            setOldRequests(older)
         })
-    }, [setAlerts]);
+    }, []);
 
-    
+    useEffect(()=>{
+        setOldRequests(prev => [...requests, ...prev])
+    }, [requests])
+
     function toggleCollapse() {
         setCollapsed(!isCollapsed);
     }
@@ -69,17 +78,18 @@ export default function Navbar({ router, page }: NavBarProps) {
         <>
             {renderAlerts && <Alerts />}
             <div id="navbar" className="h-full z-50  top-0 md:p-0 text-slate-200  bg-slate-800 w-full flex justify-between items-center">
-                <div className="cursor-pointer bg-slate-900 w-max h-full flex justify-center items-center rounded-r-lg  ">
-                    <CIcon onClick={()=>router('feed')}  className="h-8 w-8 m-4" icon={cilCircle}/>
+                <div className="cursor-pointer px-4 bg-slate-900 w-20 flex gap-4 hover:w-48 transition-all  overflow-hidden h-full  items-center rounded-r-lg  ">
+                    <Image className="shrink-0 h-12 w-12" alt="icon" height={36} width={36} src={'/icons/logo.png'} />
+                    <Image className="shrink-0 " priority onClick={()=>router('feed')} alt="logo" height={36} width={80} src={'/icons/yasmc@3x_alt.png'} />
                 </div>
                 <p className="select-none text-xl grow px-10 ">{pagetitle[page]}</p>
                 <div className="flex h-full gap-5 items-center">
                     <div className=" h-full flex gap-4 items-center">
                         <button onClick={toggleChat} className="w-8 h-8  hover:scale-105 transition-all  rounded-md cursor-pointer">
-                            {messages.size==0?<ChatBubbleOutlineOutlined className="text-slate-400" />:<MarkChatUnreadOutlined className="animate-pulse text-slate-300"/>}
+                            {messages.length==0?<ChatBubbleOutlineOutlined className="text-slate-400" />:<MarkChatUnreadOutlined className="animate-pulse text-slate-300"/>}
                         </button>
                         <button onClick={toggleNotifiacations} className="w-8 h-8 hover:scale-105 transition-all  rounded-md cursor-pointer">
-                            {alerts.length==0?<NotificationsNone className="text-slate-400"  />: <NotificationsActive className="animate-pulse text-slate-300" />}
+                            {(alerts.length==0 && requests.length==0)?<NotificationsNone className="text-slate-400"  />: <NotificationsActive className="animate-pulse text-slate-300" />}
                         </button>
                         <button onClick={toggleCollapse} className="w-8 h-8 mr-4 sm:hidden scale-75 hover:scale-90 transition-all duration-300 rounded-md cursor-pointer">
                             <CIcon className="w-full h-full   text-slate-400  hover:text-white font-light " icon={cilMenu} />

@@ -1,6 +1,8 @@
 import ProfilePictureComponent from "@/app/components/pfp"
 import { acceptRequestFromUser, rejectRequestFromUser } from "@/app/api/navbar/navbar"
-import useSSE from "@/app/sseProvider/sse";
+import { AppDispatch } from "@/app/sseProvider/store";
+import { useDispatch } from "react-redux";
+import { setRequest } from "@/app/sseProvider/reducers";
 
 
 export default function Requests({
@@ -9,24 +11,16 @@ export default function Requests({
   requestsAlerts: ConnectRequestAlert[]
 }){
 
-  const { setAlerts } = useSSE();
+  const dispatch: AppDispatch = useDispatch();
 
   async function acceptRequest(from: string) {
     const result = await acceptRequestFromUser(from);
-    if(result) {
-      setAlerts(prev => prev.filter(alert => {
-        if(alert.from==from && 'fullname' in alert) return false;
-        return true;
-      }))
-    }
+    if(result) dispatch(setRequest(requestsAlerts.filter( request => request.from!=from )))
   }
 
   async function declineRequest(from: string) {
     const result = await rejectRequestFromUser(from);
-    setAlerts(prev => prev.filter(alert => {
-      if(alert.from==from && 'fullname' in alert) return false;
-      return true;
-    }))
+    if(result) dispatch(setRequest(requestsAlerts.filter(request => request.from!=from)))
   }
 
   return (

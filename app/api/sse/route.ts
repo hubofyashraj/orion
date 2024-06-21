@@ -34,14 +34,14 @@ export async function GET(request: NextRequest) {
                 if (data.startsWith('ping')) {
                     console.log('ping from express for', user);
                     
-                    // writer.ready.then(
-                    //     ()=>writer.write(`data: ${JSON.stringify({ type: 'ping', payload: data.replace('ping', '') })}\n\n`)
-                    // ).catch(()=>{
-                    //     console.log('writer error');
-                    //     writer.ready.then(()=>writer.close());
-                    //     reader?.cancel()
-                    //     return;
-                    // })
+                    writer.ready.then(
+                        ()=>writer.write(`data: ${JSON.stringify({ type: 'ping', payload: data })}\n\n`)
+                    ).catch(()=>{
+                        console.log('writer error');
+                        writer.ready.then(()=>writer.close());
+                        reader?.cancel()
+                        return;
+                    })
                 } else {
                     writer.ready.then(()=> writer.write(`data: ${data}\n\n`))
                     .catch(()=>{

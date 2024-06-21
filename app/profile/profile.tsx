@@ -13,8 +13,6 @@ export default function Profile() {
     const [refresh, setRefresh] = useState(false);
 
     useEffect(()=>{
-        console.log('refreshing');
-        
         fetchInfo().then((infoString)=>{
             if(infoString) {
                 const info = JSON.parse(infoString) as ProfileInfo;
@@ -52,8 +50,7 @@ export default function Profile() {
                         <ProfilePicture info={info} />
                     </div>
                     
-                    <div className="grow px-2  w-full ">
-                        <p className="text-xl py-2 sm:ml-16 sm:px-2 text-center sm:text-left">Posts</p>
+                    <div className="grow px-2 flex flex-col w-full ">
                         <MyPosts user={info.username} />
                     </div>
                 </div>

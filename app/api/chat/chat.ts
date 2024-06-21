@@ -4,7 +4,8 @@ import { Message } from "@/app/chat/types";
 import { validSession } from "../actions/authentication";
 import { getConnections, getMessagesFromDb, insertMessage, readMessages } from "../db_queries/chat";
 import axios from "axios";
-import { address } from "../api";
+
+const address = process.env.express_uri as string
 
 export async function fetchConnections() {
     const {user, status} = await validSession();

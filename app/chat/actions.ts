@@ -1,6 +1,6 @@
 'use server';
 
-import { address } from "../api/api";
+const address = process.env.express_uri as string;
 
 export  async function sendMessageToServer (data: any, token: string) {
     

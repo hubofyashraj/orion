@@ -7,6 +7,11 @@ const userStatsCollection = collections.userStatsCollection;
 const usersCollection = collections.userCollection;
 const postCollection = collections.postCollection;
 
+/**
+ * 
+ * @param user username 
+ * @returns true if username has profile picture uploaded
+ */
 export async function hasPFP(user: string) {
     try {
         var info = await infoCollection.findOne({username: user});
