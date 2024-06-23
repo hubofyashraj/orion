@@ -1,6 +1,6 @@
 import { CSSProperties } from "react";
 import { redirect } from "next/navigation";
-import { validSession } from "./api/actions/authentication";
+import { validSession } from "./api/auth/authentication";
 import SSE from "./SSE";
 
 export default async function Home(){

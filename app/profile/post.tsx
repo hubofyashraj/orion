@@ -18,10 +18,10 @@ export default function PostView({
     }
 
     if(post_type=='image') return (
-        <div className="absolute z-30  top-0 left-0 w-full h-[calc(100svh-64px)]  flex  backdrop-blur-md justify-center items-start">
-            <div className="h-full w-full relative ">
+        <div className="absolute z-30 h-full top-0 left-0 w-full  flex  backdrop-blur-md justify-center items-start">
+            <div className=" w-full h-full ">
                 <Close onClick={()=>close()} className="m-4 h-8 w-8 hover:scale-105 absolute right-0" />
-                <div className="max-w-xl h-full bg-slate-800 m-auto flex flex-col items-center justify-center ">
+                <div className=" w-[calc(30rem)] max-w-full h-full bg-slate-800 m-auto flex flex-col items-center justify-center ">
                     <ImagePost post={post} />
                     <button onClick={()=>setWarning(true)} className="self-end m-6 p-2 rounded-xl border border-slate-700 hover:bg-slate-700 hover:shadow-lg">Delete Post</button>
                     {deleteWarning && <DeleteWarning post_id={post.post_id} cancel={()=>setWarning(false)} deletePost={deletePostAction} />}

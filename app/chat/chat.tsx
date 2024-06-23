@@ -7,7 +7,8 @@ import ChatBox from "./chatbox";
 import { Connection } from "../api/db_queries/chat";
 import { fetchConnections } from "../api/chat/chat";
 import { useSelector } from "react-redux";
-import { RootState } from "../sseProvider/store";
+import useMessages from "../state-store/messagesStore";
+// import { RootState } from "../sseProvider/store";
 
 
 export default function Chat(props: {interval: React.MutableRefObject<any>}) {
@@ -18,8 +19,8 @@ export default function Chat(props: {interval: React.MutableRefObject<any>}) {
 
     const [connections, setConnections] = useState<Connection[]>([]);
 
-    const messages = useSelector((state: RootState)=>state.messages)
-
+    // const messages = useSelector((state: RootState)=>state.messages)
+    const { unreadMessages, removeMessage } = useMessages();
 
     useEffect(()=>{
         fetchConnections().then( connections => {
@@ -37,12 +38,11 @@ export default function Chat(props: {interval: React.MutableRefObject<any>}) {
     useEffect(()=>{
         setConnections(prev=>{
             let updatedConnections = prev.map((connection) => {
-                var index = messages.findIndex(([sender, _]) => sender==connection.username);
-                if(index!=-1) {
-                    connection.lastmsg=messages[index][1];
+                const unreadmsg = unreadMessages[connection.username];
+                if(unreadmsg) {
+                    connection.lastmsg = unreadmsg
                 }
-                let upDatedconnection =  {...connection, lastmsg: connection.lastmsg?{...connection.lastmsg, unread: false}: null};
-                return upDatedconnection;
+                return connection;
             })
 
             return updatedConnections.toSorted((a,b)=>{
@@ -54,7 +54,7 @@ export default function Chat(props: {interval: React.MutableRefObject<any>}) {
 
         });
         
-    }, [messages])
+    }, [unreadMessages])
 
     function onClickOnUser(user: Connection) {
         primary.current='chatbox';
@@ -63,11 +63,16 @@ export default function Chat(props: {interval: React.MutableRefObject<any>}) {
             const div = document.getElementById('connections') as HTMLDivElement
             div.style.marginLeft='-100vw'
         }
-        let index = connections.findIndex((connection) => connection.username==user.username);
-        if(user.lastmsg) user.lastmsg.unread=false;
-        connections[index] = user;
-
-        setConnections([...connections])
+        if(unreadMessages[user.username]) {
+            setConnections(prev => prev.map((connection) => {
+                if(connection.username!=user.username) return connection;
+                else {
+                    return {...connection, lastmsg: {...connection.lastmsg,  unread:false}} as Connection
+                }
+            }))
+            removeMessage(user.username); 
+        }
+        
     }
 
 

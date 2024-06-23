@@ -1,7 +1,9 @@
 import { JwtPayload, verify } from 'jsonwebtoken'
 import { Response } from "express";
+import {config} from  'dotenv';
+config();
 
-const jwt_secret = process.env.jwt_secret as string;
+const jwt_secret = process.env.JWT_SECRET as string;
 
 export async function verify_token(token: string) {
     try {

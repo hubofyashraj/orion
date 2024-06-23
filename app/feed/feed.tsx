@@ -3,6 +3,7 @@ import FloatingActionButton from "./floatingActionButton";
 import { fetchPosts } from "../api/feed/feed";
 import ImagePost from "./imagepost";
 import { ObjectId } from "mongodb";
+import usePostsAlert from "../state-store/newPostsStore";
 
 
 export type Post = {
@@ -18,6 +19,7 @@ export type Post = {
 
 export default function Feed( { setPage } : { setPage: Function } ) {
     const [posts, setPost] = useState<Post[]>([]);
+    const {newPosts} = usePostsAlert();
 
     useEffect(()=>{
         fetchPosts().then((jsonString) => {
@@ -36,10 +38,10 @@ export default function Feed( { setPage } : { setPage: Function } ) {
 
     return (
         <div className="bg-slate-800 relative h-full w-full flex flex-col items-center">
-            {/* {  <div className="w-full">
+            { newPosts &&  <div className="w-full">
                 <p>New Posts</p>
                 <button onClick={refresh}>Refresh</button>
-                </div> } */}
+                </div> }
             <div className="drop-shadow-lg w-full max-w-xl h-full bg-slate-800 flex flex-col justify-start gap-0 overflow-y-auto scrollbar-none">
                 {posts.length==0 && (
                     <p className="text-slate-300 text-xl font-sans font-light text-center mt-52">Feels so empty lets connect to people</p>

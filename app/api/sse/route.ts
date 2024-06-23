@@ -1,6 +1,6 @@
 'use server'
 import { NextRequest, NextResponse } from "next/server";
-import { validSession } from "../actions/authentication";
+import { validSession } from "../auth/authentication";
 import assert from "assert";
 
 export async function GET(request: NextRequest) {

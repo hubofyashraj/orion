@@ -8,8 +8,8 @@ import Chat from "./chat/chat";
 import { useEffect, useRef, useState } from "react";
 import Navbar from "./navbar/navbar";
 import Ping from "./sseProvider/ping";
-import { validSession } from "./api/actions/authentication";
-import useSSE from "./sseProvider/useSSE";
+import { validSession } from "./api/auth/authentication";
+// import useSSE from "./sseProvider/useSSE.tsbak";
 
 
 
@@ -44,7 +44,7 @@ export default function App() {
 
   }, [])
   
-  useSSE();
+  // useSSE();
 
   if(showLoader) return (<CircularLoader />)
 

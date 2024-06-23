@@ -1,7 +1,9 @@
-import { ChangeEvent, useState } from "react";
+import { ChangeEvent, useEffect, useRef, useState } from "react";
 import UserProfile from "./userProfile";
 import { searchUsers } from "../api/search/search";
 import ProfilePictureComponent from "../components/pfp";
+import { getSuggestions } from "../api/search/suggestions";
+
 
 export interface Match { 
     username: string; 
@@ -14,9 +16,23 @@ export default function Search() {
 
     const [matches, setMatches] = useState<Match[]>([]);
     const [user, setUser] = useState<Match | undefined>();
-
+    const [suggestions, setSuggestions] = useState<Match[]>([]);
 
     let timer: ReturnType<typeof setTimeout>;
+
+    useEffect(()=>{
+        getSuggestions().then((values) => {
+            if(values) {
+                Promise.all(values).then((suggestionsData) => {
+                    setSuggestions(suggestionsData);
+                })
+            }
+        
+        })
+
+        
+    }, [])
+
 
     function changeHandler(e: ChangeEvent<HTMLInputElement>) {
         clearTimeout(timer);
@@ -85,10 +101,18 @@ export default function Search() {
             <div className=" max-w-96 mt-2 bg-slate-600  rounded-xl">
                 <input className="bg-inherit h-8   rounded-lg outline-none text-center" onChange={changeHandler}  placeholder="Search"/>
             </div>
-            <div className="w-full h-full  py-5 flex flex-col justify-start items-center gap-2 px-5">
-                {matches.length>0 && <p>Users Found</p>}
+            <div className="w-full overflow-y-auto scrollbar-none grow py-5 flex flex-col justify-start items-center gap-2 px-5">
+                {matches.length>0 && <p className="fixed -mt-12 text-2xl font-semibold">Users Found</p>}
                 {matches.map((user, idx)=><UserTile key={idx} user={user} onClick={()=>{setUser(user)}}/>)}
             </div>  
+            <div className=" w-full shrink-0  flex justify-center items-center  p-5">
+                <div className="overflow-x-auto scrollbar-none flex justify-evenly  gap-2">
+                    <p className="fixed -mt-10  font-semibold text-2xl">Suggestions</p>
+                    {suggestions.map((suggestion, idx) => {
+                        return <UserTile onClick={()=>setUser(suggestion)} user={suggestion} key={idx} />
+                    })}
+                </div>
+            </div>
           </div>
     );
 }
@@ -101,7 +125,7 @@ function UserTile({
 }) {
 
     return (
-        <div onClick={onClick} className="w-full max-w-96 flex gap-2 justify-between items-center mx-2 bg-slate-600 hover:bg-slate-500 hover:shadow-lg py-2 px-4 rounded-md">
+        <div onClick={onClick} className="w-full slide-item shrink-0 max-w-96 flex gap-2 justify-between items-center  bg-slate-600 hover:bg-slate-500 hover:shadow-lg py-2 px-4  rounded-md">
             <div className="rounded-full overflow-hidden shrink-0 border-2 border-slate-800 bg-slate-800 ">
                 <ProfilePictureComponent size={40} user={user.username} />
             </div>

@@ -3,7 +3,7 @@ import { useEffect, useState } from "react"
 import CircularLoader from "../Loader/Loader"
 import Image from "next/image"
 import { getPostThumbnails } from "../api/profile/user_posts"
-import { fetchPost, fetchPostStats } from "../api/feed/feed"
+import { fetchPost } from "../api/feed/feed"
 import PostView from "./post"
 
 export default function MyPosts({
@@ -35,8 +35,6 @@ export default function MyPosts({
 
     async function fetchPostData(post_id: string) {
         fetchPost(post_id).then((jsonString)=>{
-            console.log({jsonString});
-            
             if(jsonString) {
                 const post = JSON.parse(jsonString) as Post;
                 setPostToDisplay(post)

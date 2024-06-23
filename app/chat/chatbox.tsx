@@ -1,15 +1,11 @@
 import React, { useEffect } from "react";
 import { useState } from "react";
-import Image from "next/image";
-import { Message } from "./types";
 import Thread from "./thread";
 import { Connection } from "../api/db_queries/chat";
 import { getMessages, setAllRead } from "../api/chat/chat";
 import ProfilePictureComponent from "../components/pfp";
 import { ArrowBack } from "@mui/icons-material";
-import { useDispatch, useSelector } from "react-redux";
-import { AppDispatch, RootState } from "../sseProvider/store";
-import { setMessages } from "../sseProvider/reducers";
+import useMessages from "../state-store/messagesStore";
 
 
 function ChatBox({
@@ -20,36 +16,32 @@ function ChatBox({
 
     const [msgList, setMsgList] = useState<Message[]>([]);
 
-
-    const messages = useSelector((state: RootState)=>state.messages) as Array<[string, Message]>;
-    const dispatch: AppDispatch = useDispatch();
-
-    useEffect(()=>{
-        console.log(messages);
-        if(user ) {
-            let index=-1;
-            index = messages.findIndex(([sender, _])=>sender==user.username);
-            if(index==-1) return;
-
-            const msg = messages[index][1];
-
-            setMsgList(prev=>[...prev, {...msg, unread: false}]);
-            dispatch(setMessages(messages.filter((_, idx)=>idx!=index)));
-        }
-
-        
-    }, [dispatch, messages, user])
+    const { unreadMessages, removeMessage } = useMessages();
 
     useEffect(()=>{
         if(user) getMessages(user.username!).then( (messages) => { setMsgList(messages) })
     },[user])
 
     useEffect(()=>{
+        if(user ) {
+            const msg = unreadMessages[user.username];
+            if(msg) {
+                setMsgList(prev=>[...prev, {...msg, unread: false}]);
+                removeMessage(user.username);
+            }
+        }
+    }, [removeMessage, unreadMessages, user])
+
+    useEffect(()=>{
+        console.log(unreadMessages);
+        
+    }, [unreadMessages])
+
+    useEffect(()=>{
         if(user) {
             if(msgList.some((msg) => msg.sender==user.username && msg.unread)) {
                 setMsgList(prev=>prev.map((msg) => { 
-                    if(msg.sender==user.username) return {...msg, unread: false}; 
-                    else return msg;
+                    return {...msg, unread: false}; 
                 }))
                 setAllRead(user.username);
             }

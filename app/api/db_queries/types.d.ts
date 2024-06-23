@@ -113,6 +113,6 @@ type UserSession = {
 type Match = {
     username: string, 
     fullname: string, 
-    status?: string, 
+    status: string, 
     _id?: string
 }

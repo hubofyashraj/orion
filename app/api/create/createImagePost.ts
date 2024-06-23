@@ -1,6 +1,6 @@
 'use server';
-import { validSession } from "../actions/authentication";
-import { getToken } from "../actions/cookie_store";
+import { validSession } from "../auth/authentication";
+import { getToken } from "../auth/cookie_store";
 import { deletePostData, uploadPostData } from "../db_queries/create";
 
 

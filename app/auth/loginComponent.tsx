@@ -1,6 +1,6 @@
 'use client'
 import { ChangeEvent, FormEvent, useEffect, useState } from "react";
-import { login } from "../api/actions/authentication";
+import { login } from "../api/auth/authentication";
 import { useFormStatus } from "react-dom";
 
 export default function LoginComponent() {

@@ -1,7 +1,6 @@
-import { setAlert } from "@/app/sseProvider/reducers";
+import useAlerts from "@/app/state-store/alertsStore";
 import Image from "next/image"
 import { useEffect, useState } from "react"
-import { useDispatch } from "react-redux";
 
 export default function Notifications({
     notificationsAlerts
@@ -10,10 +9,13 @@ export default function Notifications({
 }){
     
     const [oldNotifications, setOldNotification] = useState([]);
-    const dispatch = useDispatch();
+    // const dispatch = useDispatch();
+
+    const { clearAlerts } = useAlerts();
 
     async function clearNotifications() {
-        dispatch(setAlert([]));
+        clearAlerts();
+        // dispatch(setAlert([]));
     }
     return(
         <div className=" flex flex-col gap-3   p-3  overflow-y-auto scrollbar-none   ">

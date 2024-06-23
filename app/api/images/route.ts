@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getToken } from "../actions/cookie_store";
+import { getToken } from "../auth/cookie_store";
 import { fetchPFP } from "../profile/profile";
-import { validSession } from "../actions/authentication";
+import { validSession } from "../auth/authentication";
 
 const address = process.env.express_uri as string;
 

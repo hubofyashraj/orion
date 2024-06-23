@@ -1,9 +1,6 @@
-import { useSelector } from "react-redux";
-import { RootState } from "./store";
-
+import usePing from "../state-store/pingStore";
 export default function Ping() {
-    const ping = useSelector((state: RootState) => state.ping);
-    
+    const {ping} = usePing();
 
 
     return (

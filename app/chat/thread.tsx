@@ -1,5 +1,4 @@
 import { Send } from "@mui/icons-material";
-import { Message } from "./types";
 import { useOptimistic, useRef } from "react";
 import MessageComp from "./message";
 import { sendMessage } from "../api/chat/chat";
@@ -38,14 +37,11 @@ export default function Thread({
             <div id="msgs" key={user.username} className="grow w-full flex flex-col items-start justify-start overflow-y-auto scrollbar-none scrollbar-track-white">
                 { optimisticMessages.map((msg, idx)=>{
                     if(msg.receiver == user.username || msg.sender==user.username) 
-                        return ( <>
-                            {msg.sender==user.username && msg.unread && ((idx>0 && (!optimisticMessages[idx-1].unread || optimisticMessages[idx-1].sender!=user.username))  || idx==0) && <p key={'unread tag '} className="text-lg text-center self-center px-5 border-b text-slate-600 border-slate-700">Unread</p>}
-                            <MessageComp key={idx+msg.ts}  msg={msg} user={user.username} />
-                        </> )
+                        return (  <MessageComp key={idx+msg.ts}  msg={msg} user={user.username} />)
                     
                 })}
             </div>
-            <div className="h-16 shrink-0 flex justify-center items-center w-[calc(100svw)] sm:w-[calc(66svw)] bg-slate-800  border-slate-600">
+            <div key={'form'} className="h-16 shrink-0 flex justify-center items-center w-[calc(100svw)] sm:w-[calc(66svw)] bg-slate-800  border-slate-600">
                 <MessageForm sendMessage={sendOptimistically}/>
             </div>       
         </>

@@ -1,6 +1,6 @@
 'use server'
 import axios from "axios";
-import { validSession } from "../actions/authentication";
+import { validSession } from "../auth/authentication";
 import { getCommentsFromDb, getPostFromDb, getPostStats, getPostsFromDB, removeCommentFromDb, saveCommentToDB, toggleLikeInDB, toggleSaveInDB } from "../db_queries/feed";
 
 const address = process.env.express_uri as string;

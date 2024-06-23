@@ -22,6 +22,6 @@
       "@/*": ["./*"]
     }
   },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts", "app/profile/profile_bac", "app/api/events", "app/api/navbar"],
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts", "app/profile/profile_bac", "app/api/events", "app/api/navbar", "app/sseProvider/useSSE.tsbak"],
   "exclude": ["node_modules"]
 }

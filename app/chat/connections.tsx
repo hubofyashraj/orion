@@ -1,9 +1,6 @@
-import { ChangeEvent, Dispatch, useEffect, useRef, useState } from "react";
-import { fetchConnections } from "../api/chat/chat";
+import { ChangeEvent, Dispatch, useEffect } from "react";
 import { Connection } from "../api/db_queries/chat";
 import ProfilePictureComponent from "../components/pfp";
-import { useSelector } from "react-redux";
-import { RootState } from "../sseProvider/store";
 
 function Connections({
     setConnections, allConnections, connections, focusUser
@@ -13,24 +10,26 @@ function Connections({
     connections: Connection[], focusUser: (user: Connection) => void
 }) {
 
-    console.log('rendered');
-    
-
-
-
-    
-
-    
 
 
     function searchOnChange(event: ChangeEvent<HTMLInputElement>) {
         const val = event.target.value;
-        if(val=='') setConnections(allConnections.current);
+        if(val=='') setConnections(allConnections.current.toSorted((a,b) => {
+            if(!a.lastmsg && !b.lastmsg) return 0;
+            if(!a.lastmsg) return 1;
+            if(!b.lastmsg) return -1;
+            return (b.lastmsg.ts).localeCompare(a.lastmsg.ts)
+        }));
         else {
             let pattern = RegExp(val,'i')
             setConnections(allConnections.current.filter(
                 (connection)=>connection.fullname.match(pattern) || connection.username.match(pattern)
-            ))
+            ).toSorted((a,b) => {
+                if(!a.lastmsg && !b.lastmsg) return 0;
+                if(!a.lastmsg) return 1;
+                if(!b.lastmsg) return -1;
+                return (b.lastmsg.ts).localeCompare(a.lastmsg.ts)
+            }))
         }
     }
 

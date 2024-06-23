@@ -1,7 +1,7 @@
 'use server';
 
 import axios from "axios";
-import { validSession } from "../actions/authentication";
+import { validSession } from "../auth/authentication";
 import { deleteRequestFromDb, resolveRequestInDb, saveRequestInDb, searchUser } from "../db_queries/search";
 import { fetchInfo } from "../profile/profile";
 

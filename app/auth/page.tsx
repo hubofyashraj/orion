@@ -1,7 +1,7 @@
 import './login.css';
 import { Form } from './form';
 import { redirect } from 'next/navigation';
-import { validSession } from '../api/actions/authentication';
+import { validSession } from '../api/auth/authentication';
 import Image from 'next/image';
 
 export default async function Auth() {

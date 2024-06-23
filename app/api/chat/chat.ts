@@ -1,7 +1,7 @@
 'use server';
 
-import { Message } from "@/app/chat/types";
-import { validSession } from "../actions/authentication";
+// import { Message } from "@/app/chat/types";
+import { validSession } from "../auth/authentication";
 import { getConnections, getMessagesFromDb, insertMessage, readMessages } from "../db_queries/chat";
 import axios from "axios";
 

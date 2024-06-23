@@ -1,5 +1,5 @@
 'use server';
-import { validSession } from "../actions/authentication";
+import { validSession } from "../auth/authentication";
 import { collections } from './collections';
 
 
