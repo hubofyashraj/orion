@@ -3,6 +3,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { validSession } from "../auth/authentication";
 import assert from "assert";
 
+const address = process.env.express_uri as string
+
 export async function GET(request: NextRequest) {
     const {status, user} = await validSession();
     if(status==401) return new NextResponse('Unauthorized', {status: 401})
@@ -18,7 +20,7 @@ export async function GET(request: NextRequest) {
         let reader: ReadableStreamDefaultReader | undefined;
 
         const connect = async () => {
-            expResponse = await fetch(`http://localhost:6789/sse/register?user=${user}`);
+            expResponse = await fetch(`${address}/sse/register?user=${user}`);
             stream = expResponse.body;
             reader = stream?.getReader();
         };
@@ -32,8 +34,6 @@ export async function GET(request: NextRequest) {
                 const data = decoder.decode(value);
 
                 if (data.startsWith('ping')) {
-                    console.log('ping from express for', user);
-                    
                     writer.ready.then(
                         ()=>writer.write(`data: ${JSON.stringify({ type: 'ping', payload: data })}\n\n`)
                     ).catch(()=>{

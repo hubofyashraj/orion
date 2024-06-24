@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { AlternateEmail, ArrowBack, Cancel, CheckCircle, Delete, Email, Notes, PeopleAlt, PersonAdd, Phone, PinDrop, Work } from "@mui/icons-material";
 import { Match } from "./search";
-import { ToastContainer } from "react-toastify";
 import UserPosts from "./userPosts";
 import { fetchInfo } from "../api/profile/profile";
 import ProfilePictureComponent from "../components/pfp";
@@ -69,7 +68,6 @@ export default function UserProfile({
 
 
                 </div>
-                <ToastContainer />
             </div>}
         
           </div>

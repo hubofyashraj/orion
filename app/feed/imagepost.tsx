@@ -190,8 +190,8 @@ export default function ImagePost({ post }: {post: Post}) {
                 <div>
                     {stats && <p className="mr-4">{stats.post_likes_count} {stats.post_likes_count==1?'like':'likes'}</p>}
                 </div>
-                <div className=" my-2 ">
-                    <p className="flex gap-2 text-base items-center"><span className="font-bold ">{post.post_user}</span> {post!.post_caption}</p>
+                <div className=" my-1 ">
+                    <p className="text-base text-pretty "><span className="font-bold ">{post.post_user}</span> {post!.post_caption}</p>
                 </div>
 
             </div>

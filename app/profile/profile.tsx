@@ -1,7 +1,6 @@
 'use client'
 import { fetchInfo } from "../api/profile/profile";
 import ProfilePicture from "./profilePicture";
-import { ToastContainer } from "react-toastify";
 import { useEffect, useState } from "react";
 import { AlternateEmail, Settings } from "@mui/icons-material";
 import Edit from "./edit";
@@ -56,7 +55,6 @@ export default function Profile() {
                 <div className="absolute  top-5 right-6">
                     <p onClick={() => showEdit(true)}><Settings /></p>
                 </div>
-                <ToastContainer />
             </div>}
         
           </div>

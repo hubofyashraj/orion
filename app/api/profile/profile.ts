@@ -4,7 +4,7 @@ import { getInfo, hasPFP, saveInfo } from "@/app/api/db_queries/profile";
 import { getToken } from "../auth/cookie_store";
 import axios from "axios";
 import { validSession } from "../auth/authentication";
-import redis from "../redis/redis_client";
+import redis, { redisInit } from "../redis/redis_client";
 
 const address = process.env.express_uri as string
 
@@ -46,14 +46,22 @@ export async function fetchPFP(username?: string) {
         if(status==401) return '';
         
         if(!hasPFP(username??user!)) return '';
-
-        const cachedPfp = await redis.hget('pfp', username??user!);
-        if(cachedPfp) return cachedPfp;
+        
+        try {
+            if(!redis) await redisInit();
+        } catch (error) {
+            console.log('while initializing redis\n', error);
+        }
+        
+        if(redis) {
+            const cachedPfp = await redis.hget('pfp', username??user!);
+            if(cachedPfp) return cachedPfp;    
+        }
 
         axios.defaults.headers.common['Authorization'] = `Bearer ${await getToken()}`
         const result: {data: {success: boolean, image: string}} = await axios.get( address + '/profile/fetchPFP'+(username?'?user='+username:'') )
         if(result.data.success) {
-            await redis.hset('pfp', username??user!, result.data.image);
+            if(redis) await redis.hset('pfp', username??user!, result.data.image);
             return result.data.image;
         }
     } catch (error) {

@@ -6,9 +6,7 @@ import ChatBox from "./chatbox";
 
 import { Connection } from "../api/db_queries/chat";
 import { fetchConnections } from "../api/chat/chat";
-import { useSelector } from "react-redux";
 import useMessages from "../state-store/messagesStore";
-// import { RootState } from "../sseProvider/store";
 
 
 export default function Chat(props: {interval: React.MutableRefObject<any>}) {
@@ -19,7 +17,6 @@ export default function Chat(props: {interval: React.MutableRefObject<any>}) {
 
     const [connections, setConnections] = useState<Connection[]>([]);
 
-    // const messages = useSelector((state: RootState)=>state.messages)
     const { unreadMessages, removeMessage } = useMessages();
 
     useEffect(()=>{

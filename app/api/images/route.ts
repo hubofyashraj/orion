@@ -18,7 +18,6 @@ export async function GET(req: NextRequest) {
         }})
         if(assets.ok) {
             const body = await assets.json();
-            console.log({assetnull: body.asset==''});
             
             if(body.asset=='') {return new NextResponse('Assset not found', {status: 404})};
 

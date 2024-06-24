@@ -6,7 +6,6 @@ import { cilX } from "@coreui/icons"
 import ReactCrop, { type Crop } from 'react-image-crop';
 import 'react-image-crop/src/ReactCrop.scss'
 import { uploadPFP } from "../api/profile/profile"
-import { toast } from "react-toastify"
 
 export default function CropComponent({
     file, close
@@ -26,7 +25,7 @@ export default function CropComponent({
 
     function cropimage(event: any): void {
         const img = document.getElementById('img') as HTMLImageElement
-        getCroppedImage(img, crop.x, crop.y, crop.width, crop.height).then(async (value)=>{
+        getCroppedImage(img, crop.x!, crop.y!, crop.width!, crop.height!).then(async (value)=>{
             const blob: Blob = await (await fetch(value)).blob()
             const formData = new FormData();
             formData.append('file', blob);
@@ -34,7 +33,6 @@ export default function CropComponent({
             uploadPFP(formData).then((success)=>{
                 close(success)
             }).catch((error)=>{
-                toast('some err')
             })
         })
     }
@@ -45,7 +43,7 @@ export default function CropComponent({
             <CIcon onClick={()=>close(false)} className="w-10 h-10 shrink-0 scale-75 hover:scale-90 self-end" icon={cilX} />
             <div className="  overflow-hidden ">
                 {imgSrc!='' 
-                &&  <ReactCrop   className="border-8 p-0 m-0 border-slate-800  max-h-full max-w-full" aspect={1} crop={crop} onChange={c=>setCrop(c)}>
+                &&  <ReactCrop  aspect={1} className="border-8 p-0 m-0 border-slate-800  max-h-full max-w-full" crop={crop} onChange={c=>setCrop(c)}>
                     <div className="relative w-full h-full ">
                         <Image id="img"  className={ " object-contain max-h-[calc(100svh-240px)] max-w-full  h-full w-auto "} alt="" src={imgSrc} width={0} height={0} />
                     </div>

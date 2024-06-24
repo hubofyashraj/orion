@@ -1,0 +1,74 @@
+version: '3.8'
+services:
+  nextjs:
+    build: .
+    ports:
+      - '3000:3000'
+    depends_on:
+      # - mongo1
+      # - mongo2
+      # - mongo3
+      - redis
+      - backend
+    environment:
+      - express_uri=http://backend:6789
+      - mongo_uri=mongodb+srv://yashraj:Raj@cluster0.q1zhypd.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0
+      - db_name=oriondb
+      - NODE_ENV=production
+      - redis_uri=redis://redis:6379
+
+  # mongo1:
+  #   image: mongo:latest
+  #   container_name: mongo1
+  #   ports:
+  #     - 27017:27017
+  #   environment:
+  #     - TCP_FASTOPEN=enabled
+  #   volumes:
+  #     - mongo1-data:/data/db
+  #   command: ["mongod", "--replSet", "rs0", "--bind_ip_all"]
+
+  # mongo2:
+  #   image: mongo:latest
+  #   container_name: mongo2
+  #   ports:
+  #     - 27018:27017
+  #   environment:
+  #     - TCP_FASTOPEN=enabled
+  #   volumes:
+  #     - mongo2-data:/data/db
+  #   command: ["mongod", "--replSet", "rs0", "--bind_ip_all"]
+
+  # mongo3:
+  #   image: mongo:latest
+  #   container_name: mongo3
+  #   ports:
+  #     - 27019:27017
+  #   environment:
+  #     - TCP_FASTOPEN=enabled
+  #   volumes:
+  #     - mongo3-data:/data/db
+  #   command: ["mongod", "--replSet", "rs0", "--bind_ip_all"]
+
+  redis:
+    image: redis:latest
+    ports:
+      - 6379:6379
+    volumes:
+      - redis-data:/data
+
+  backend:
+    image: yasmc-backend:1.0
+    ports:
+      - 6789:6789
+    depends_on:
+      - redis
+    environment:
+      - redis_uri=redis://redis:6379
+
+# Define volumes for persistent data
+volumes:
+  # mongo1-data:
+  # mongo2-data:
+  # mongo3-data:
+  redis-data:

@@ -1,4 +1,5 @@
 'use server';
+import { PullOperator, PushOperator } from "mongodb";
 import { validSession } from "../auth/authentication";
 import { collections } from './collections';
 
@@ -7,7 +8,6 @@ const client = collections.client;
 const postCollection = collections.postCollection;
 const postStatsCollection = collections.postStatsCollection;
 const postOptions = collections.postOptionsCollection;
-const userCollection = collections.userCollection;
 const connectionsCollection = collections.connectionsCollection;
 const commentsCollection = collections.postCommentsCollection;
 
@@ -80,16 +80,21 @@ export async function toggleLikeInDB(post_id: string, user: string, current: boo
     const session = client.startSession();
     try {
         session.startTransaction();
+
         if(current) {
-            await postStatsCollection.updateOne({post_id}, {$inc: {post_likes_count: -1}});
-            await postOptions.updateOne({post_id}, {$pull: {post_liked_by: user}});
+            await postStatsCollection.updateOne({post_id}, {$inc: {post_likes_count: -1}}, {session});
+            const likedby = (await postOptions.findOne({post_id: post_id}))!.post_liked_by;
+            await postOptions.updateOne({post_id}, {$set: {post_saved_by: likedby.filter((userInArray) => userInArray!=user)}});
         } else {
-            await postStatsCollection.updateOne({post_id}, {$inc: {post_likes_count: 1}});
-            await postOptions.updateOne({post_id}, {$push: {post_liked_by: user}});
+            await postStatsCollection.updateOne({post_id}, {$inc: {post_likes_count: 1}}, {session});
+            const likedby = (await postOptions.findOne({post_id: post_id}))!.post_liked_by;
+            await postOptions.updateOne({post_id}, {$set: {post_saved_by: likedby.filter((userInArray) => userInArray!=user)}});
         }
         await session.commitTransaction();
         return true;
     } catch (error) {
+        console.log({error});
+        
         await session.abortTransaction();        
         return false;
     } finally {
@@ -104,10 +109,12 @@ export async function toggleSaveInDB(post_id: string, user: string, current: boo
         session.startTransaction();
         if(current) {
             await postStatsCollection.updateOne({post_id}, {$inc: {post_save_count: -1}});
-            await postOptions.updateOne({post_id}, {$pull: {post_saved_by: user}});
+            const savedby = (await postOptions.findOne({post_id: post_id}))!.post_saved_by;
+            await postOptions.updateOne({post_id}, {$set: {post_saved_by: savedby.filter((userInArray) => userInArray!=user)}});
         } else {
             await postStatsCollection.updateOne({post_id}, {$inc: {post_save_count: 1}});
-            await postOptions.updateOne({post_id}, {$push: {post_saved_by: user}});
+            const savedby = (await postOptions.findOne({post_id: post_id}))!.post_saved_by;
+            await postOptions.updateOne({post_id}, {$set: {post_saved_by: [...savedby, user]}});
         }
         await session.commitTransaction();
         return true;
