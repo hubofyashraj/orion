@@ -2,6 +2,7 @@
 import assert from "assert";
 import { validSession } from "../auth/authentication";
 import { collections } from "../db_queries/collections";
+import { hasPFP } from "../db_queries/profile";
 
 const connectionsCollection = collections.connectionsCollection;
 const infoCollection = collections.infoCollection;
@@ -34,8 +35,15 @@ export async function getSuggestions() {
         const data = await fetchMatchData(suggestion);
         return data;
     })
-    if(datas) await Promise.all(datas);
-    return datas;
+
+    if(!datas) return;
+
+    const matches = await Promise.all(datas);
+    const promises = matches.map((match) => hasPFP(match.username).then((has) => match.hasPFP=has))
+
+    await Promise.all(promises);
+    
+    return JSON.stringify({matches});
 }
 
 export async function fetchMatchData(user: string) {

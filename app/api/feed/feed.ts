@@ -1,9 +1,8 @@
 'use server'
-import axios from "axios";
 import { validSession } from "../auth/authentication";
 import { getCommentsFromDb, getPostFromDb, getPostStats, getPostsFromDB, removeCommentFromDb, saveCommentToDB, toggleLikeInDB, toggleSaveInDB } from "../db_queries/feed";
+import { sendEvent } from "@/app/utils/server-only";
 
-const address = process.env.express_uri as string;
 
 export async function fetchPosts() {
     const {status} = await validSession();
@@ -51,15 +50,19 @@ export async function togglePostLike(post_id: string, post_user: string, current
     const {user, status} = await validSession();
     if(status==401) return false;
     const result =  await toggleLikeInDB(post_id, user!, current);
-    if(result && !current) {
-        axios.post(address+'/sse/sendAlert?user='+user, {alert: {
-            type: 'notification',
-            content: {
-                post_id,
-                post_user,
-                liked_by: user
+    if(result && !current && user!=post_user) {
+
+        const event = {
+            type: 'alert', 
+            payload: {
+                from: user,
+                post_id: post_id,
+                type: 'like'
             }
-        }})
+        }
+
+        sendEvent(post_user, event)
+        
     }
     return result;
 }  
@@ -94,14 +97,17 @@ export async function sendComment(comment: PostComments) {
 
     const result  = await saveCommentToDB(obj);
     if(result && user!=comment.post_user) {
-        axios.post(address+'/sse/sendAlert?user='+user, {alert: {
-            type: 'notification',
-            content: {
+        const event = {
+            type: 'alert', 
+            payload: {
+                from: user,
                 post_id: comment.post_id,
-                post_user: comment.post_user,
-                comment_by: user
+                type: 'comment'
             }
-        }})
+        }
+
+        sendEvent(comment.post_user, event)
+
     }
     return result?JSON.stringify(obj):false;
 

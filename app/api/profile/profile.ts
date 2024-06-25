@@ -5,8 +5,8 @@ import { getToken } from "../auth/cookie_store";
 import axios from "axios";
 import { validSession } from "../auth/authentication";
 import redis, { redisInit } from "../redis/redis_client";
+import { savePFP } from "@/app/utils/imageUploads";
 
-const address = process.env.express_uri as string
 
 /**
  * 
@@ -34,54 +34,20 @@ export async function updateInfo(  updatedInfo: {
     return result;
 }
 
-/**
- * fetches profilepicture from express server
- * @param username 
- * @returns base64 image if present else empty string
- */
-export async function fetchPFP(username?: string) {
-
-    try {
-        const {user, status} = await validSession();
-        if(status==401) return '';
-        
-        if(!hasPFP(username??user!)) return '';
-        
-        try {
-            if(!redis) await redisInit();
-        } catch (error) {
-            console.log('while initializing redis\n', error);
-        }
-        
-        if(redis) {
-            const cachedPfp = await redis.hget('pfp', username??user!);
-            if(cachedPfp) return cachedPfp;    
-        }
-
-        axios.defaults.headers.common['Authorization'] = `Bearer ${await getToken()}`
-        const result: {data: {success: boolean, image: string}} = await axios.get( address + '/profile/fetchPFP'+(username?'?user='+username:'') )
-        if(result.data.success) {
-            if(redis) await redis.hset('pfp', username??user!, result.data.image);
-            return result.data.image;
-        }
-    } catch (error) {
-        console.log('error while fetching pfp ',error);
-    }
-    
-    return ''
-
-}
 
 
 export async function uploadPFP(formData: FormData) {
     const token = await getToken();
+    const {status, user} = await validSession();
     if(token) {
         try {
             const updatedInfo = { pfp_uploaded: true }
-            axios.defaults.headers.common['Authorization'] = `Bearer ${token}`
-            const result = await axios.post( address + '/profile/savePFP', formData )
+            console.log(formData.get('file'));
             
-            if(result.data.success) {
+            const result = await savePFP(formData.get('file') as File, user!)
+
+            
+            if(result) {
                 updateInfo(updatedInfo)
                 return true;
             } else return false;

@@ -4,9 +4,9 @@ import CropComponent from "./CropComponent";
 import ProfilePictureComponent from "../components/pfp";
 
 export default function ProfilePicture({
-    info
+    info, refresh
 }: {
-    info: ProfileInfo
+    info: ProfileInfo, refresh: () => void
 }) {
 
     const [imageChosen, setImageChosen] = useState(false)
@@ -24,7 +24,7 @@ export default function ProfilePicture({
     return (
         <div className=" sm:ml-10 sm:mt-20 p-2  rounded-full bg-inherit">
             <div className="h-32 w-32 shrink-0  profile-img relative rounded-full bg-slate-800 overflow-hidden flex justify-center items-center">
-                <ProfilePictureComponent size={128} user={info.username} />
+                <ProfilePictureComponent size={128} user={info.username} hasPFP={info.pfp_uploaded} />
                 <div onClick={() => { document.getElementById('pickInput')?.click() }} className="cursor-pointer select-none h-32 w-32 bg-black opacity-0 hover:opacity-50 absolute rounded-full text-center" >
                     <p className="text-white mt-12 ">Edit Profile Picture</p>
                     <input onChange={onChangeHandler} id="pickInput" className="hidden" placeholder="" type="file" />
@@ -35,6 +35,9 @@ export default function ProfilePicture({
                 file={fileSelected.current!} 
                 close={(uploadSuccess)=>{
                     setImageChosen(false) 
+                    if(uploadSuccess) {
+                        refresh()
+                    }
                 } } 
                 />
             }

@@ -9,6 +9,7 @@ export interface Match {
     username: string; 
     fullname: string;
     status: string,
+    hasPFP?: boolean,
     _id? : string
 };
 
@@ -23,9 +24,8 @@ export default function Search() {
     useEffect(()=>{
         getSuggestions().then((values) => {
             if(values) {
-                Promise.all(values).then((suggestionsData) => {
-                    setSuggestions(suggestionsData);
-                })
+                const { matches } = JSON.parse(values);
+                setSuggestions(matches);
             }
         
         })
@@ -127,7 +127,7 @@ function UserTile({
     return (
         <div onClick={onClick} className="w-full slide-item shrink-0 max-w-96 flex gap-2 justify-between items-center  bg-slate-600 hover:bg-slate-500 hover:shadow-lg py-2 px-4  rounded-md">
             <div className="rounded-full overflow-hidden shrink-0 border-2 border-slate-800 bg-slate-800 ">
-                <ProfilePictureComponent size={40} user={user.username} />
+                <ProfilePictureComponent size={40} user={user.username} hasPFP={user.hasPFP} />
             </div>
             <div className="grow">
                 <p className="text-lg ">{user.fullname}</p>

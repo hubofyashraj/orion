@@ -1,11 +1,9 @@
 'use server';
 
-// import { Message } from "@/app/chat/types";
+import { sendEvent } from "@/app/utils/server-only";
 import { validSession } from "../auth/authentication";
 import { getConnections, getMessagesFromDb, insertMessage, readMessages } from "../db_queries/chat";
-import axios from "axios";
 
-const address = process.env.express_uri as string
 
 export async function fetchConnections() {
     const {user, status} = await validSession();
@@ -40,7 +38,12 @@ export async function sendMessage(msg: Message) {
     const inserted = await insertMessage(message);
     if(inserted) {
         try {
-            axios.post(address+'/sse/sendMessage?user='+user, {message})
+            const event = {
+                type: 'message',
+                payload: message
+            }
+
+            sendEvent(message.receiver, event);
             return JSON.stringify(message)
         } catch (error) {
             console.error('while sending sse request to express\n ', error);

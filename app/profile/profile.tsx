@@ -45,7 +45,7 @@ export default function Profile() {
                             <p className="w-1/2 sm:w-32 flex flex-col sm:flex-row justify-between">Connections<span>{info.connectionsCount}</span></p>
                             <p className=" w-1/2 sm:w-32 flex flex-col sm:flex-row justify-between">posts<span>{info.postsCount}</span></p>
                         </div>
-                        <ProfilePicture info={info} />
+                        <ProfilePicture info={info} refresh={() => setRefresh(!refresh)} />
                     </div>
                     
                     <div className="grow px-2 flex flex-col w-full ">

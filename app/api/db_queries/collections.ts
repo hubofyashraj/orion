@@ -1,3 +1,5 @@
+import 'server-only';
+
 import { MongoClient } from "mongodb";
 import { Collection } from "mongodb";
 
@@ -37,6 +39,3 @@ export const collections =
     userStatsCollection,
     sessions
 };
-
-export default async function placeholder() {
-}

@@ -1,4 +1,3 @@
-import getCollections from "./collections";
 import { collections } from './collections';
 
 const client = collections.client;

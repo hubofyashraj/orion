@@ -4,8 +4,8 @@ import axios from "axios";
 import { validSession } from "../auth/authentication";
 import { deleteRequestFromDb, resolveRequestInDb, saveRequestInDb, searchUser } from "../db_queries/search";
 import { fetchInfo } from "../profile/profile";
+import { sendEvent } from "@/app/utils/server-only";
 
-const address = process.env.express_uri as string;
 
 export async function searchUsers(keyword: string) {
     const {status, user} = await validSession();
@@ -24,14 +24,15 @@ export async function sendRequest(receiver: string) {
     const req_id = await saveRequestInDb(user!, receiver);
     if(req_id) {
         const info = JSON.parse((await fetchInfo())!) as ProfileInfo
-        axios.post(address+'/sse/sendAlert?user='+user, {alert: {
-            type: 'request',
-            content: {
+        const event = {
+            type: 'alert',
+            payload: {
                 from: user,
                 fullname: info.fullname,
-                to: receiver,
             }
-        }})
+        }
+        sendEvent(receiver, event)
+    
     }
     return req_id;
 }

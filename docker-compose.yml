@@ -57,15 +57,6 @@ services:
     volumes:
       - redis-data:/data
 
-  backend:
-    image: yasmc-backend:1.0
-    ports:
-      - 6789:6789
-    depends_on:
-      - redis
-    environment:
-      - redis_uri=redis://redis:6379
-
 # Define volumes for persistent data
 volumes:
   # mongo1-data:

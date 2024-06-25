@@ -1,3 +1,4 @@
+'use server'
 import { validSession } from "../auth/authentication";
 import { readConnectRequestsFromDb, readRequestId } from "../db_queries/navbar";
 import { acceptRequest, cancelRequest } from "../search/search";

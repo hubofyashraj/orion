@@ -61,7 +61,7 @@ function UserComponent({
         <div onClick={onClick} className="clickableuser  cursor-pointer px-2 py-2 flex gap-5 justify-start items-center bg-slate-800 shadow-md">
             <div className="h-12 w-12 bg-slate-900 rounded-full p-[calc(3px)] shrink-0">
                 <div className="h-full w-full rounded-full overflow-hidden ">
-                    <ProfilePictureComponent size={100} user={info.username} />
+                    <ProfilePictureComponent size={100} user={info.username} hasPFP={info.pfp_uploaded} />
                 </div>
             </div>
             <div className="grow   h-full ">

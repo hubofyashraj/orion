@@ -114,5 +114,6 @@ type Match = {
     username: string, 
     fullname: string, 
     status: string, 
+    hasPFP?: boolean
     _id?: string
 }

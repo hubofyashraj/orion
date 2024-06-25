@@ -13,8 +13,8 @@ export default function UserPosts({
     const [posts, setPosts] = useState<Array<string>>([]);
 
     useEffect(()=>{
-        getPostThumbnails(user).then((usersPosts)=>{
-            if(usersPosts) setPosts(usersPosts);                
+        getPostThumbnails(user).then((jsonString)=>{
+            if(jsonString.length) setPosts((JSON.parse(jsonString)).post_ids);                
             else setPosts([])
         })
     }, [user])

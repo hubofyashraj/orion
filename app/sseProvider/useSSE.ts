@@ -51,7 +51,7 @@ const useSSE = () => {
         setNewPosts(true);
       } else if (data.type === 'ping') {
         const ts1 = Date.now()
-        const ts = parseInt((data.payload as string).replace('ping', ''))
+        const ts = parseInt((data.payload as string))
         setPing(`${ts1-ts} ms`);
       }
     };
