@@ -18,13 +18,6 @@ export function Form() {
                 </div>
             </div>
             <div id='component' className='bg-slate-700 w-full h-72 py-2 flex justify-center items-center  rounded-b-lg'>
-                {/* {
-                    <form action={}>
-                        {
-                            page==0 ? <LoginComponent /> : <SignupComponent />
-                        }
-                    </form>
-                } */}
                 {   page==0? <LoginComponent /> : <SignupComponent setPage={()=>setPage(0)} />} 
             </div>
         </>

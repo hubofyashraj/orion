@@ -1,6 +1,5 @@
 'use server';
 
-import axios from "axios";
 import { validSession } from "../auth/authentication";
 import { deleteRequestFromDb, resolveRequestInDb, saveRequestInDb, searchUser } from "../db_queries/search";
 import { fetchInfo } from "../profile/profile";
@@ -12,6 +11,7 @@ export async function searchUsers(keyword: string) {
     if(status==401) return;
     try {
         const users = await searchUser(keyword, user!);
+
         return users;
     } catch(error) {
         return [];

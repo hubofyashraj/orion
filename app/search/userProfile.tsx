@@ -40,7 +40,7 @@ export default function UserProfile({
                         
                         <div className=" sm:ml-10 sm:mt-20 p-2  rounded-full bg-inherit">
                             <div className="h-32 w-32 shrink-0  profile-img relative rounded-full bg-slate-800 overflow-hidden flex justify-center items-center">
-                                <ProfilePictureComponent size={128} user={info.username} />
+                                <ProfilePictureComponent size={128} user={info.username} hasPFP={info.pfp_uploaded} />
                             </div>
                         </div>
                         <ArrowBack className="absolute top-2 left-2 hover:scale-105" onClick={close} />

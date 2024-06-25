@@ -1,35 +1,26 @@
 'use client'
-import { ChangeEvent, FormEvent, SetStateAction, useEffect, useState } from "react";
+import { ChangeEvent, SetStateAction, useRef, useState } from "react";
 import { checkUserNameAvailability, signup } from "../api/auth/signup";
-import { useFormStatus } from "react-dom";
+import { VisibilityOffOutlined, VisibilityOutlined } from "@mui/icons-material";
 
-export default function SignupComponent(props: {setPage: React.Dispatch<SetStateAction<number>>}) {
-
-    return (
-        <>
-            <form action={signup} autoComplete="off" id="inputform" className={' overflow-hidden flex flex-col gap-2'}>
-                <FormBody />
-            </form>
-        </>
-    )
-}
-
-
-
-function FormBody() {
+export default function SignupComponent(props: {setPage: () => void}) {
 
     const [ userNameAvailability, setAvailability ] = useState(false);
     const [ filled, setFilled ]= useState(false);
     const [ passwordsMatch, setIfMatch ] = useState(false);
+    const [ visible, setVisible ] = useState(false);
 
-    const { pending, data, action, method } = useFormStatus();
+    const form = useRef<HTMLFormElement | null>(null);
 
     let timeout: NodeJS.Timeout | null = null;
 
+
+
     function onChangeHandlerInput(event: ChangeEvent<HTMLInputElement>) {
         setFilled(false)
-        const form = event.target.parentElement as HTMLFormElement
-        const formData = new FormData(form);
+        if(!form.current) return;
+
+        const formData = new FormData(form.current);
         setTimeout(()=>{
             if(event.target.name=='password' || event.target.name=='cnfpassword')
                 setIfMatch(formData.get('password')==formData.get('cnfpassword'))
@@ -42,16 +33,7 @@ function FormBody() {
             )
         }, 1000)
     }
-    
-    useEffect(()=>{
-        if(data) {
-            const form = document.getElementById('inputform') as HTMLFormElement;
-            form.reset();
-            setFilled(false);
-            setAvailability(false)
-            setIfMatch(false)
-        }        
-    }, [data])
+
 
     function userNameOnChangedHandler(event: ChangeEvent<HTMLInputElement>) {
         if(timeout) clearTimeout(timeout);
@@ -70,15 +52,29 @@ function FormBody() {
         onChangeHandlerInput(event)
     }
 
+    async function action(formData: FormData) {
+        const result =  await signup(formData);
+        if(result) props.setPage()
+    }
+
     const common = 'outline-none bg-slate-900 bg-opacity-50 rounded-lg  hover:bg-opacity-70 px-3 py-2 text-center border-b border-slate-600'
     const btn=' cursor-pointer disabled:opacity-50 disabled:hover:bg-opacity-50 disabled:cursor-not-allowed'
+    
+
     return (
         <>
-            <input className={common}  onChange={userNameOnChangedHandler} name='username' type='text' placeholder='username' />
-            <input className={common}  onChange={onChangeHandlerInput} name='name' type='text' placeholder='full name'/>
-            <input className={common}  onChange={onChangeHandlerInput} name='password' type='password' placeholder='password'/>
-            <input className={common}  onChange={onChangeHandlerInput} name='cnfpassword' type='password' placeholder='confirm password'/>
-            <button id="submitbtn" className={ common + btn } disabled={!(userNameAvailability && filled && passwordsMatch )}>{pending?'Wait':'Signup'}</button>
+            <form ref={form} action={action} autoComplete="off" autoSave="off" id="inputform" className={' overflow-hidden flex flex-col gap-2'}>
+                <input className={common}  onChange={userNameOnChangedHandler} name='username' type='text' placeholder='username' />
+                <input className={common}  onChange={onChangeHandlerInput} name='name' type='text' placeholder='full name'/>
+                <div className={"flex items-center relative     "+common}>
+                    <input className={' bg-transparent autofill:bg-transparent outline-none text-center '}  onChange={onChangeHandlerInput} name='password'  type={visible?'text':'password'} placeholder='password'/>
+                    <span onClick={()=>setVisible(!visible)} className=" absolute right-2">{visible?<VisibilityOutlined />:<VisibilityOffOutlined />}</span>
+                </div>
+                <input className={common}  onChange={onChangeHandlerInput} name='cnfpassword' type='password' placeholder='confirm password'/>
+                <button id="submitbtn" className={ common + btn } disabled={!(userNameAvailability && filled && passwordsMatch )}>{'Signup'}</button>
+            </form>
         </>
     )
 }
+
+

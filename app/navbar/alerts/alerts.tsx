@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Notifications from "./notifications";
 import Requests from "./requests";
 import CIcon from "@coreui/icons-react";
@@ -12,6 +12,7 @@ export default function Alerts({
     const notifications = useRef<HTMLDivElement | null>(null);
     
     const { alerts, requests } = useAlerts();
+
 
     function close() {
         if(notifications.current) notifications.current.style.marginTop='-150vh'

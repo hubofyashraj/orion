@@ -10,7 +10,7 @@ async function validate(formData: FormData) {
     )
         return false;
     if(formData.get('password')?.toString()!=formData.get('cnfpassword')?.toString()) return false;
-    if(await checkUserNameAvailability(formData.get('username')!.toString())) return true;
+    if(await checkUserNameAvailability(formData.get('username')!.toString().toLowerCase())) return true;
     return false;
 }
 
@@ -19,7 +19,7 @@ export async function signup(formData: FormData) {
     if(!validated) throw 'Data not validated'
 
     const data = {
-        username: formData.get('username')!.toString(), 
+        username: formData.get('username')!.toString().toLowerCase(), 
         fullname: formData.get('name')!.toString(), 
         password: formData.get('password')!.toString()
     }
@@ -35,6 +35,6 @@ export async function signup(formData: FormData) {
 }
 
 export async function checkUserNameAvailability(username: string) {
-    const exists = await userExists(username);
+    const exists = await userExists(username.toLowerCase());
     return !exists;
 }

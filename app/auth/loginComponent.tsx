@@ -2,6 +2,7 @@
 import { ChangeEvent, FormEvent, useEffect, useState } from "react";
 import { login } from "../api/auth/authentication";
 import { useFormStatus } from "react-dom";
+import { VisibilityOffOutlined, VisibilityOutlined } from "@mui/icons-material";
 
 export default function LoginComponent() {
 
@@ -26,6 +27,7 @@ export default function LoginComponent() {
 function FormBody() {
     const { pending } = useFormStatus();
     const [filled, setFilled] = useState(false);
+    const [visible, setVisible] = useState(false);
 
     function onChangeHandler(event: ChangeEvent<HTMLInputElement>) {
         const form = event.target.parentElement as HTMLFormElement;
@@ -40,8 +42,12 @@ function FormBody() {
     return (
         <>
             <input onChange={onChangeHandler} className={common} name='username' type='text' autoComplete="off" placeholder='username' />
-            <input onChange={onChangeHandler} className={common} name='password' type='password' placeholder='password'/>
+            <input onChange={onChangeHandler} className={common + ' '} name='password' type={visible?'text':'password'} placeholder='password'/>
+            <span onClick={()=>setVisible(!visible)} className=" -mt-11 h-9 self-end mr-2">
+                {visible?<VisibilityOutlined />:<VisibilityOffOutlined/>}
+            </span>
             <input className={ common+ btn} disabled={!filled} type='submit' value={pending?'Logging In':'Login'}/>
+                
         </>
     )
 }

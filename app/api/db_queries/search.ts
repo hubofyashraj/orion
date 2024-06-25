@@ -1,19 +1,17 @@
 'use server'
 import { Collection, ObjectId } from "mongodb";
 import { collections } from './collections';
-import { PushOperator } from "mongodb";
 const client  = collections.client;
 const userStatsCollection = collections.userStatsCollection;
-const usersCollection = collections.userCollection;
 const connectionsCollection: Collection<Connections> = collections.connectionsCollection;
 const requestsCollection = collections.connectRequestCollection;
-
+const infoCollection = collections.infoCollection;
 
 export async function searchUser(keyword: string, user: string) {
     const session = client.startSession();
     try {
         session.startTransaction()
-        const resultSet = await usersCollection.find(
+        const resultSet = await infoCollection.find(
             {$and: [
                 {username: {$ne :user}}, 
                 {$or: [
@@ -26,7 +24,7 @@ export async function searchUser(keyword: string, user: string) {
         var list: Array<Match>= []
 
         for(const result of resultSet) {
-            let obj: Match = {username: result.username, fullname: result.fullname, status: ''};
+            let obj: Match = {username: result.username, fullname: result.fullname, status: '', hasPFP: result.pfp_uploaded};
             const connections = (await connectionsCollection.findOne({username: user}))!.connections;
             
             if(connections.includes(obj.username)) {

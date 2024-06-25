@@ -73,7 +73,7 @@ function ChatBox({
             <div className="h-16 shrink-0 flex gap-2 justify-start items-center px-4 drop-shadow-sm  bg-slate-800 ">
                 <ArrowBack onClick={onBack} />
                 <div className="rounded-full overflow-hidden">
-                    <ProfilePictureComponent key={user.username} size={40} user={user.username} />
+                    <ProfilePictureComponent key={user.username} size={40} user={user.username} hasPFP={user.pfp_uploaded} />
                 </div>
                 <div className="text-lg">
                     <p>{user.fullname}</p>

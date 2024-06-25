@@ -73,19 +73,12 @@ export default function Search() {
             }
         }
 
-        
         const updatedMatches = matches.map((match)=>match.username===update?.username? update: match)
         
         matches.filter(match=>{
             if(match.username==update!.username) return update;
             else return match
         })
-
-        console.log(matches, updatedMatches);
-        
-
-        console.log(user, update );
-        
 
         setMatches(updatedMatches);
         setUser(update)
