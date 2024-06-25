@@ -3,7 +3,7 @@ import 'server-only';
 import { MongoClient } from "mongodb";
 import { Collection } from "mongodb";
 
-const mongo_uri = process.env.mongo_uri as string;
+const mongo_uri = process.env.MONGODB_URI as string;
 const db_name = process.env.db_name as string
 const client = new MongoClient(mongo_uri);
 client.connect();

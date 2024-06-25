@@ -5,6 +5,7 @@ import useSSE from "./sseProvider/useSSE";
 export default function SSE() {
     useSSE();
     return (
+        
             <App/>
     )
 }

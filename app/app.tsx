@@ -9,7 +9,7 @@ import { useEffect, useRef, useState } from "react";
 import Navbar from "./navbar/navbar";
 import Ping from "./sseProvider/ping";
 import { validSession } from "./api/auth/authentication";
-// import useSSE from "./sseProvider/useSSE.tsbak";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 
 
 
@@ -50,6 +50,7 @@ export default function App() {
 
   return (
     <div className='w-full h-svh relative top-0 overflow-hidden flex flex-col justify-start'>
+        <SpeedInsights />
         <div className='w-full shrink-0 h-16 z-50 shadow-sm border-b border-slate-700'>
           <Navbar page={route} router={(route: string)=>setRoute(route)} />
         </div>
