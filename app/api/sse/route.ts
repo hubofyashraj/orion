@@ -21,6 +21,8 @@ export async function GET(request: NextRequest) {
 
         const connect = async () => {
             expResponse = await fetch(`${address}/sse/register?user=${user}`);
+            console.log(expResponse);
+            
             stream = expResponse.body;
             reader = stream?.getReader();
         };
