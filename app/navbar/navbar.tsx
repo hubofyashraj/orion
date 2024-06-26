@@ -10,6 +10,7 @@ import { fetchConnectRequests } from "../api/navbar/navbar";
 import Image from "next/image";
 import useAlerts from "../state-store/alertsStore";
 import useMessages from "../state-store/messagesStore";
+import Link from "next/link";
 
 interface NavBarProps {
     router: (route: string)=>void, 
@@ -95,7 +96,7 @@ export default function Navbar({ router, page }: NavBarProps) {
                     </div>
                     <div className={(isCollapsed?"-right-full ":"right-0 ")+"transition-all min-w-40 max-w-40 sm:max-w-none h-full sm:w-auto self-start absolute  sm:static  "}>
                         <ul className=" bg-slate-900 w-full  drop-shadow-lg sm:drop-shadow-none  sm:h-full flex flex-col sm:flex-row gap-2 sm:px-4 pb-2 justify-start items-center rounded-l-lg">
-                            <li className="sm:hidden h-16 hover:scale-110 font-extralight sm:w-16 scale-90 transition-all duration-300 hover:font-normal  self-end "><button onClick={toggleCollapse} className="w-full   h-full "><CIcon className=" w-8 mr-4 " icon={cilX}  /></button></li>
+                            <li className="sm:hidden h-16 hover:scale-110 font-extralight sm:w-16 scale-90 transition-all duration-300 hover:font-normal  self-end "> <button onClick={toggleCollapse} className="w-full   h-full "><CIcon className=" w-8 mr-4 " icon={cilX}  /></button> </li>
                             <li className="hover:scale-110 font-extralight sm:w-16 scale-90 transition-all duration-300 hover:font-normal  w-full"><button onClick={()=>{router('feed'); toggleCollapse();}} className="px-2 py-0.5 w-full">Home</button></li>
                             <li className="hover:scale-110 font-extralight sm:w-16 scale-90 transition-all duration-300 hover:font-normal  w-full"><button onClick={()=>{router('search'); toggleCollapse();}} className="px-2 py-0.5  w-full">Search</button></li>
                             <li className="hover:scale-110 font-extralight sm:w-16 scale-90 transition-all duration-300 hover:font-normal  w-full"><button onClick={()=>{router('profile');  toggleCollapse();}} className="px-2 py-0.5 w-full">Profile</button></li>

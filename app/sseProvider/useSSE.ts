@@ -4,6 +4,7 @@ import useAlerts from '../state-store/alertsStore';
 import useMessages from '../state-store/messagesStore';
 import usePing from '../state-store/pingStore';
 import usePostsAlert from '../state-store/newPostsStore';
+import { getUnreadMessages } from '../api/chat/chat';
 
 const useSSE = () => {
 
@@ -91,6 +92,21 @@ const useSSE = () => {
       clearInterval(interval);
     };
   }, [addAlert, addMessage, addRequest, setNewPosts, setPing]);
+
+  /**
+   * fetching unread messages
+   */
+  useEffect(()=>{
+    getUnreadMessages().then((jsonString) => {
+      if(jsonString) {
+        const messages = JSON.parse(jsonString).messages as Message[];
+        messages.forEach(message => addMessage(message.sender, message))
+      }
+    })
+
+    
+  }, [addMessage])
+
 
   return null;
 };

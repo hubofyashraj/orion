@@ -10,6 +10,7 @@ import Navbar from "./navbar/navbar";
 import Ping from "./sseProvider/ping";
 import { validSession } from "./api/auth/authentication";
 import { SpeedInsights } from "@vercel/speed-insights/next";
+import { useRouter, usePathname, useSearchParams } from "next/navigation";
 
 
 
@@ -21,14 +22,24 @@ export default function App() {
   const interval = useRef(null);
 
 
+  const router = useRouter();
+  
+  const pathname = usePathname();
+  // if(pathname=='/') 
+    // router.push('/feed')
+  const searchParams  =useSearchParams();
+
   const documentHeight = () => {
     const doc = document.documentElement
     doc.style.setProperty('--doc-height', `${window.innerHeight}px`)
   }
-    
+  
+  
 
   useEffect(()=>{
-    
+
+    document.title = 'Home | YASMC'
+
     window.addEventListener('resize', documentHeight)
     documentHeight()    
     
@@ -43,6 +54,25 @@ export default function App() {
     
 
   }, [])
+
+  const renderTab = () => {
+    switch (searchParams.get('tab')) {
+      case null:
+        return <Feed  />;
+      case 'feed':
+        return <Feed  />;
+      case 'profile':
+        return <Profile  />;
+      case 'search':
+        return <Search />
+      case 'chat':
+        return <Chat />
+      case 'create':
+        return <Create />
+        default:
+          return <></>
+    }
+  }
   
   // useSSE();
 
@@ -52,24 +82,10 @@ export default function App() {
     <div className='w-full h-svh relative top-0 overflow-hidden flex flex-col justify-start'>
         <SpeedInsights />
         <div className='w-full shrink-0 h-16 z-50 shadow-sm border-b border-slate-700'>
-          <Navbar page={route} router={(route: string)=>setRoute(route)} />
+          <Navbar page={pathname} router={(route: string)=>router.push('/?tab='+route)} />
         </div>
         <div className='grow-0 w-full h-full bg-slate-700 overflow-hidden'>
-          {route==='feed' && (
-              <Feed setPage={(val: string)=>setRoute(val)} />
-          )}
-          {route==='profile' && (
-              <Profile  />
-          )}
-          {route==='search' && (
-              <Search />
-          )}
-          {route==='chat' && (
-              <Chat interval={interval}/>
-          )}
-          {route==='create' && (
-              <Create cancel={()=>setRoute('feed')} />
-          )}
+          { renderTab() }
         </div>
       <Ping />
     </div>

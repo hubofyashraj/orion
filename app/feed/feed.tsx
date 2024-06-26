@@ -17,11 +17,13 @@ export type Post = {
 }
 
 
-export default function Feed( { setPage } : { setPage: Function } ) {
+export default function Feed() {
     const [posts, setPost] = useState<Post[]>([]);
     const {newPosts} = usePostsAlert();
 
+
     useEffect(()=>{
+        document.title = 'Home | YASMC'
         fetchPosts().then((jsonString) => {
             if(jsonString) {
                 const posts = JSON.parse(jsonString).posts as Post[];
@@ -53,7 +55,7 @@ export default function Feed( { setPage } : { setPage: Function } ) {
                 )}
             </div>
 
-            <FloatingActionButton setShowSelectComponent={()=>setPage('create')} />
+            <FloatingActionButton />
         </div>
     );
 }

@@ -19,7 +19,8 @@ const useMessages = create<State>((set) => ({
     })),
     removeMessage: (user: string) => set((state)=>{
         const {[user]: removedMessage, ...rest} = state.unreadMessages;
-        return {unreadMessages: rest}
+        const update = {unreadMessages: rest};
+        return update
     }),
 
 }))

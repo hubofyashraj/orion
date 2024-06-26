@@ -1,11 +1,14 @@
 import { ArrowBack, DeleteOutlineRounded } from "@mui/icons-material";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import { ChangeEvent, DragEvent, MouseEvent, MutableRefObject, useEffect, useMemo, useRef, useState } from "react";
 
-export default function SelectImagesComponent({ fileList,  setPage, cancel }: {fileList: MutableRefObject<Array<File>>, setPage: Function, cancel: Function }) {
+export default function SelectImagesComponent({ fileList,  setPage }: {fileList: MutableRefObject<Array<File>>, setPage: Function }) {
    
     const [images, setImages] = useState(new Array<string>());
     const textBtnCls = "hover:text-slate-300 text-slate-200 hover:drop-shadow-lg cursor-pointer ";
+
+    const router = useRouter();
 
     
     function dragOver(e: DragEvent) {
@@ -86,23 +89,21 @@ export default function SelectImagesComponent({ fileList,  setPage, cancel }: {f
     return (
         <div className={" rounded-lg  select-none  w-full h-full flex flex-col justify-end items-center bg-blue-100"}>
             <div className="px-5 py-2 self-start w-full bg-slate-700 text-slate-200">
-                <ArrowBack onClick={()=>cancel()} className="  hover:scale-110" />
+                <ArrowBack onClick={()=>router.back()} className="  hover:scale-110" />
             </div>
-            { 
-                <div className={" h-1/2 w-full grow flex justify-center items-center p-5 bg-slate-700 "}>
-                    {images.length!==0 
-                        ? <div className=" h-full w-[calc(90svw)] max-w-[calc(50rem)] m-3 flex gap-2 divide-slate-700  rounded-md overflow-auto scrollbar-none scrollbar-track-transparent scrollbar-thumb-slate-200 ">
-                            {images.map((image, idx)=>(
-                                <div key={idx} className=" h-full relative shrink-0">
-                                    <DeleteOutlineRounded onClick={()=>deleteFile(image, idx)} className="absolute right-2 top-2 bg-white bg-opacity-90 rounded-full h-10" />
-                                    <Image className="h-full w-auto rounded-lg" alt="" width={200} height={200} src={image}/>
-                                </div>
-                            ))}
-                        </div>
-                        : <p className="text-xl text-slate-400">No Image Selected</p>
-                    }
-                </div>
-            }
+            <div className={" h-1/2 w-full grow flex justify-center items-center p-5 bg-slate-700 "}>
+                {images.length!==0 
+                    ? <div className=" h-full w-[calc(90svw)] max-w-[calc(50rem)] m-3 flex gap-2 divide-slate-700  rounded-md overflow-auto scrollbar-none scrollbar-track-transparent scrollbar-thumb-slate-200 ">
+                        {images.map((image, idx)=>(
+                            <div key={idx} className=" h-full relative shrink-0">
+                                <DeleteOutlineRounded onClick={()=>deleteFile(image, idx)} className="absolute right-2 top-2 bg-white bg-opacity-90 rounded-full h-10" />
+                                <Image className="h-full w-auto rounded-lg" alt="" width={200} height={200} src={image}/>
+                            </div>
+                        ))}
+                    </div>
+                    : <p className="text-xl text-slate-400">No Image Selected</p>
+                }
+            </div>
             <div className="bg-slate-600 text-slate-200   w-full h-1/2 p-5 flex flex-col justify-between items-center ">
                 <div onClick={pickFiles} onDragEnter={dragEnter} onDragLeave={dragLeave} onDrop={fileDrop} onDragOver={dragOver} 
                     className={ " border-dashed  border-slate-500 border-2 rounded-lg w-[calc(90svw)] max-w-[calc(50rem)] h-3/5 flex flex-col justify-center items-center cursor-pointer"}>

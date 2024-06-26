@@ -19,19 +19,30 @@ export default function SignupComponent(props: {setPage: () => void}) {
     function onChangeHandlerInput(event: ChangeEvent<HTMLInputElement>) {
         setFilled(false)
         if(!form.current) return;
+        const ele = document.getElementById('warning')!
 
         const formData = new FormData(form.current);
+        const username = formData.get('username')?.toString() 
+        const fullname = formData.get('name')?.toString() 
+        const password = formData.get('password')?.toString() 
+        const cnfpassword = formData.get('cnfpassword')?.toString()
         setTimeout(()=>{
-            if(event.target.name=='password' || event.target.name=='cnfpassword')
-                setIfMatch(formData.get('password')==formData.get('cnfpassword'))
+            if(event.target.name=='password' || event.target.name=='cnfpassword'){
+                if(password==cnfpassword) {
+                    setIfMatch(true);
+                    ele.innerText=''
+                }
+                else {
+                    if(password!='' && cnfpassword!=''){
+                        setIfMatch(false);
+                        ele.innerText = 'Passwords do not match!'
+                    }
+                    else ele.innerText=''
+                }
+            }
 
-            setFilled( 
-                    formData.get('username')?.toString()!='' 
-                &&  formData.get('name')?.toString()!='' 
-                &&  formData.get('password')?.toString()!='' 
-                &&  formData.get('cnfpassword')?.toString()!=''
-            )
-        }, 1000)
+            setFilled( username!='' &&  fullname!='' &&  password!='' &&  cnfpassword!='')
+        }, 500)
     }
 
 
@@ -58,7 +69,8 @@ export default function SignupComponent(props: {setPage: () => void}) {
     }
 
     const common = 'outline-none bg-slate-900 bg-opacity-50 rounded-lg  hover:bg-opacity-70 px-3 py-2 text-center border-b border-slate-600'
-    const btn=' cursor-pointer disabled:opacity-50 disabled:hover:bg-opacity-50 disabled:cursor-not-allowed'
+    const btn1 = 'outline-none bg-slate-800  rounded-lg   px-3 py-2 text-center border border-slate-900 hover:border-slate-800 dropshadow'
+    const btn=' cursor-pointer  disabled:opacity-50 disabled:cursor-not-allowed'
     
 
     return (
@@ -68,10 +80,10 @@ export default function SignupComponent(props: {setPage: () => void}) {
                 <input className={common}  onChange={onChangeHandlerInput} name='name' type='text' placeholder='full name'/>
                 <div className={"flex items-center relative     "+common}>
                     <input className={' bg-transparent autofill:bg-transparent outline-none text-center '}  onChange={onChangeHandlerInput} name='password'  type={visible?'text':'password'} placeholder='password'/>
-                    <span onClick={()=>setVisible(!visible)} className=" absolute right-2">{visible?<VisibilityOutlined />:<VisibilityOffOutlined />}</span>
+                    <span onClick={()=>setVisible(!visible)} className=" absolute right-2 text-slate-500">{visible?<VisibilityOutlined />:<VisibilityOffOutlined />}</span>
                 </div>
                 <input className={common}  onChange={onChangeHandlerInput} name='cnfpassword' type='password' placeholder='confirm password'/>
-                <button id="submitbtn" className={ common + btn } disabled={!(userNameAvailability && filled && passwordsMatch )}>{'Signup'}</button>
+                <button id="submitbtn" className={ btn1 + btn } disabled={!(userNameAvailability && filled && passwordsMatch )}>{'Signup'}</button>
             </form>
         </>
     )

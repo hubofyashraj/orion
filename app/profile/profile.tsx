@@ -12,6 +12,7 @@ export default function Profile() {
     const [refresh, setRefresh] = useState(false);
 
     useEffect(()=>{
+        document.title = 'Profile | YASMC'
         fetchInfo().then((infoString)=>{
             if(infoString) {
                 const info = JSON.parse(infoString) as ProfileInfo;

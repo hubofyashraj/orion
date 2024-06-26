@@ -2,7 +2,7 @@
 
 import { sendEvent } from "@/app/utils/server-only";
 import { validSession } from "../auth/authentication";
-import { getConnections, getMessagesFromDb, insertMessage, readMessages } from "../db_queries/chat";
+import { getConnections, getMessagesFromDb, getUnreadMessagesFromDB, insertMessage, readMessages } from "../db_queries/chat";
 
 
 export async function fetchConnections() {
@@ -59,4 +59,14 @@ export async function setAllRead(connection: string) {
     if(status==401) return;
     const modifiedCount = await readMessages(connection, user!);
     return modifiedCount;
+}
+
+export async function getUnreadMessages() {
+    const {user, status} = await validSession();
+    if(status==401) return;
+
+    const messages = await getUnreadMessagesFromDB(user!);
+    if(messages) return JSON.stringify({messages});
+
+    return ;
 }

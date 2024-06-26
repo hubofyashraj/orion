@@ -1,9 +1,9 @@
+'use client'
 import { ChangeEvent, useEffect, useRef, useState } from "react";
 import UserProfile from "./userProfile";
 import { searchUsers } from "../api/search/search";
 import ProfilePictureComponent from "../components/pfp";
 import { getSuggestions } from "../api/search/suggestions";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
 
 export interface Match { 
@@ -17,23 +17,21 @@ export interface Match {
 export default function Search() {
 
     const [matches, setMatches] = useState<Match[]>([]);
-    const user = useRef<Match | null>(null);
+    const [user, setUser] = useState<Match | undefined>();
     const [suggestions, setSuggestions] = useState<Match[]>([]);
-
-    const searchParams = useSearchParams();
-    const router  = useRouter();
-    const pathname = usePathname();
 
     let timer: ReturnType<typeof setTimeout>;
 
     useEffect(()=>{
-        document.title = 'Search | YASMC'
         getSuggestions().then((values) => {
             if(values) {
                 const { matches } = JSON.parse(values);
                 setSuggestions(matches);
             }
+        
         })
+
+        
     }, [])
 
 
@@ -53,25 +51,25 @@ export default function Search() {
     }
 
     function action(action: string, _id?: string) {
-        let update = user.current!;
+        let update = user;
         if(action=='send') {
             update ={
-                ...user.current!,
+                ...user!,
                 status: 'outgoing',
                 _id: _id
             }
         } 
         else if(action=='cancel' || action=='decline') {
             update ={
-                username: user.current!.username,
-                fullname: user.current!.fullname,
+                username: user!.username,
+                fullname: user!.fullname,
                 status: 'none',
             }
         }
         else if(action=='accept') {
             update ={
-                username: user.current!.username,
-                fullname: user.current!.fullname,
+                username: user!.username,
+                fullname: user!.fullname,
                 status: 'connected',
             }
         }
@@ -84,34 +82,28 @@ export default function Search() {
         })
 
         setMatches(updatedMatches);
-        user.current = (update)
+        setUser(update)
     }
 
 
     return (
-        searchParams.get('user')
+        user
         ? <div className="text-slate-200 flex overflow-hidden flex-col w-full h-full gap-10 justify-start items-center bg-slate-700">
-            <UserProfile user={user.current!} close={() => router.back()} action={action}/>
+            <UserProfile user={user} close={() => setUser(undefined)} action={action}/>
           </div> 
-        : <div className="text-slate-200 flex overflow-y-auto flex-col w-full h-full justify-start  bg-slate-700">
-            <div className=" h-16 shrink-0 w-full flex items-center justify-center">
-                <input 
-                 className="bg-inherit h-8 max-w-96 bg-slate-600 rounded-lg outline-none text-center focus:bg-slate0700" 
-                 onChange={changeHandler}  
-                 placeholder="Search"
-                />
+        : <div className="text-slate-200 flex overflow-hidden flex-col w-full h-full gap-10 justify-start items-center bg-slate-700">
+            <div className=" max-w-96 mt-2 bg-slate-600  rounded-xl">
+                <input className="bg-inherit h-8   rounded-lg outline-none text-center" onChange={changeHandler}  placeholder="Search"/>
             </div>
-            {matches.length>0 && <div className=" relative w-full h-72 shrink-0 p-5 sm:p-10">
-                <div className="overflow-x-auto h-full scrollbar-none flex  justify-start items-center  gap-2">
-                    {<p className="absolute top-2 text-2xl self-start font-semibold">Users Found</p>}
-                    {matches.map((match, idx)=><UserTile key={match.username} user={match} onClick={()=>{user.current=(match); router.push(pathname+'?'+searchParams.toString()+'&user='+match.username)}}/>)}
-                </div>  
-            </div>}
-            <div className=" w-full h-72 shrink-0 relative p-5 sm:p-10">
-                <div className="overflow-x-auto h-full  scrollbar-none flex  justify-start items-center  gap-2">
-                    {suggestions.length>0 && <p className="absolute top-2  self-start font-semibold text-2xl">Suggestions</p>}
+            <div className="w-full overflow-y-auto scrollbar-none grow py-5 flex flex-col justify-start items-center gap-2 px-5">
+                {matches.length>0 && <p className="fixed -mt-12 text-2xl font-semibold">Users Found</p>}
+                {matches.map((user, idx)=><UserTile key={idx} user={user} onClick={()=>{setUser(user)}}/>)}
+            </div>  
+            <div className=" w-full shrink-0  flex justify-center items-center  p-5">
+                <div className="overflow-x-auto scrollbar-none flex justify-evenly  gap-2">
+                    <p className="fixed -mt-10  font-semibold text-2xl">Suggestions</p>
                     {suggestions.map((suggestion, idx) => {
-                        return <UserTile onClick={()=>{user.current = (suggestion); router.push(pathname+'?'+searchParams.toString()+'&user='+suggestion.username)} } user={suggestion} key={suggestion.username} />
+                        return <UserTile onClick={()=>setUser(suggestion)} user={suggestion} key={idx} />
                     })}
                 </div>
             </div>
@@ -127,12 +119,12 @@ function UserTile({
 }) {
 
     return (
-        <div onClick={onClick} className="w-48 h-48 flex-col shrink-0  flex gap-2 transition-all items-center  bg-slate-600 hover:bg-slate-500  sm:hover:h-52 sm:hover:w-52 hover:shadow-lg py-2 px-4  rounded-md">
-            <div className="rounded-full h-16 w-16 overflow-hidden shrink-0 border-2 border-slate-800 bg-slate-800 ">
-                <ProfilePictureComponent size={64} user={user.username} hasPFP={user.hasPFP} />
+        <div onClick={onClick} className="w-48 h-48 slide-item shrink-0 flex gap-2 justify-between items-center  bg-slate-600 hover:bg-slate-500 hover:shadow-lg py-2 px-4  rounded-md">
+            <div className="rounded-full overflow-hidden shrink-0 border-2 border-slate-800 bg-slate-800 ">
+                <ProfilePictureComponent size={40} user={user.username} hasPFP={user.hasPFP} />
             </div>
-            <div className="grow text-center">
-                <p className="text-lg">{user.fullname}</p>
+            <div className="grow">
+                <p className="text-lg ">{user.fullname}</p>
                 <p className="text-sm font-extralight">{user.username}</p>
             </div>
             <div className="shrink-0 text-sm  hover:bg-opacity-30">

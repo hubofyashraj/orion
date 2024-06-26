@@ -6,23 +6,21 @@ import { getMessages, setAllRead } from "../api/chat/chat";
 import ProfilePictureComponent from "../components/pfp";
 import { ArrowBack } from "@mui/icons-material";
 import useMessages from "../state-store/messagesStore";
+import { useRouter, useSearchParams } from "next/navigation";
 
 
-function ChatBox({
-    screenWidth, focus, user, interval
-}: {
-    screenWidth:number, focus: () => void ,  user: Connection | null, interval: React.MutableRefObject<any> 
-}) {
+function ChatBox({user, setUser}: {user: Connection | null, setUser: ()=>void}) {
 
     const [msgList, setMsgList] = useState<Message[]>([]);
 
     const { unreadMessages, removeMessage } = useMessages();
 
     useEffect(()=>{
-        if(user) getMessages(user.username!).then( (messages) => { setMsgList(messages) })
+        if(user) getMessages(user.username).then( (messages) => { setMsgList(messages) })
     },[user])
 
     useEffect(()=>{
+
         if(user ) {
             const msg = unreadMessages[user.username];
             if(msg) {
@@ -32,10 +30,6 @@ function ChatBox({
         }
     }, [removeMessage, unreadMessages, user])
 
-    useEffect(()=>{
-        console.log(unreadMessages);
-        
-    }, [unreadMessages])
 
     useEffect(()=>{
         if(user) {
@@ -59,7 +53,7 @@ function ChatBox({
     function onBack(){
         const div = document.getElementById('connections') as HTMLDivElement
         div.style.marginLeft='0'
-        focus()
+        setUser()
     }
 
     if(user==null) return (
@@ -80,7 +74,7 @@ function ChatBox({
                 </div>
                 <div className="grow"></div>
             </div>
-            <Thread messages={msgList} user={user} updateMessageList={(newMessage) => setMsgList([...msgList, newMessage])} />
+            <Thread key={user.username} messages={msgList} user={user} updateMessageList={(newMessage) => setMsgList([...msgList, newMessage])} />
         </div>
     )
 }

@@ -12,6 +12,7 @@ export type Connection = {
     fullname: string,
     pfp_uploaded?: boolean,
     lastmsg: Messages | null,
+    hasUnread: boolean
 }
 
 export async function getConnections(username: string) {
@@ -28,6 +29,7 @@ export async function getConnections(username: string) {
                 fullname: info.fullname,
                 pfp_uploaded: info?.pfp_uploaded,
                 lastmsg: null,
+                hasUnread: false
             }
 
             const lastmsg = await messagesCollection
@@ -91,5 +93,15 @@ export async function readMessages(sender: string, receiver: string) {
         console.log('error when setting messages to read', sender, receiver);
         console.log(error);
         return 0;
+    }
+}
+
+export async function getUnreadMessagesFromDB(username: string) {
+    try {
+        const messages = await messagesCollection.find({receiver: username, unread: true}).toArray();
+        return messages;
+    } catch (error) {
+        console.log('error when getting unreadMessages', username);
+        console.log(error);
     }
 }

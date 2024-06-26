@@ -3,10 +3,42 @@ import 'server-only';
 import { MongoClient } from "mongodb";
 import { Collection } from "mongodb";
 
+declare global {
+    var mongoClient: MongoClient
+}
+
 const mongo_uri = process.env.MONGODB_URI as string;
 const db_name = process.env.db_name as string
-const client = new MongoClient(mongo_uri);
-client.connect();
+const client = global.mongoClient || new MongoClient(mongo_uri);
+global.mongoClient = client;
+
+client.connect().then(() => {
+    process.on('SIGINT', async () => {
+        try {
+            await client.close();
+            console.log('mongo connection closed');
+            process.exit(0);
+        }catch(err) {
+            console.error('while closing mongodb connection!');
+            console.error(err);
+        }
+        
+    })
+    process.on('SIGTERM', async () => {
+        try {
+            await client.close();
+            console.log('mongo connection closed');
+            process.exit(0);
+        }catch(err) {
+            console.error('while closing mongodb connection!');
+            console.error(err);
+        }
+        
+    })
+}).catch((err) => {
+    console.error('while trying to connect to mongodb');
+    console.error(err);
+})
 
 const db = client.db(db_name);
 const userCollection: Collection<User> = db.collection('users');
@@ -39,3 +71,4 @@ export const collections =
     userStatsCollection,
     sessions
 };
+

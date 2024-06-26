@@ -16,6 +16,8 @@ export default function UserProfile({
 
 
     useEffect(()=>{
+
+        document.title = `${user.fullname} | YASMC`;
         fetchInfo(user.username).then((info)=>{
             if(info) setInfo(JSON.parse(info))
         })
@@ -47,15 +49,15 @@ export default function UserProfile({
                         
                     </div>
                     <div className=" pl-12 mt-10 self-start select-none flex flex-col gap-2">
-                        <p className="flex gap-1 items-center text-sm"><Notes className="text-red-300 " fontSize="small"/>   {info.bio}</p>
+                        <p className="flex gap-1 items-start text-sm"><Notes className="text-red-300 " fontSize="small"/>   {info.bio}</p>
                         {
                             user.status=='connected' && 
                             <>
-                                <p className="flex gap-1 items-center text-sm"><Phone className="text-red-300 " fontSize="small" /> {info.contact}</p>
-                                <p className="flex gap-1 items-center text-sm"><Email className="text-red-300 " fontSize="small"  /> {info.email}</p>
+                                <p className="flex gap-1 items-start text-sm"><Phone className="text-red-300 " fontSize="small" /> {info.contact}</p>
+                                <p className="flex gap-1 items-start text-sm"><Email className="text-red-300 " fontSize="small"  /> {info.email}</p>
                                     
-                                <p className="flex gap-1 items-center text-sm"><PinDrop className="text-red-300 " fontSize="small"  /> {info.location}</p>
-                                <p className="flex gap-1 items-center text-sm"><Work className="text-red-300 " fontSize="small"  /> {info.profession}</p>
+                                <p className="flex gap-1 items-start text-sm"><PinDrop className="text-red-300 " fontSize="small"  /> {info.location}</p>
+                                <p className="flex gap-1 items-start text-sm"><Work className="text-red-300 " fontSize="small"  /> {info.profession}</p>
                             </>
                         }
                     </div>

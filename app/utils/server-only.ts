@@ -2,6 +2,7 @@ import 'server-only';
 
 declare global {
     var clients: Map<string, WritableStreamDefaultWriter>
+    var interval: undefined | NodeJS.Timeout
 }
 
 const clients = global.clients  || new Map<string, WritableStreamDefaultWriter>();
@@ -19,7 +20,7 @@ export function removeClient(username: string) {
     return clients.delete(username);
 }
 
-let interval: undefined | NodeJS.Timeout
+let interval = global.interval || undefined
 
 if(!interval) {
     interval = setInterval(()=>{
@@ -37,6 +38,7 @@ if(!interval) {
                 )        
         })
     }, 5000)
+    global.interval = interval;
 }
 
 
