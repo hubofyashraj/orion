@@ -5,11 +5,12 @@ import useMessages from '../state-store/messagesStore';
 import usePing from '../state-store/pingStore';
 import usePostsAlert from '../state-store/newPostsStore';
 import { getUnreadMessages } from '../api/chat/chat';
+import { fetchOldRequests } from '../api/search/search';
 
 const useSSE = () => {
 
     const {
-        addAlert, addRequest, 
+        addAlert, addRequest, setRequests
     } = useAlerts();
 
 
@@ -106,6 +107,15 @@ const useSSE = () => {
 
     
   }, [addMessage])
+
+  useEffect(()=>{
+    fetchOldRequests().then((jsonString) => {
+      if(jsonString) {
+        const requests = JSON.parse(jsonString).requests as ConnectRequest[];
+        setRequests(requests.map((request) => ({from: request.sender, fullname: ''})))
+      }
+    })
+  }, [setRequests])
 
 
   return null;

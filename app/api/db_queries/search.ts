@@ -147,3 +147,16 @@ export async function resolveRequestInDb(id: string) {
     }
     return false;
 } 
+
+
+export async function getRequestsFromDB(receiver: string) {
+    try {
+        const requests = await requestsCollection.find({receiver}).toArray();
+        return requests;
+    } catch (error) {
+        
+        console.log('error while accepting a connection request', receiver);
+        console.log(error);
+        return [];
+    }
+}

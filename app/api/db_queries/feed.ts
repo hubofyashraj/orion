@@ -66,6 +66,8 @@ export async function getPostStats(post_id: string) {
     if(status==401) return;
     const stats = await postStatsCollection.findOne({post_id});
     const options = await postOptions.findOne({post_id});
+    console.log({options});
+    
     const selfStats = {
         liked: options?.post_liked_by.indexOf(user!)!=-1,
         saved: options?.post_saved_by.indexOf(user!)!=-1
@@ -84,11 +86,11 @@ export async function toggleLikeInDB(post_id: string, user: string, current: boo
         if(current) {
             await postStatsCollection.updateOne({post_id}, {$inc: {post_likes_count: -1}}, {session});
             const likedby = (await postOptions.findOne({post_id: post_id}))!.post_liked_by;
-            await postOptions.updateOne({post_id}, {$set: {post_saved_by: likedby.filter((userInArray) => userInArray!=user)}});
+            await postOptions.updateOne({post_id}, {$set: {post_liked_by: likedby.filter((userInArray) => userInArray!=user)}});
         } else {
             await postStatsCollection.updateOne({post_id}, {$inc: {post_likes_count: 1}}, {session});
             const likedby = (await postOptions.findOne({post_id: post_id}))!.post_liked_by;
-            await postOptions.updateOne({post_id}, {$set: {post_saved_by: likedby.filter((userInArray) => userInArray!=user)}});
+            await postOptions.updateOne({post_id}, {$set: {post_liked_by: [...likedby, user]}});
         }
         await session.commitTransaction();
         return true;

@@ -1,7 +1,7 @@
 'use server';
 
 import { validSession } from "../auth/authentication";
-import { deleteRequestFromDb, resolveRequestInDb, saveRequestInDb, searchUser } from "../db_queries/search";
+import { deleteRequestFromDb, getRequestsFromDB, resolveRequestInDb, saveRequestInDb, searchUser } from "../db_queries/search";
 import { fetchInfo } from "../profile/profile";
 import { sendEvent } from "@/app/utils/server-only";
 
@@ -49,4 +49,12 @@ export async function acceptRequest(req_id: string) {
     if(status==401) return false;
     const result = await resolveRequestInDb(req_id);
     return result;
+}
+
+export async function fetchOldRequests() {
+    const {user, status} = await validSession();
+    if(status==401) return;
+    const requests = await getRequestsFromDB(user!);
+    return JSON.stringify({requests});
+    
 }

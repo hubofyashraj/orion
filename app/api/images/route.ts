@@ -31,7 +31,8 @@ export async function GET(req: NextRequest) {
         const buffer = Buffer.from(pfp, 'base64');
         return new NextResponse(buffer, {
             headers: {
-                'Content-Type': 'image/jpeg'
+                'Content-Type': 'image/jpeg',
+                'Cache-Control': 'no-cache'
             }
         }); 
     }

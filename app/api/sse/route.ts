@@ -25,6 +25,8 @@ export async function GET(request: NextRequest) {
             writer.close();
         });
 
+        
+
     } catch (error) {
         console.error('Error:', error);
         writer.close();

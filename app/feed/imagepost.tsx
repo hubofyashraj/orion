@@ -52,15 +52,13 @@ export type Comment = {
 }
 
 
-export default function ImagePost({ post }: {post: Post}) {
+export default function ImagePost({ post, openCommentSection }: {post: Post, openCommentSection: (post: Post) => void}) {
 
     const [stats, setStats] = useState<PostStats>({post_id: '-1', post_comments_count: 0, post_likes_count: 0, post_save_count: 0})
     const [selfStats, setSelfStats] = useState<SelfStats>({liked: false, saved: false})
     
     const imageInViewRef = useRef(0);
     
-    const [comments, setComments] = useState<Comment[]>([]);
-    const commentsRef = useRef<Comment[]>([]);
     const [displayComments, toggleCommentSection] = useState(false);
     type Stats = {
         stats: PostStats | null;
@@ -82,9 +80,6 @@ export default function ImagePost({ post }: {post: Post}) {
         )
     }, [post]);
 
-    useEffect(()=>{
-        if(comments.length) commentsRef.current=comments
-    }, [comments])
 
     function toggleLike() {
         const cur = selfStats.liked;
@@ -107,23 +102,7 @@ export default function ImagePost({ post }: {post: Post}) {
     }
 
 
-    function openCommentSection() {
-        fetchComments(post.post_id).then((jsonString)=>{
-            const {comments} = JSON.parse(jsonString) as {comments: Comment[]};
-            commentsRef.current=comments;
-            setComments(commentsRef.current);
-        })
-        toggleCommentSection(true);
-    }
-
-    function closeComments() {
-        toggleCommentSection(false);
-    }
     
-    function addComment(comment: Comment) {
-        setComments(prev=>[...prev, comment])
-        commentsRef.current=comments;
-    }
 
     function swipe(direction: 'left' | 'right') {
         const div: HTMLDivElement = document.getElementById('imageContainer'+post?.post_id) as HTMLDivElement; 
@@ -146,18 +125,14 @@ export default function ImagePost({ post }: {post: Post}) {
 
     }
 
-    function delete_comment(comment_id: string) {
-        setComments(prev => prev.filter(comment => comment.comment_id!=comment_id))
-    }
-    
     
     return (
-        <div className={"flex w-full  relative shrink-0   border-slate-600 text-slate-200  bg-slate-800"}>
+        <div className={"flex w-full  shrink-0   border-slate-600 text-slate-200  bg-slate-800"}>
             { screen.width>0 && <button onClick={()=>swipe('left')}  className={post.post_length==1?"invisible":"  "}><ArrowLeft /></button>}
             <div className={(displayComments?"blur ":"")+"w-full "}>
                 <div className="flex items-center  w-full gap-3 py-2 ">
                     <div className="  rounded-full overflow-hidden bg-gray-400">
-                        <ProfilePictureComponent user={post.post_user} size={40}/>
+                        <ProfilePictureComponent user={post.post_user} size={40} hasPFP={true}/>
                     </div>
                     <div className="flex flex-col  justify-center">
                         <div className="shrink">
@@ -178,7 +153,7 @@ export default function ImagePost({ post }: {post: Post}) {
                 <div className="flex bg-inherit py-2 text-slate-400   justify-between">
                     <div className="h-full flex gap-2">
                         {selfStats && selfStats.liked ? <Favorite onClick={toggleLike} className="  text-red-600 drop-shadow-md" />: <FavoriteBorderOutlined onClick={toggleLike} /> }
-                        <RateReviewOutlined onClick={openCommentSection} />
+                        <RateReviewOutlined onClick={() => openCommentSection(post)} />
                         {/* <CIcon className="w-[calc(25%)] "  icon={cilPaperPlane}/> */}
                         
                     </div>
@@ -196,7 +171,6 @@ export default function ImagePost({ post }: {post: Post}) {
 
             </div>
             { screen.width>0  && <button onClick={()=>swipe('right')} className={post.post_length==1?"invisible":""}><ArrowRight /></button>}
-            { displayComments && <CommentSection post={post} comments={comments} close={closeComments} addComment={addComment} delete_comment={delete_comment} />}
         </div>
     )
 }
@@ -247,90 +221,6 @@ function ImageFallBack() {
     return (
         <div className=" bg-slate-900 w-full shrink-0 aspect-square flex justify-center items-center">
             <Skeleton className="w-full h-full bg-slate-800" variant="rectangular" title="Loading" animation="pulse"  />
-        </div>
-    )
-}
-
-function PfpFallback() {
-    return <CIcon className="w-full h-full" icon={cilUser} />
-}
-
-
-function CommentSection({
-    post, comments, addComment, delete_comment, close
-}: {
-    post: Post, comments: Comment[], addComment: (comment: Comment)=>void, delete_comment: (comment_id: string)=>void, close: () => void
-}) {
-
-    const divRef=useRef<HTMLDivElement | null>(null);
-    const inputRef = useRef<HTMLInputElement | null>(null);
-    const [optimisticComments, addOptimisticComment] = useOptimistic<Comment[], Comment>(
-        comments, (state: Comment[], comment: Comment) => [...state, comment]
-    )
-
-    const ref = useRef<HTMLDivElement | null>(null);
-    useEffect(()=>{
-        setTimeout(()=>{
-            if(ref.current) ref.current.style.height='80%';
-        }, 50)
-    },[])
-
-
-    async function action(formData: FormData) {
-        const text = formData.get('commentbox')?.toString();
-        if(!text) return;
-        let comment: Comment | false = {
-            comment: text,
-            comment_by: 'me',
-            comment_id: 'me'+Date.now(),
-            post_id: post.post_id,
-            post_user: post.post_user,
-            sending: true
-        }
-
-        addOptimisticComment(comment);
-        const result = await sendComment(comment);
-        
-        if(result) {
-            if(inputRef.current) inputRef.current.value='';
-            addComment(JSON.parse(result) as Comment)
-        }
-    }
-
-
-    return (
-        <div ref={ref} style={{height: '3rem'}} className="absolute z-50  transition-all bottom-0 overflow-hidden   w-full max-w-xl flex flex-col bg-slate-800 rounded-t-2xl  border border-b-0 border-slate-950">
-            <p className="w-full p-2 text-center text-lg underline-offset-8 underline ">Comments <Close onClick={close} className="float-right hover:scale-105 "/></p>
-            <div ref={divRef} className="flex grow w-full  flex-col-reverse overflow-y-auto scrollbar-none">
-                {optimisticComments.map(comment => <CommentComponent comment={comment} post_user={post.post_user} delete_comment={()=>delete_comment(comment.comment_id)} key={comment.comment_id} />)}
-            </div>
-            <form action={action} autoComplete="off" className="w-full  p-2 select-none bg-inherit  flex gap-2 justify-center items-center">
-                <input ref={inputRef} name="commentbox" placeholder="Comment" className="bg-inherit outline-none grow shrink border rounded-full p-1 hover:bg-slate-700 focus:bg-slate-700 active:bg-slate-700 px-5"/>
-                <button><Send className="" /></button>
-            </form>
-        </div>
-    )
-}
-
-function CommentComponent({comment, post_user, delete_comment}: {comment: Comment, post_user: string, delete_comment: Function}){
-    const self = sessionStorage.getItem('user');
-    if(!self) window.location.href='/auth';
-
-    async function attemptDelete() {
-        const result = await deleteComment(comment.comment_id, comment.comment_by, post_user);
-        if(result) {
-            delete_comment();
-        }
-    }
-
-    return (
-        <div className="p-2">
-            <div className="flex gap-2 text-wrap justify-start items-start">
-                <p className="font-semibold">{comment.comment_by}</p>
-                <p className="grow">{comment.comment}</p>
-                {!comment.sending && (comment.comment_by==self || self==post_user) && <Delete onClick={attemptDelete} className="text-slate-400 hover:text-slate-300 hover:scale-105"/>}
-            </div>
-            {comment.sending && <p className="text-sm animate-pulse">Posting</p>}
         </div>
     )
 }
