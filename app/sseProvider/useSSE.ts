@@ -74,7 +74,7 @@ const useSSE = () => {
       if (eventSource.current!.readyState !== EventSource.OPEN) {
         retries.current++;
         if (retries.current === 10) {
-          alert('Please refresh to reconnect');
+          setPing('Refresh to reconnect!!!!')
           clearInterval(interval);
           return;
         }

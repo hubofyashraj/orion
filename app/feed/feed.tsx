@@ -42,12 +42,12 @@ export default function Feed() {
 
 
     return (
-        <div className="bg-slate-800 relative h-full w-full flex flex-col items-center">
+        <div className="bg-slate-900 relative h-full w-full flex flex-col items-center">
             { newPosts &&  <div className="w-full">
                 <p>New Posts</p>
                 <button onClick={refresh}>Refresh</button>
                 </div> }
-            <div className="drop-shadow-lg relative w-full max-w-xl h-full bg-slate-800 flex flex-col justify-start gap-0 overflow-y-auto scrollbar-none">
+            <div className="drop-shadow-lg relative w-full max-w-xl h-full bg-slate-900 flex flex-col justify-start gap-0 overflow-y-auto scrollbar-none">
                 {posts.length==0 && (
                     <p className="text-slate-300 text-xl font-sans font-light text-center mt-52">Feels so empty lets connect to people</p>
                 )}

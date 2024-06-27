@@ -116,9 +116,9 @@ function Connections({user, setUser}: {user: Connection| null, setUser: (user: C
 
 
     return (
-        <div id="connections" className="connections  select-none border-r border-slate-500 transition-all  text-white bg-slate-700 flex flex-col w-[calc(100svw)] sm:m-0 sm:w-[calc(34svw)] shrink-0 h-full ">
+        <div id="connections" className="connections  select-none border-r border-slate-700 transition-all  text-white bg-slate-800 bg-opacity-90 flex flex-col w-[calc(100svw)] sm:m-0 sm:w-[calc(34svw)] shrink-0 h-full ">
             <div className="w-full bg-slate-800 flex first-line justify-center py-2">
-                <input onChange={searchOnChange} placeholder="search" type="text" className="px-4 py-1 bg-transparent border drop-shadow-sm hover:bg-slate-600 focus:bg-slate-600 focus:border-slate-700 select-none border-slate-700 outline-none rounded-full" />
+                <input onChange={searchOnChange} placeholder="search" type="text" className="px-4 py-1 bg-slate-900 bg-opacity-25 hover:bg-opacity-5 shadow-sm border   focus:bg-slate-700 focus:border-slate-800 select-none border-slate-700  outline-none rounded-full" />
             </div>
             <div className="grow flex  flex-col overflow-y-auto scrollbar-none ">
                 { connections 
@@ -139,7 +139,7 @@ function UserComponent({
     info: Connection, onClick: () => void
 }) {
     return (
-        <div onClick={onClick} className="clickableuser  cursor-pointer px-2 py-2 flex gap-5 justify-start items-center bg-slate-800 shadow-md">
+        <div onClick={onClick} className="clickableuser  cursor-pointer px-2 py-2 flex gap-5 justify-start items-center bg-slate-800 ">
             <div className="h-12 w-12 bg-slate-900 rounded-full p-[calc(3px)] shrink-0">
                 <div className="h-full w-full rounded-full overflow-hidden ">
                     <ProfilePictureComponent key={info.username} size={100} user={info.username} hasPFP={info.pfp_uploaded} />

@@ -57,7 +57,7 @@ function ChatBox({user, setUser}: {user: Connection | null, setUser: ()=>void}) 
     }
 
     if(user==null) return (
-        <div className="h-full w-[calc(100svw)] sm:w-[calc(66svw)] bg-slate-700   flex justify-center items-center">
+        <div className="h-full w-[calc(100svw)] sm:w-[calc(66svw)] bg-slate-800   flex justify-center items-center">
         </div>
     )
 

@@ -4,7 +4,7 @@ import { MongoClient } from "mongodb";
 import { Collection } from "mongodb";
 
 declare global {
-    var mongoClient: MongoClient
+    var mongoClient: MongoClient;
 }
 
 const mongo_uri = process.env.MONGODB_URI as string;
@@ -12,7 +12,7 @@ const db_name = process.env.db_name as string
 const client = global.mongoClient || new MongoClient(mongo_uri);
 global.mongoClient = client;
 
-client.connect().then(() => {
+client.connect().then(async () => {
     process.on('SIGINT', async () => {
         try {
             await client.close();

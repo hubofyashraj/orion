@@ -31,10 +31,10 @@ export default function Profile() {
 
     return (
         !edit
-        ? <div className="relative bg-slate-700 text-slate-300 h-full w-full ">
+        ? <div className="relative bg-slate-800 text-slate-300 h-full w-full ">
             {<div className="flex flex-col h-full relative  justify-start sm:justify-start sm:items-start  items-center gap-5  overflow-y-auto scrollbar-none">
                 <div className="details w-full h-full flex flex-col gap-12 justify-center sm:items-start items-center grow">
-                    <div className="relative flex w-full h-36 bg-slate-800 flex-col sm:gap-6 sm:flex-row-reverse  justify-between items-center">
+                    <div className="relative flex w-full h-36 bg-slate-900 flex-col sm:gap-6 sm:flex-row-reverse  justify-between items-center">
                         <div className="flex w-full  self-end flex-col justify-center items-center sm:items-start">
                             <p className="text-xl">{info.fullname}</p>
                             <div className="text-base flex justify-center items-center gap-1 ">

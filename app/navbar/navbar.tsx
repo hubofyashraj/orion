@@ -76,7 +76,7 @@ export default function Navbar({ router, page }: NavBarProps) {
     return (
         <>
             {renderAlerts && <Alerts />}
-            <div id="navbar" className="h-full z-50  top-0 md:p-0 text-slate-200  bg-slate-800 w-full flex justify-between items-center">
+            <div id="navbar" className="h-full z-50  top-0 md:p-0 text-slate-200  bg-slate-900 w-full flex justify-between items-center">
                 <div onClick={()=>router('feed')} className="cursor-pointer shrink-0 px-4 bg-slate-900 w-20 flex gap-4 sm:hover:w-48 transition-all  overflow-hidden h-full  items-center rounded-r-lg  ">
                     <Image className="shrink-0 h-12 w-12" alt="icon" height={36} width={36} src={'/icons/logo.png'} />
                     <Image className="shrink-0 " priority onClick={()=>router('feed')} alt="logo" height={36} width={80} src={'/icons/yasmc@3x_alt.png'} />

@@ -34,7 +34,7 @@ export default function Edit({
     const roundButton = "rounded-full text-slate-200 bg-slate-900 active:bg-slate-950 hover:shadow-md outline-none"
 
     return (
-        <div className=" w-full py-12 h-full text-white flex justify-center  md:items-center overflow-y-scroll bg-slate-700">
+        <div className=" w-full py-12 h-full text-white flex justify-center  md:items-center overflow-y-scroll bg-slate-900">
             <div className="w-[calc(90svw)] max-w-[calc(40rem)] h-max shadow-lg px-5 sm:px-8 md:px-10 py-6 shrink transition-all bg-slate-800 rounded-lg ">
 
                 <div className="flex gap-2 justify-between">

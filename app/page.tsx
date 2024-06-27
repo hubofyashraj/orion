@@ -1,7 +1,7 @@
 import { CSSProperties } from "react";
 import { redirect } from "next/navigation";
 import { validSession } from "./api/auth/authentication";
-import SSE from "./SSE";
+import App from "./app";
 
 export default async function Home(){
   const {status} = await validSession();
@@ -14,7 +14,7 @@ export default async function Home(){
 
   return (
     <main style={style}>
-      <SSE/>
+      <App/>
     </main>
   );
 }

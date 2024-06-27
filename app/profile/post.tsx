@@ -19,15 +19,15 @@ export default function PostView({
     }
 
     if(post_type=='image') return (
-        <div className="absolute z-30 h-full top-0 left-0 w-full  flex  backdrop-blur-md justify-center items-start">
-            <div className=" flex justify-center items-center w-full h-full ">
+        <div className="absolute z-30 h-full top-0 left-0 w-full  flex  backdrop-blur-md rounded-md justify-center items-start">
+            <div className=" flex justify-center items-center w-full h-full  ">
                 <Close onClick={()=>close()} className="m-4 h-8 w-8 hover:scale-105 absolute right-0 self-start" />
-                <div className=" w-[calc(30rem)] max-w-full h-full bg-slate-800  flex flex-col items-center justify-center ">
+                <div className=" w-[calc(30rem)] max-w-full h-full bg-slate-800 rounded-md py-2 flex flex-col items-center justify-start ">
                     <ImagePost post={post} openCommentSection={(post) => setValue(post)} />
                     <button onClick={()=>setWarning(true)} className="self-end m-6 p-2 rounded-xl border border-slate-700 hover:bg-slate-700 hover:shadow-lg">Delete Post</button>
                     {deleteWarning && <DeleteWarning post_id={post.post_id} cancel={()=>setWarning(false)} deletePost={deletePostAction} />}
                 </div>
-                {commentSection && <div className="absolute sm:relative h-full w-full max-w-xl bg-slate-800">
+                {commentSection && <div className="absolute sm:relative h-full w-full rounded-md max-w-xl  bg-slate-800">
                     <CommentSection post={commentSection} close={() => setValue(null)}/>
                 </div>}
             </div>
@@ -41,7 +41,7 @@ function DeleteWarning({post_id, cancel ,deletePost}: {post_id: string, cancel: 
 
    
     return (
-        <div className="bg-slate-900 absolute w-60 h-32 rounded">
+        <div className="bg-slate-900 absolute w-60 h-32 rounded-xl">
             <div className=" w-full h-full relative flex flex-col gap-2 justify-center items-center ">
                 <Close onClick={cancel} className="absolute right-0 top-0 m-3" />
                 <p>Confirm Deletion</p>

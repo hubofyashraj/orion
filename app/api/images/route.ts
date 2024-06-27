@@ -25,6 +25,9 @@ export async function GET(req: NextRequest) {
     }else if(type=='pfp') {
             
         const user1 = req.nextUrl.searchParams.get('user');
+        
+        
+
         const pfp = readImage(user1??user!, 'pfp');
         if(pfp=='' || !pfp) return new NextResponse('PFP not uploaded', {status: 404});
         

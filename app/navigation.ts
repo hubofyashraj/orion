@@ -1,1 +1,0 @@
-const gator = new Navigator();

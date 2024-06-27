@@ -11,22 +11,19 @@ import Ping from "./sseProvider/ping";
 import { validSession } from "./api/auth/authentication";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
+import useSSE from "./sseProvider/useSSE";
 
 
 
 
 export default function App() {
+
+  useSSE();
+
   const [showLoader, setShowLoader] = useState(true);
-  const [route, setRoute] = useState('feed');
-
-  const interval = useRef(null);
-
-
   const router = useRouter();
   
   const pathname = usePathname();
-  // if(pathname=='/') 
-    // router.push('/feed')
   const searchParams  =useSearchParams();
 
   const documentHeight = () => {
@@ -74,15 +71,14 @@ export default function App() {
     }
   }
   
-  // useSSE();
 
   if(showLoader) return (<CircularLoader />)
 
   return (
     <div className='w-full h-svh relative top-0 overflow-hidden flex flex-col justify-start'>
         <SpeedInsights />
-        <div className='w-full shrink-0 h-16 z-50 shadow-sm border-b border-slate-700'>
-          <Navbar page={pathname} router={(route: string)=>router.push('/?tab='+route)} />
+        <div className='w-full shrink-0 h-16 z-50 shadow-sm '>
+          <Navbar page={searchParams.get('tab')!} router={(route: string)=>router.push('/?tab='+route)} />
         </div>
         <div className='grow-0 w-full h-full bg-slate-700 overflow-hidden'>
           { renderTab() }

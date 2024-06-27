@@ -93,10 +93,10 @@ export default function Search() {
         ? <div className="text-slate-200 flex overflow-hidden flex-col w-full h-full gap-10 justify-start items-center bg-slate-700">
             <UserProfile user={user.current!} close={() => router.back()} action={action}/>
           </div> 
-        : <div className="text-slate-200 flex overflow-y-auto flex-col w-full h-full justify-start  bg-slate-700">
-            <div className=" h-16 shrink-0 w-full flex items-center justify-center">
+        : <div className="text-slate-200 flex overflow-y-auto flex-col w-full h-full justify-start  bg-slate-900">
+            <div className=" h-16 shrink-0 w-full px-5 flex items-center justify-center">
                 <input 
-                 className="bg-inherit h-8 max-w-96 bg-slate-600 rounded-lg outline-none text-center focus:bg-slate0700" 
+                 className="bg-inherit h-8  bg-slate-800 w-72 max-w-full focus:w-96 focus:py-5 transition-all   rounded-lg outline-none text-center focus:bg-slate0700" 
                  onChange={changeHandler}  
                  placeholder="Search"
                 />
@@ -127,7 +127,7 @@ function UserTile({
 }) {
 
     return (
-        <div onClick={onClick} className="w-48 h-48 flex-col shrink-0  flex gap-2 transition-all items-center  bg-slate-600 hover:bg-slate-500  sm:hover:h-52 sm:hover:w-52 hover:shadow-lg py-2 px-4  rounded-md">
+        <div onClick={onClick} className="w-48 h-48 flex-col shrink-0  flex gap-2 transition-all items-center  bg-slate-800 hover:bg-slate-700  sm:hover:h-52 sm:hover:w-52 hover:shadow-lg py-2 px-4  rounded-md">
             <div className="rounded-full h-16 w-16 overflow-hidden shrink-0 border-2 border-slate-800 bg-slate-800 ">
                 <ProfilePictureComponent size={64} user={user.username} hasPFP={user.hasPFP} />
             </div>
