@@ -30,11 +30,11 @@ export default function UserPosts({
     )
 
     return (
-        <div className={` w-full flex flex-wrap justify-start overflow-y-auto`}>
+        <div className={` w-full flex flex-wrap justify-start overflow-y-auto `}>
             {posts.map((post, idx)=>{
                 return (
                     <div key={idx} className={`p-0.5 aspect-square min-w-[calc(12.5svw)]  max-w-[calc(33.33svw-0.33333rem)] sm:max-w-[calc(25svw-0.25rem)] md:max-w-[calc(20svw-0.2rem)]  `}  > 
-                        <Image alt="" src={'/api/images?type=post-asset&asset-id='+post+'-0'} width={250} height={250} className="aspect-square h-auto w-auto" />
+                        <Image alt="" src={'/api/images?type=post-asset&asset-id='+post+'-0'} width={400} height={400} className="aspect-square h-auto w-auto" />
                     </div>
                 )
             })}

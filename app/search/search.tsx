@@ -53,6 +53,7 @@ export default function Search() {
     }
 
     function action(action: string, _id?: string) {
+        return;
         let update = user.current!;
         if(action=='send') {
             update ={
@@ -91,7 +92,7 @@ export default function Search() {
     return (
         searchParams.get('user')
         ? <div className="text-slate-200 flex overflow-hidden flex-col w-full h-full gap-10 justify-start items-center bg-slate-700">
-            <UserProfile user={user.current!} close={() => router.back()} action={action}/>
+            <UserProfile close={() => router.back()} action={action}/>
           </div> 
         : <div className="text-slate-200 flex overflow-y-auto flex-col w-full h-full justify-start  bg-slate-900">
             <div className=" h-16 shrink-0 w-full px-5 flex items-center justify-center">

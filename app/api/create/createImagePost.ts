@@ -4,6 +4,7 @@ import { validSession } from "../auth/authentication";
 import { getToken } from "../auth/cookie_store";
 import { deletePostData, uploadPostData } from "../db_queries/create";
 import { getPostFromDb } from "../db_queries/feed";
+import { alertUsers } from "@/app/utils/server-only";
 
 
 
@@ -28,7 +29,11 @@ export async function createPost(formData: FormData) {
                     post_caption: formData.get('caption')!.toString(), 
                     post_length: parseInt(formData.get('length')!.toString()) }
                 )
+                
+                alertUsers(user!);
+                
                 return true;
+
             } catch (error) {
                 return false;                
             }

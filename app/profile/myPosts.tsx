@@ -49,7 +49,7 @@ export default function MyPosts({
     return (
         <>
             <p className="text-xl py-2 sm:ml-16 sm:px-2 text-center sm:text-left">Posts</p>
-            <div className={` grow w-full flex flex-wrap justify-start overflow-y-auto`}>
+            <div className={` w-full flex flex-wrap justify-start overflow-y-auto  `}>
                 
                 {posts.map((post, idx)=>{
                     return (

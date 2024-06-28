@@ -7,6 +7,26 @@ const connectionsCollection: Collection<Connections> = collections.connectionsCo
 const requestsCollection = collections.connectRequestCollection;
 const infoCollection = collections.infoCollection;
 
+
+
+export async function getConnectionStatus(username: string, user1: string) {
+    try {
+        const connections = (await connectionsCollection.findOne({username}))!.connections;
+        if(connections.includes(user1)) return {status: 'connected'};
+
+        const incomingReq = await requestsCollection.findOne({sender: user1, receiver: username});
+        if(incomingReq) return {status: 'incoming', id: incomingReq._id.toString()}
+
+        const sentReq = await requestsCollection.findOne({sender: username, receiver: user1});
+        if(sentReq) return {status: 'outgoing', id: sentReq._id.toString()};
+
+    } catch (error) {
+
+    }
+    return  {status: 'none'};
+
+}
+
 export async function searchUser(keyword: string, user: string) {
     const session = client.startSession();
     try {
@@ -25,35 +45,8 @@ export async function searchUser(keyword: string, user: string) {
 
         for(const result of resultSet) {
             let obj: Match = {username: result.username, fullname: result.fullname, status: '', hasPFP: result.pfp_uploaded};
-            const connections = (await connectionsCollection.findOne({username: user}))!.connections;
-            
-            if(connections.includes(obj.username)) {
-                obj.status = 'connected';
-                list.push(obj);
-                continue;
-            }
-
-            const incomingReq = await requestsCollection
-                .findOne({sender: obj.username, receiver: user});
-            
-            if(incomingReq) {
-                obj.status = 'incoming'
-                obj._id = incomingReq._id.toString()
-                list.push(obj);
-                continue;
-            }
-
-            const sentReq = await requestsCollection
-                .findOne({sender: user, receiver: obj.username});
-
-            if(sentReq) {
-                obj.status = 'outgoing';
-                obj._id = sentReq._id.toString();
-                list.push(obj);
-                continue;
-            }
-
-            obj.status = 'none';
+            const {status} = await getConnectionStatus(user, result.username)
+            obj.status=status;
             list.push(obj);
         }
         await session.commitTransaction();

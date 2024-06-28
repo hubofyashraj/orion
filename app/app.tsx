@@ -5,13 +5,14 @@ import Search from "./search/search";
 import CircularLoader from "./Loader/Loader";
 import Create from "./create/create";
 import Chat from "./chat/chat";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Navbar from "./navbar/navbar";
 import Ping from "./sseProvider/ping";
 import { validSession } from "./api/auth/authentication";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import useSSE from "./sseProvider/useSSE";
+import { fetchPosts } from "./api/feed/feed";
 
 
 
@@ -34,7 +35,6 @@ export default function App() {
   
 
   useEffect(()=>{
-
     document.title = 'Home | YASMC'
 
     window.addEventListener('resize', documentHeight)
@@ -52,6 +52,9 @@ export default function App() {
 
   }, [])
 
+  
+
+
   const renderTab = () => {
     switch (searchParams.get('tab')) {
       case null:
@@ -66,8 +69,8 @@ export default function App() {
         return <Chat />
       case 'create':
         return <Create />
-        default:
-          return <></>
+      default:
+        return <></>
     }
   }
   

@@ -15,7 +15,7 @@ const commentsCollection = collections.postCommentsCollection;
 const postSortComparator = (a: Post,b: Post) => {
     const tsa = parseInt(a.post_id.replace(a.post_user, ''));
     const tsb = parseInt(b.post_id.replace(b.post_user, ''));
-    return tsa-tsb;
+    return tsb-tsa;
 }
 
 export async function getPostsFromDB() {

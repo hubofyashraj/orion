@@ -70,7 +70,7 @@ export default function CreatePost({
     }
 
     return (
-        <div className=" w-full  h-full top-0 bg-slate-700 text-slate-200 flex flex-col overflow-hidden scrollbar-thin">
+        <div className=" w-full  h-full top-0 bg-slate-800 text-slate-200 flex flex-col overflow-hidden scrollbar-thin">
             <div className="px-5 pt-3 shrink-0 flex justify-start items-center gap-5 ">
                 <ArrowBack className="hover:scale-110" onClick={()=>cancel()}  />
                 { images.current.length==0
@@ -91,8 +91,8 @@ export default function CreatePost({
                             </div> 
                             <div className="shrink-0 flex flex-col sm:flex-row justify-center items-center gap-2 ">
                                 {/* <p className="text-lg ">Caption</p> */}
-                                <div className="w-full max-w-96  h-10 select-none  border border-slate-900 bg-slate-800 rounded-lg ">
-                                    <input ref={caption} type="text" placeholder="Caption" className="px-3 outline-none bg-transparent w-full h-full border-none " />
+                                <div className="w-full max-w-96  h-10 select-none  border border-slate-900 bg-slate-800 rounded-lg overflow-hidden">
+                                    <input ref={caption} type="text" placeholder="Caption" className="px-3 outline-none bg-slate-700 bg-opacity-50 focus:bg-opacity-100 w-full h-full border-none " />
                                 </div>
                                 <button onClick={()=>post()} className="bg-blue-200 hover:bg-blue-300 text-slate-600 hover:text-black  shrink-0 h-10 w-full sm:w-20 max-w-96  rounded-lg ">
                                 Post

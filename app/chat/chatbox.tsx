@@ -24,29 +24,11 @@ function ChatBox({user, setUser}: {user: Connection | null, setUser: ()=>void}) 
         if(user ) {
             const msg = unreadMessages[user.username];
             if(msg) {
-                setMsgList(prev=>[...prev, {...msg, unread: false}]);
+                setMsgList(prev=>[...prev, {...msg}]);
                 removeMessage(user.username);
             }
         }
     }, [removeMessage, unreadMessages, user])
-
-
-    useEffect(()=>{
-        if(user) {
-            if(msgList.some((msg) => msg.sender==user.username && msg.unread)) {
-                setMsgList(prev=>prev.map((msg) => { 
-                    return {...msg, unread: false}; 
-                }))
-                setAllRead(user.username);
-            }
-
-            const container = document.getElementById('msgs') as HTMLDivElement
-            container?.scrollTo({top: container.scrollHeight})
-        };
-    }, [msgList, user])
-
-    
-
 
 
 

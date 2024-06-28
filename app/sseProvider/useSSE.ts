@@ -38,6 +38,8 @@ const useSSE = () => {
     const handleMessage = async (ev: MessageEvent) => {
       console.log({data: ev.data});
       if(!(ev.data as string).startsWith('{')) return;
+      console.log(ev.data);
+      
       const data = JSON.parse(ev.data);
 
       if (data.type === 'alert') {

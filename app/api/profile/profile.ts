@@ -6,6 +6,7 @@ import axios from "axios";
 import { validSession } from "../auth/authentication";
 import redis, { redisInit } from "../redis/redis_client";
 import { savePFP } from "@/app/utils/imageUploads";
+import { getConnectionStatus } from "../db_queries/search";
 
 
 /**
@@ -13,11 +14,13 @@ import { savePFP } from "@/app/utils/imageUploads";
  * @param user passed only when searching for another user
  * @returns info, fetches info from database and returns undefined if info not present
  */
-export async function fetchInfo(searchUser?: string) {
+export async function fetchInfo(searchUser?: string | null) {
     const {user, status} = await validSession();
     if(status==401) return;
-    const info = getInfo(searchUser??user!)
-    return info
+    {
+    const info = await getInfo(searchUser??user!)
+    const {status, id} = await getConnectionStatus(user!, info!.username)
+    return JSON.stringify({...info, status, id})}
 }
 
 /**

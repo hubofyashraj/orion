@@ -1,5 +1,3 @@
-import { cilUser } from "@coreui/icons"
-import CIcon from "@coreui/icons-react"
 import Image from "next/image"
 import { Suspense, TouchEvent, useEffect, useOptimistic, useRef, useState } from "react"
 import { ArrowLeft, ArrowRight, BookmarkAddOutlined, BookmarkSharp, Close, Comment, Delete, Favorite, FavoriteBorderOutlined, RateReviewOutlined, Send } from "@mui/icons-material"
@@ -127,7 +125,7 @@ export default function ImagePost({ post, openCommentSection }: {post: Post, ope
 
     
     return (
-        <div className={"flex w-full  shrink-0   border-slate-600 text-slate-200  bg-slate-800"}>
+        <div className={"flex w-full  shrink-0   border-slate-600 text-slate-200  bg-inherit"}>
             { screen.width>0 && <button onClick={()=>swipe('left')}  className={post.post_length==1?"invisible":"  "}><ArrowLeft /></button>}
             <div className={(displayComments?"blur ":"")+"w-full "}>
                 <div className="flex items-center  w-full gap-3 py-2 ">

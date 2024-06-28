@@ -10,7 +10,7 @@ import { fetchConnectRequests } from "../api/navbar/navbar";
 import Image from "next/image";
 import useAlerts from "../state-store/alertsStore";
 import useMessages from "../state-store/messagesStore";
-import Link from "next/link";
+import usePostsAlert from "../state-store/newPostsStore";
 
 interface NavBarProps {
     router: (route: string)=>void, 
@@ -23,6 +23,8 @@ export default function Navbar({ router, page }: NavBarProps) {
     const [renderAlerts, setRenderAlertsValue] = useState(false);
     const { alerts, requests } = useAlerts();    
     const { unreadMessages } = useMessages();    
+
+    const {newPosts} = usePostsAlert();
 
     const [oldRequests, setOldRequests] = useState<{[key: string]: string}>({});
 
@@ -38,8 +40,8 @@ export default function Navbar({ router, page }: NavBarProps) {
     }, []);
 
 
-    function toggleCollapse() {
-        setCollapsed(!isCollapsed);
+    function toggleCollapse(state?: boolean) {
+        setCollapsed(state??!isCollapsed);
     }
 
 
@@ -78,7 +80,7 @@ export default function Navbar({ router, page }: NavBarProps) {
             {renderAlerts && <Alerts />}
             <div id="navbar" className="h-full z-50  top-0 md:p-0 text-slate-200  bg-slate-900 w-full flex justify-between items-center">
                 <div onClick={()=>router('feed')} className="cursor-pointer shrink-0 px-4 bg-slate-900 w-20 flex gap-4 sm:hover:w-48 transition-all  overflow-hidden h-full  items-center rounded-r-lg  ">
-                    <Image className="shrink-0 h-12 w-12" alt="icon" height={36} width={36} src={'/icons/logo.png'} />
+                    <Image className={"shrink-0 h-12 w-12"+(newPosts?" animate-pulse ":"")} alt="icon" height={36} width={36} src={'/icons/logo.png'} />
                     <Image className="shrink-0 " priority onClick={()=>router('feed')} alt="logo" height={36} width={80} src={'/icons/yasmc@3x_alt.png'} />
                 </div>
                 <p className="select-none text-xl grow px-10 ">{pagetitle[page]}</p>
@@ -90,16 +92,16 @@ export default function Navbar({ router, page }: NavBarProps) {
                         <button onClick={toggleNotifiacations} className="w-8 h-8 hover:scale-105 transition-all  rounded-md cursor-pointer">
                             {(alerts.length==0 && Object.keys(requests).length==0)?<NotificationsNone className="text-slate-400"  />: <NotificationsActive className="animate-pulse text-slate-300" />}
                         </button>
-                        <button onClick={toggleCollapse} className="w-8 h-8 mr-4 sm:hidden scale-75 hover:scale-90 transition-all duration-300 rounded-md cursor-pointer">
+                        <button onClick={()=>toggleCollapse()} className="w-8 h-8 mr-4 sm:hidden scale-75 hover:scale-90 transition-all duration-300 rounded-md cursor-pointer">
                             <CIcon className="w-full h-full   text-slate-400  hover:text-white font-light " icon={cilMenu} />
                         </button>
                     </div>
                     <div className={(isCollapsed?"-right-full ":"right-0 ")+"transition-all min-w-40 max-w-40 sm:max-w-none h-full sm:w-auto self-start absolute  sm:static  "}>
                         <ul className=" bg-slate-900 w-full  drop-shadow-lg sm:drop-shadow-none  sm:h-full flex flex-col sm:flex-row gap-2 sm:px-4 pb-2 justify-start items-center rounded-l-lg">
-                            <li className="sm:hidden h-16 hover:scale-110 font-extralight sm:w-16 scale-90 transition-all duration-300 hover:font-normal  self-end "> <button onClick={toggleCollapse} className="w-full   h-full "><CIcon className=" w-8 mr-4 " icon={cilX}  /></button> </li>
-                            <li className="hover:scale-110 font-extralight sm:w-16 scale-90 transition-all duration-300 hover:font-normal  w-full"><button onClick={()=>{router('feed'); toggleCollapse();}} className="px-2 py-0.5 w-full">Home</button></li>
-                            <li className="hover:scale-110 font-extralight sm:w-16 scale-90 transition-all duration-300 hover:font-normal  w-full"><button onClick={()=>{router('search'); toggleCollapse();}} className="px-2 py-0.5  w-full">Search</button></li>
-                            <li className="hover:scale-110 font-extralight sm:w-16 scale-90 transition-all duration-300 hover:font-normal  w-full"><button onClick={()=>{router('profile');  toggleCollapse();}} className="px-2 py-0.5 w-full">Profile</button></li>
+                            <li className="sm:hidden h-16 hover:scale-110 font-extralight sm:w-16 scale-90 transition-all duration-300 hover:font-normal  self-end "> <button onClick={()=>toggleCollapse(true)} className="w-full   h-full "><CIcon className=" w-8 mr-4 " icon={cilX}  /></button> </li>
+                            <li className="hover:scale-110 font-extralight sm:w-16 scale-90 transition-all duration-300 hover:font-normal  w-full"><button onClick={()=>{router('feed'); toggleCollapse(true);}} className="px-2 py-0.5 w-full">Home</button></li>
+                            <li className="hover:scale-110 font-extralight sm:w-16 scale-90 transition-all duration-300 hover:font-normal  w-full"><button onClick={()=>{router('search'); toggleCollapse(true);}} className="px-2 py-0.5  w-full">Search</button></li>
+                            <li className="hover:scale-110 font-extralight sm:w-16 scale-90 transition-all duration-300 hover:font-normal  w-full"><button onClick={()=>{router('profile');  toggleCollapse(true);}} className="px-2 py-0.5 w-full">Profile</button></li>
                             <li className="hover:scale-110 font-extralight sm:w-16 scale-90 transition-all duration-300 hover:font-normal  w-full"><button onClick={onLogout} className="px-2 py-0.5 w-full" >{'Logout'}</button></li>
                         </ul>
                     </div>

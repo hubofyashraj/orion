@@ -14,7 +14,7 @@ export default function CommentSection({
     const divRef=useRef<HTMLDivElement | null>(null);
     const inputRef = useRef<HTMLInputElement | null>(null);
     const [optimisticComments, addOptimisticComment] = useOptimistic<Comment[], Comment>(
-        comments, (state: Comment[], comment: Comment) => [...state, comment]
+        comments, (state: Comment[], comment: Comment) => [comment, ...state]
     )
 
     const commentsRef = useRef<Comment[]>([]);
@@ -27,7 +27,7 @@ export default function CommentSection({
         }, 50)
         fetchComments(post.post_id).then((jsonString)=>{
             const {comments} = JSON.parse(jsonString) as {comments: Comment[]};
-            commentsRef.current=comments;
+            commentsRef.current=comments.sort((a,b) => -1);
             setComments(commentsRef.current);
         })
     },[post.post_id])
@@ -37,7 +37,7 @@ export default function CommentSection({
 
     
     function addComment(comment: Comment) {
-        setComments(prev=>[...prev, comment])
+        setComments(prev=>[ comment, ...prev])
         commentsRef.current=comments;
     }
 
@@ -70,9 +70,9 @@ export default function CommentSection({
 
 
     return (
-        <div ref={ref} style={{height: '3rem'}} className=" text-slate-300 absolute bottom-0  z-50  transition-all  overflow-hidden   w-full max-w-xl flex flex-col bg-slate-800 rounded-t-2xl  ">
+        <div ref={ref} style={{height: '3rem'}} className=" text-slate-300 absolute bottom-0  z-50  transition-all  overflow-hidden   w-full max-w-xl flex flex-col bg-inherit rounded-t-2xl  ">
             <p className="w-full p-2 text-center text-lg underline-offset-8 underline ">Comments <Close onClick={close} className="float-right hover:scale-105 "/></p>
-            <div ref={divRef} className="flex grow w-full  flex-col-reverse overflow-y-auto scrollbar-none">
+            <div ref={divRef} className="flex grow w-full  flex-col overflow-y-auto scrollbar-none">
                 {optimisticComments.map(comment => <CommentComponent comment={comment} post_user={post.post_user} delete_comment={()=>delete_comment(comment.comment_id)} key={comment.comment_id} />)}
             </div>
             <form action={action} autoComplete="off" className="w-full  p-2 select-none bg-inherit  flex gap-2 justify-center items-center">

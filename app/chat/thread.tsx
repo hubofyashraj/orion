@@ -1,7 +1,7 @@
 import { Send } from "@mui/icons-material";
-import { useOptimistic, useRef } from "react";
+import { useEffect, useOptimistic, useRef } from "react";
 import MessageComp from "./message";
-import { sendMessage } from "../api/chat/chat";
+import { sendMessage, setAllRead } from "../api/chat/chat";
 import { Connection } from "../api/db_queries/chat";
 
 
@@ -31,6 +31,16 @@ export default function Thread({
 
         }
     }
+
+
+    useEffect(()=>{
+        if(messages.some((message, idx) => message.unread)) {
+            setAllRead(user.username);
+        }
+        const container = document.getElementById('msgs') as HTMLDivElement
+        container?.scrollTo({top: container.scrollHeight})
+    }, [messages, user.username])
+
 
     return (
         <>

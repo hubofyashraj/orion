@@ -26,7 +26,7 @@ export async function hasPFP(user: string) {
 export async function getInfo(user: string) {
     var info = await infoCollection.findOne({username: user})
     const userStats = await userStatsCollection.findOne({username: user});
-    if(info && userStats) return JSON.stringify({ ...info, ...userStats })
+    if(info && userStats) return { ...info, ...userStats }
     else return
 }   
 

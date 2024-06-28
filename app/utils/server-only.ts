@@ -1,4 +1,5 @@
 import 'server-only';
+import { getConnections } from '../api/db_queries/chat';
 
 declare global {
     var clients: Map<string, WritableStreamDefaultWriter>
@@ -49,3 +50,10 @@ export function sendEvent(username: string, event: any) {
     }
 }
 
+
+export async function alertUsers(connectionsOf: string) {
+    const connections = await getConnections(connectionsOf);
+    connections.forEach((connection) => {
+        sendEvent(connection.username, {type: 'post'})
+    })
+}
