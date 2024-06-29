@@ -1,1 +1,1 @@
-npm start
+npx next start -p 80

@@ -36,9 +36,9 @@ const useSSE = () => {
     eventSource.current = new EventSource(`/api/sse`);
 
     const handleMessage = async (ev: MessageEvent) => {
-      console.log({data: ev.data});
+      // console.log({data: ev.data});
       if(!(ev.data as string).startsWith('{')) return;
-      console.log(ev.data);
+      // console.log(ev.data);
       
       const data = JSON.parse(ev.data);
 

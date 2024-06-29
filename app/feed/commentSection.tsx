@@ -32,9 +32,6 @@ export default function CommentSection({
         })
     },[post.post_id])
 
-
-
-
     
     function addComment(comment: Comment) {
         setComments(prev=>[ comment, ...prev])
