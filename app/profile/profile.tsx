@@ -15,6 +15,9 @@ export default function Profile() {
 
     useEffect(()=>{
         document.title = 'Profile | YASMC'
+    }, [])
+
+    useEffect(()=>{
         fetchInfo().then((infoString)=>{
             if(infoString) {
                 const info = JSON.parse(infoString) as ProfileInfo;
@@ -23,7 +26,7 @@ export default function Profile() {
         })
     }, [refresh])
 
-
+    
 
     const goBack = (doRefresh: boolean) => {
         showEdit(false); 

@@ -5,21 +5,16 @@ import Search from "./search/search";
 import CircularLoader from "./Loader/Loader";
 import Create from "./create/create";
 import Chat from "./chat/chat";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import Navbar from "./navbar/navbar";
-import Ping from "./sseProvider/ping";
 import { validSession } from "./api/auth/authentication";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
-import useSSE from "./sseProvider/useSSE";
-import { fetchPosts } from "./api/feed/feed";
 
 
 
 
 export default function App() {
-
-  useSSE();
 
   const [showLoader, setShowLoader] = useState(true);
   const router = useRouter();
@@ -31,7 +26,7 @@ export default function App() {
     const doc = document.documentElement
     doc.style.setProperty('--doc-height', `${window.innerHeight}px`)
   }
-  
+
   
 
   useEffect(()=>{
@@ -48,12 +43,10 @@ export default function App() {
       sessionStorage.setItem('user', user!);
       setShowLoader(false);
     })
+    console.log('app');
     
-
   }, [])
-
   
-
 
   const renderTab = () => {
     switch (searchParams.get('tab')) {
@@ -86,7 +79,6 @@ export default function App() {
         <div className='grow-0 w-full h-full bg-slate-700 overflow-hidden'>
           { renderTab() }
         </div>
-      <Ping />
     </div>
   )
 }

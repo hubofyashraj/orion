@@ -4,5 +4,6 @@ Dockerfile
 .next
 .vscode
 .env
+.env.local
 keyfile
 uploads

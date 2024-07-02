@@ -32,8 +32,8 @@ export default function CropComponent({
 
             uploadPFP(formData).then((success)=>{
                 close(success)
-                
             }).catch((error)=>{
+                console.error({error});
             })
         })
     }

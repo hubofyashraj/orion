@@ -1,30 +1,39 @@
 import Image from "next/image";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 
 export default function ProfilePictureComponent({
-    user, size, hasPFP
+    user, size, hasPFP, priority, refetch
 }: {
-    user: string, size: number, hasPFP?: boolean
+    user: string, size: number, hasPFP?: boolean, priority?: true, refetch?: boolean
 }) {
-    const self = useRef<string| null>(null);
-    const [src, setSrc] = useState(`/default_user_icon.png`)
+    const defaultPFP = '/default_user_icon.png';
+    const [src, setSrc] = useState(defaultPFP);
+    
+    useEffect(() => {
+        const uri = `/api/images?type=pfp&user=${user}&t=${Date.now()}`;
+        if (hasPFP) {
+            setSrc(uri);
+        }
+    }, [hasPFP, user]);
 
-    useEffect(()=>{
-        self.current = sessionStorage.getItem('user');
-        const uri = `/api/images?type=pfp&user=${user}`
-        if(hasPFP){  setSrc(uri) }
-    }, [hasPFP, user])
-
-    useEffect(()=>{
-        console.log(src);
-        
-    }, [src])
+    useEffect(() => {
+        if (refetch) {
+            const uri = `/api/images?type=pfp&user=${user}`;
+            const cacheBustedUri = `${uri}&t=${new Date().getTime()}`;
+            setSrc(cacheBustedUri);
+        }
+    }, [refetch, user]);
 
     return (
-        <div style={{height: size+'', width: size+''}} >
-            <Image loading="lazy" key={user} alt="Profile Picture" width={size} height={size} src={src} onError={(e)=>{console.log(e);
-             setSrc('/default_user_icon.png')}} />
+        <div style={{ height: size + 'px', width: size + 'px' }}>
+            <Image
+                loading={priority ? 'eager' : "lazy"}
+                alt="Profile Picture"
+                width={size}
+                height={size}
+                src={src}
+                onError={() => { setSrc(defaultPFP) }}
+            />
         </div>
-    )
-
+    );
 }

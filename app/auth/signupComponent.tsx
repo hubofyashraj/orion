@@ -64,8 +64,12 @@ export default function SignupComponent(props: {setPage: () => void}) {
     }
 
     async function action(formData: FormData) {
-        const result =  await signup(formData);
-        if(result) props.setPage()
+        try {
+            const result =  await signup(formData);
+            if(result) props.setPage()
+        } catch (error) {
+            alert(error);            
+        }
     }
 
     const common = 'outline-none bg-slate-900 bg-opacity-50 rounded-lg  hover:bg-opacity-70 px-3 py-2 text-center border-b border-slate-600'

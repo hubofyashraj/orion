@@ -1,15 +1,9 @@
 'use server';
 import { PullOperator, PushOperator } from "mongodb";
 import { validSession } from "../auth/authentication";
-import { collections } from './collections';
+import { getConnectionsCollection, getPostCollection, getPostCommentsCollection, getPostOptionsCollection, getPostStatsCollection, get_client } from "./collections";
 
 
-const client = collections.client;
-const postCollection = collections.postCollection;
-const postStatsCollection = collections.postStatsCollection;
-const postOptions = collections.postOptionsCollection;
-const connectionsCollection = collections.connectionsCollection;
-const commentsCollection = collections.postCommentsCollection;
 
 
 const postSortComparator = (a: Post,b: Post) => {
@@ -20,6 +14,8 @@ const postSortComparator = (a: Post,b: Post) => {
 
 export async function getPostsFromDB() {
     const {user, status} = await validSession();
+    const connectionsCollection = await getConnectionsCollection();
+    
     if(status==401) return;
 
     const document = await connectionsCollection.findOne({username: user})
@@ -40,6 +36,7 @@ export async function getPostsFromDB() {
 }
 
 export async function getPostFromDb(post_id: string) {
+    const postCollection = await getPostCollection();
     try {
         const post = await postCollection.findOne({post_id});
         return post;
@@ -51,6 +48,7 @@ export async function getPostFromDb(post_id: string) {
 }
 
 export async function getPostsOfUser(user: string, sorted: boolean) {
+    const postCollection = await getPostCollection();
     const posts = await postCollection.find({post_user: user}).toArray();
     if(!sorted) return posts;
 
@@ -63,6 +61,8 @@ export async function getPostsOfUser(user: string, sorted: boolean) {
 
 export async function getPostStats(post_id: string) {
     const {user, status} = await validSession();
+    const postStatsCollection = await getPostStatsCollection();
+    const postOptions = await getPostOptionsCollection();
     if(status==401) return;
     const stats = await postStatsCollection.findOne({post_id});
     const options = await postOptions.findOne({post_id});
@@ -79,7 +79,10 @@ export async function getPostStats(post_id: string) {
 }
 
 export async function toggleLikeInDB(post_id: string, user: string, current: boolean) {
+    const client = await get_client();
     const session = client.startSession();
+    const postStatsCollection = await getPostStatsCollection();
+    const postOptions = await getPostOptionsCollection();
     try {
         session.startTransaction();
 
@@ -106,7 +109,10 @@ export async function toggleLikeInDB(post_id: string, user: string, current: boo
 }
 
 export async function toggleSaveInDB(post_id: string, user: string, current: boolean) {
+    const client = await get_client();
     const session = client.startSession();
+    const postStatsCollection = await getPostStatsCollection();
+    const postOptions = await getPostOptionsCollection();
     try {
         session.startTransaction();
         if(current) {
@@ -131,6 +137,7 @@ export async function toggleSaveInDB(post_id: string, user: string, current: boo
 
 
 export async function getCommentsFromDb(post_id: string) {
+    const commentsCollection = await getPostCommentsCollection();
     try {
         const comments = await commentsCollection.find({post_id}).toArray();
         return comments;
@@ -141,6 +148,8 @@ export async function getCommentsFromDb(post_id: string) {
 }
 
 export async function saveCommentToDB(comment: PostComments) {
+    const commentsCollection = await getPostCommentsCollection();
+
     try {
         const result = await commentsCollection.insertOne(comment);
         return result.acknowledged;
@@ -153,6 +162,8 @@ export async function saveCommentToDB(comment: PostComments) {
 }
 
 export async function removeCommentFromDb(comment_id: string) {
+    const commentsCollection = await getPostCommentsCollection();
+    
     try {
         const result = await commentsCollection.deleteOne({comment_id});
         if(result.acknowledged && result.deletedCount==1) return true;

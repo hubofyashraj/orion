@@ -1,13 +1,13 @@
 'use server'
 import assert from "assert";
 import { validSession } from "../auth/authentication";
-import { collections } from "../db_queries/collections";
 import { hasPFP } from "../db_queries/profile";
+import { getConnectionsCollection, getInfoCollection } from "../db_queries/collections";
 
-const connectionsCollection = collections.connectionsCollection;
-const infoCollection = collections.infoCollection;
 
 async function generateSuggestions() {
+    const connectionsCollection = await getConnectionsCollection();
+
     const {status, user} = await validSession();
     if(status==401) return;
     assert(user);
@@ -47,6 +47,7 @@ export async function getSuggestions() {
 }
 
 export async function fetchMatchData(user: string) {
+    const infoCollection = await getInfoCollection();
     const info = await infoCollection.findOne({username: user}, {projection: {username: 1, fullname: 1}});
     return {...info, status: 'none'} as Match
 }

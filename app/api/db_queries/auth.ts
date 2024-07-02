@@ -1,21 +1,17 @@
 'use server';
+import { getClient } from '@/app/utils/server-only';
 import { compareSync } from 'bcrypt';
-import { collections } from './collections';
 import { genSaltSync, hashSync} from 'bcrypt';
+import { getConnectionsCollection, getInfoCollection, getSessionsCollection, getUserCollection, getUserStatsCollection, get_client } from './collections';
 
-const client = collections.client;
-const userCollection =collections.userCollection;
-const infoCollection =collections.infoCollection;
-const userStatsCollection = collections.userStatsCollection;
-const connectionCollection  = collections.connectionsCollection;
 
-const sessions = collections.sessions;
 
 export async function checkCredentials({
     username, password
 }: {
     username: string, password: string
 }) {
+    const userCollection =await getUserCollection();
     const result = await userCollection.findOne({username});
     if(result && compareSync(password, result.password)) return true;
     else return false;
@@ -25,6 +21,8 @@ export async function checkCredentials({
 
 export async function userExists(username: string) {
     try {
+        const userCollection =await getUserCollection();
+
         const result  =await userCollection.findOne({username});
         if(result) return true;
         else return false;
@@ -36,7 +34,12 @@ export async function userExists(username: string) {
 }
 
 export async function userSignup(data: User) {
-
+    const userCollection =await getUserCollection();
+    const infoCollection =await getInfoCollection();
+    const userStatsCollection = await getUserStatsCollection();
+    const connectionCollection  = await getConnectionsCollection();
+    
+    const client = await get_client();
     var salt = genSaltSync(10);
     data.password = hashSync(data.password , salt);
     
@@ -45,15 +48,15 @@ export async function userSignup(data: User) {
         const info: Info = {
             username: data.username,
             fullname: data.fullname,
-            bio: '',
-            contact: '',
             contact_privacy: false,
-            dob: '',
-            email: '',
-            gender: '',
-            location: '',
             pfp_uploaded: false,
             profession: '',
+            location: '',
+            contact: '',
+            gender: '',
+            email: '',
+            dob: '',
+            bio: '',
         }
 
         const stats: UserStats = {
@@ -95,6 +98,9 @@ export async function addSession({
 }: {
     user: string, token: string
 }) {
+    const client = await get_client();
+    const sessions = await getSessionsCollection();
+    
     const session = client.startSession();
     try {
         session.startTransaction();
@@ -114,6 +120,9 @@ export async function retrieveSession({
 }: {
     user: string
 }) {
+    const client = await get_client();
+    const sessions = await getSessionsCollection();
+
     const session = client.startSession();
     let token;
     try {
@@ -137,6 +146,8 @@ export async function endSession({
 }: {
     user: string
 }) {
+    const sessions = await getSessionsCollection();
+
     try {
         await sessions.deleteOne({user});
         return true;

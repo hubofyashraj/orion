@@ -1,9 +1,10 @@
 'use server'
-import { collections } from "./collections"
 
-const requestsCollection = collections.connectRequestCollection;
+import { getConnectRequestCollection } from "./collections";
+
 
 export async function readConnectRequestsFromDb(user: string) {
+    const requestsCollection = await getConnectRequestCollection();
     try {
         const requests = await requestsCollection.find({receiver: user}).toArray();
         const requestAlerts = requests.map(request => {return {from: request.sender, fullname: 'Placeholder'}})
@@ -18,6 +19,7 @@ export async function readConnectRequestsFromDb(user: string) {
 
 
 export async function readRequestId(sender: string, receiver: string) {
+    const requestsCollection = await getConnectRequestCollection();
     try {
         const request = await requestsCollection.findOne({sender, receiver});
         return request?._id.toString();

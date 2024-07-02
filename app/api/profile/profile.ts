@@ -45,11 +45,7 @@ export async function uploadPFP(formData: FormData) {
     if(token) {
         try {
             const updatedInfo = { pfp_uploaded: true }
-            console.log(formData.get('file'));
-            
             const result = await savePFP(formData.get('file') as File, user!)
-
-            
             if(result) {
                 updateInfo(updatedInfo)
                 return true;

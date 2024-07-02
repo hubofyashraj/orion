@@ -1,12 +1,5 @@
-import { collections } from './collections';
+import {  getPostCollection, getPostOptionsCollection, getPostStatsCollection, getUserStatsCollection, get_client } from './collections';
 
-const client = collections.client;
-const postsCollection = collections.postCollection;
-const postStatsCollection = collections.postStatsCollection;
-const postOptionsCollection = collections.postOptionsCollection;
-const postCommentsCollection = collections.postCommentsCollection;
-const userStatsCollection = collections.userStatsCollection;
-const connectionsCollection = collections.connectionsCollection;
 
 interface PostProps {
     post_id: string, 
@@ -17,6 +10,12 @@ interface PostProps {
 }
 
 export async function uploadPostData({ post_id, post_user, post_type, post_length, post_caption }: PostProps){
+    const client = await get_client();
+    const postsCollection = await getPostCollection();
+    const postStatsCollection = await getPostStatsCollection();
+    const postOptionsCollection = await getPostOptionsCollection();
+    const userStatsCollection = await getUserStatsCollection();
+
     const session = client.startSession()
     try{
         session.startTransaction();
@@ -60,6 +59,12 @@ export async function uploadPostData({ post_id, post_user, post_type, post_lengt
 }
 
 export async function deletePostData(post_id: string) {
+    const client = await get_client();
+    const postsCollection = await getPostCollection();
+    const postStatsCollection = await getPostStatsCollection();
+    const postOptionsCollection = await getPostOptionsCollection();
+    const userStatsCollection = await getUserStatsCollection();
+    
     const session  = client.startSession();
     try {
         session.startTransaction();

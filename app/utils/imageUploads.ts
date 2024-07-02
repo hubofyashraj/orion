@@ -31,16 +31,22 @@ export async function saveImages(formData: FormData) {
 }
 
 export async function savePFP(file: File, username: string) {
-    if(!existsSync(uploads)) mkdirSync(uploads);
+    try {
+        if(!existsSync(uploads)) mkdirSync(uploads);
 
-    if(!existsSync(pfp)) mkdirSync(pfp);
+        if(!existsSync(pfp)) mkdirSync(pfp);
 
-    await sharp(await file.arrayBuffer())
-    .resize(512)
-    .jpeg({quality: 80})
-    .toFile(join(pfp, username))
+        await sharp(await file.arrayBuffer())
+        .resize(512)
+        .jpeg({quality: 80})
+        .toFile(join(pfp, username))
 
-    return true;
+        return true;
+    } catch (error) {
+        console.error('while saving pfp');
+        console.error(error);
+    }
+    return false;
 }
 
 

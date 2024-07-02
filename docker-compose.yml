@@ -4,62 +4,62 @@ services:
     build: .
     ports:
       - '80:80'
-    depends_on:
-      - mongo1
-      - mongo2
-      - mongo3
-      - redis
+    # depends_on:
+    #   - mongo1
+    #   - mongo2
+    #   - mongo3
+    #   - redis
     environment:
-      - MONGODB_URI=mongodb://mongo1:27017,mongo2:27017,mongo3:27017/?retryWrites=true&w=majority&appName=ORION
+      # - mongodb_uri=mongodb://mongo1:27017,mongo2:27017,mongo3:27017/?retryWrites=true&w=majority&appName=ORION
       - db_name=oriondb
       - NODE_ENV=production
-      - redis_uri=redis://redis:6379
+      # - redis_uri=redis://redis:6379
 
-  mongo1:
-    image: mongo:latest
-    container_name: mongo1
-    ports:
-      - 27017:27017
-    environment:
-      - TCP_FASTOPEN=enabled
-    volumes:
-      - mongo1-data:/data/db
-      - ./init-replicaset.sh:/data/init_replicaset
-      - ./startupmongo.sh:/boot_mongo
-    command: ["sh","./boot_mongo"]
+#   mongo1:
+#     image: mongo:latest
+#     container_name: mongo1
+#     ports:
+#       - 27017:27017
+#     environment:
+#       - TCP_FASTOPEN=enabled
+#     volumes:
+#       - mongo1-data:/data/db
+#       - ./init-replicaset.sh:/data/init_replicaset
+#       - ./startupmongo.sh:/boot_mongo
+#     command: ["sh","./boot_mongo"]
 
-  mongo2:
-    image: mongo:latest
-    container_name: mongo2
-    ports:
-      - 27018:27017
-    environment:
-      - TCP_FASTOPEN=enabled
-    volumes:
-      - mongo2-data:/data/db
-    command: ["mongod","--replSet","rs0","--bind_ip_all"]
+#   mongo2:
+#     image: mongo:latest
+#     container_name: mongo2
+#     ports:
+#       - 27018:27017
+#     environment:
+#       - TCP_FASTOPEN=enabled
+#     volumes:
+#       - mongo2-data:/data/db
+#     command: ["mongod","--replSet","rs0","--bind_ip_all"]
 
-  mongo3:
-    image: mongo:latest
-    container_name: mongo3
-    ports:
-      - 27019:27017
-    environment:
-      - TCP_FASTOPEN=enabled
-    volumes:
-      - mongo3-data:/data/db
-    command: ["mongod","--replSet","rs0","--bind_ip_all"]
+#   mongo3:
+#     image: mongo:latest
+#     container_name: mongo3
+#     ports:
+#       - 27019:27017
+#     environment:
+#       - TCP_FASTOPEN=enabled
+#     volumes:
+#       - mongo3-data:/data/db
+#     command: ["mongod","--replSet","rs0","--bind_ip_all"]
 
-  redis:
-    image: redis:latest
-    ports:
-      - 6379:6379
-    volumes:
-      - redis-data:/data
+#   redis:
+#     image: redis:latest
+#     ports:
+#       - 6379:6379
+#     volumes:
+#       - redis-data:/data
 
-# Define volumes for persistent data
-volumes:
-  mongo1-data:
-  mongo2-data:
-  mongo3-data:
-  redis-data:
+# # Define volumes for persistent data
+# volumes:
+#   mongo1-data:
+#   mongo2-data:
+#   mongo3-data:
+#   redis-data:

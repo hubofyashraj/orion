@@ -1,11 +1,8 @@
 'use server'
 import assert from "assert";
-import { collections } from './collections';
+import { getConnectionsCollection, getInfoCollection, getMessagesCollection } from "./collections";
 
 
-const infoCollection         = collections.infoCollection;
-const connectionsCollection  = collections.connectionsCollection;
-const messagesCollection     = collections.messagesCollection;
 
 export type Connection = {
     username: string,
@@ -17,6 +14,10 @@ export type Connection = {
 
 export async function getConnections(username: string) {
     try {
+        const infoCollection =await getInfoCollection();
+        const connectionsCollection = await getConnectionsCollection();
+        const messagesCollection = await getMessagesCollection();
+
         const user = await connectionsCollection.findOne({username: username})
         
         const connections = user?.connections ?? [];
@@ -58,6 +59,8 @@ export async function getConnections(username: string) {
 
 export async function getMessagesFromDb(user1: string, user2: string) {
     try {
+        const messagesCollection = await getMessagesCollection();
+
         const messages = await messagesCollection.find({
             $or: [
                 {sender: user1, receiver: user2},
@@ -76,6 +79,8 @@ export async function getMessagesFromDb(user1: string, user2: string) {
 
 export async function insertMessage(message: Messages) {
     try {
+        const messagesCollection = await getMessagesCollection();
+
         const inserted = await messagesCollection.insertOne(message);
         return inserted.acknowledged;
     } catch (error) {
@@ -87,6 +92,9 @@ export async function insertMessage(message: Messages) {
 
 export async function readMessages(sender: string, receiver: string) {
     try {
+        const messagesCollection = await getMessagesCollection();
+        
+
         const result = await messagesCollection.updateMany({sender, receiver, unread: true}, {$set: {unread: false}});
         return result.modifiedCount;
     } catch (error) {
@@ -98,6 +106,8 @@ export async function readMessages(sender: string, receiver: string) {
 
 export async function getUnreadMessagesFromDB(username: string) {
     try {
+        const messagesCollection = await getMessagesCollection();
+
         const messages = await messagesCollection.find({receiver: username, unread: true}).toArray();
         return messages;
     } catch (error) {

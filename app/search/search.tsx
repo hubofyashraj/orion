@@ -52,47 +52,18 @@ export default function Search() {
         
     }
 
-    function action(action: string, _id?: string) {
-        return;
-        let update = user.current!;
-        if(action=='send') {
-            update ={
-                ...user.current!,
-                status: 'outgoing',
-                _id: _id
-            }
-        } 
-        else if(action=='cancel' || action=='decline') {
-            update ={
-                username: user.current!.username,
-                fullname: user.current!.fullname,
-                status: 'none',
-            }
-        }
-        else if(action=='accept') {
-            update ={
-                username: user.current!.username,
-                fullname: user.current!.fullname,
-                status: 'connected',
-            }
-        }
-
-        const updatedMatches = matches.map((match)=>match.username===update?.username? update: match)
-        
-        matches.filter(match=>{
-            if(match.username==update!.username) return update;
-            else return match
-        })
-
-        setMatches(updatedMatches);
-        user.current = (update)
+    const updateUser = (user: string, newVal: Match) => {
+        setMatches(prev => prev.map(v => {
+            if(v.username==user) return newVal;
+            return v;
+        }))
     }
 
 
     return (
         searchParams.get('user')
         ? <div className="text-slate-200 flex overflow-hidden flex-col w-full h-full gap-10 justify-start items-center bg-slate-700">
-            <UserProfile close={() => router.back()} action={action}/>
+            <UserProfile close={() => router.back()} updateUser={updateUser}/>
           </div> 
         : <div className="text-slate-200 flex overflow-y-auto flex-col w-full h-full justify-start  bg-slate-900">
             <div className=" h-16 shrink-0 w-full px-5 flex items-center justify-center">
@@ -127,9 +98,10 @@ function UserTile({
     user: Match, onClick: () => void
 }) {
 
+
     return (
         <div onClick={onClick} className="w-48 h-48 flex-col shrink-0  flex gap-2 transition-all items-center  bg-slate-800 hover:bg-slate-700  sm:hover:h-52 sm:hover:w-52 hover:shadow-lg py-2 px-4  rounded-md">
-            <div className="rounded-full h-16 w-16 overflow-hidden shrink-0 border-2 border-slate-800 bg-slate-800 ">
+            <div className="rounded-full h-16 w-16 overflow-hidden shrink-0  border-slate-800 bg-slate-800 ">
                 <ProfilePictureComponent size={64} user={user.username} hasPFP={user.hasPFP} />
             </div>
             <div className="grow text-center">

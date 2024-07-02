@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useOptimistic, useState } from "react";
 import { AlternateEmail, ArrowBack, Cancel, CheckCircle, Delete, Email, Notes, PeopleAlt, PersonAdd, Phone, PinDrop, Work } from "@mui/icons-material";
 import { Match } from "./search";
 import UserPosts from "./userPosts";
@@ -10,9 +10,9 @@ import Loading from "../loading";
 
 
 export default function UserProfile({ 
-    close, action
+    close, updateUser
 } : {
-    close: () => void, action: (action: string, _id?: string) => void
+    close: () => void, updateUser: (user: string, newVal: Match) => void
 }) {
     const [info, setInfo] = useState<ProfileInfo | undefined>()
 
@@ -76,7 +76,7 @@ export default function UserProfile({
                         <p className="text-xl py-2 sm:ml-16 sm:px-2 text-center sm:text-left">Posts</p>
                         <UserPosts user={info.username} />
                       </div>    
-                    : <ConnectionComponent info={info} action={action} refresh={refresh}/>}
+                    : <ConnectionComponent info={info} updateUser={updateUser} refresh={refresh}/>}
 
 
                 </div>
@@ -88,31 +88,60 @@ export default function UserProfile({
 }
 
 function ConnectionComponent({
-    info, action, refresh
+    info, updateUser, refresh
 }: {
-    info: ProfileInfo, action: (action:string, _id?: string) => void,refresh: () => void
+    info: ProfileInfo, updateUser: (user:string, newVal: Match) => void,refresh: () => void
 }) {
     
+    const [status, setStatus] = useState(info.status);
+
+    const [optimisticState, setStateOptimistically] = useOptimistic<string, string>(
+        info.status as string, (state, newState) => newState
+        
+    )
+
     async function sendrequest() {
+        setStateOptimistically('outgoing')
         const req_id = await sendRequest(info.username);
         if(req_id) {
-            action('send', req_id);
+            const m:Match = {
+                fullname: info.fullname,
+                username: info.username,
+                status: 'outgoing',
+                _id: req_id,
+                hasPFP: info.pfp_uploaded
+            }
+            updateUser(info.username, m);
             refresh();
         }
     }
 
     async function cancelrequest() {
+        setStateOptimistically('none')
         const result = await cancelRequest(info.id as string);
         if(result) {
-            action('cancel');
+            const m:Match = {
+                fullname: info.fullname,
+                username: info.username,
+                status: 'none',
+                hasPFP: info.pfp_uploaded
+            }
+            updateUser(info.username, m);
             refresh();
         }
     }
 
     async function acceptrequest() {
+        setStateOptimistically('connected')
         const result = await acceptRequest(info.id as string);
         if(result) { 
-            action('accept')
+            const m:Match = {
+                fullname: info.fullname,
+                username: info.username,
+                status: 'connected',
+                hasPFP: info.pfp_uploaded
+            }
+            updateUser(info.username, m);
             refresh()
         }
     }
@@ -120,16 +149,32 @@ function ConnectionComponent({
     async function declinerequest() {
         const result = await cancelRequest(info.id as string);
         if(result) {
-            action('cancel');
+            const m:Match = {
+                fullname: info.fullname,
+                username: info.username,
+                status: 'none',
+                hasPFP: info.pfp_uploaded
+            }
+            updateUser(info.username, m);
             refresh();
         }
     }
     
+
+    function get_label(status: string) {
+        switch (status) {
+            case 'none':
+                return 'Send Request';
+            case 'incoming': 
+                return ''
+        }
+    }
+
     const btnStyle = 'w-max bg-slate-800 bg-opacity-70 hover:bg-opacity-100 py-2 px-5 rounded-full hover:scale-105 flex justify-center items-center gap-2'
     return (
         <div className="mt-5 flex gap-2 justify-center items-center w-full flex-col sm:flex-row">
-            { info.status=='none' && <button onClick={sendrequest}  className={btnStyle}><PersonAdd  /><p className="text-sm">Send Request</p></button>}
-            { info.status=='incoming' 
+            { status=='none' && <button onClick={sendrequest}  className={btnStyle}><PersonAdd  /><p className="text-sm">Send Request</p></button>}
+            { status=='incoming' 
                 && <div className="flex flex-col gap-2 items-center justify-center">
                     <p>{info.fullname} wants to connect</p>
                     <div className="flex gap-2 sm:gap-5 max-w-[calc(80svw)] flex-col sm:flex-row ">
@@ -137,7 +182,7 @@ function ConnectionComponent({
                         <button onClick={declinerequest} className={btnStyle}><Delete /><p className="text-sm">Delete Request</p></button>
                     </div>    
                 </div> }
-            { info.status=='outgoing' && <button onClick={cancelrequest} className={btnStyle}><Cancel /><p className="text-sm">Cancel Request</p></button> } 
+            { status=='outgoing' && <button onClick={cancelrequest} className={btnStyle}><Cancel /><p className="text-sm">Cancel Request</p></button> } 
         </div> 
     )
 }

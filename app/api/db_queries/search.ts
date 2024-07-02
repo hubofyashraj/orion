@@ -1,15 +1,12 @@
 'use server'
 import { Collection, ObjectId } from "mongodb";
-import { collections } from './collections';
-const client  = collections.client;
-const userStatsCollection = collections.userStatsCollection;
-const connectionsCollection: Collection<Connections> = collections.connectionsCollection;
-const requestsCollection = collections.connectRequestCollection;
-const infoCollection = collections.infoCollection;
+import { getConnectRequestCollection, getConnectionsCollection, getInfoCollection, getUserStatsCollection, get_client } from "./collections";
 
 
 
 export async function getConnectionStatus(username: string, user1: string) {
+    const connectionsCollection = await getConnectionsCollection();
+    const requestsCollection = await getConnectRequestCollection();
     try {
         const connections = (await connectionsCollection.findOne({username}))!.connections;
         if(connections.includes(user1)) return {status: 'connected'};
@@ -28,6 +25,8 @@ export async function getConnectionStatus(username: string, user1: string) {
 }
 
 export async function searchUser(keyword: string, user: string) {
+    const client = await get_client();
+    const infoCollection = await getInfoCollection();
     const session = client.startSession();
     try {
         session.startTransaction()
@@ -70,6 +69,7 @@ export async function searchUser(keyword: string, user: string) {
  */
 export async function saveRequestInDb(sender: string, receiver: string) {
     const document = { sender, receiver };
+    const requestsCollection = await getConnectRequestCollection();
     try {
         const result = await requestsCollection.insertOne(document);
         return result.insertedId.toString()
@@ -86,6 +86,7 @@ export async function saveRequestInDb(sender: string, receiver: string) {
  * @returns return true or false depending on if the transaction was success
  */
 export async function deleteRequestFromDb(req_id: string) {
+    const requestsCollection = await getConnectRequestCollection();
     try {
         const result = await requestsCollection.deleteOne({_id: new ObjectId(req_id)});
         console.log({result});
@@ -99,6 +100,10 @@ export async function deleteRequestFromDb(req_id: string) {
 }
 
 async function connectUsers(u1: string, u2:string, _id: ObjectId) {
+    const connectionsCollection = await getConnectionsCollection();
+    const requestsCollection = await getConnectRequestCollection();
+    const userStatsCollection = await getUserStatsCollection();
+    const client = await get_client();
     const session = client.startSession();
     try {
         session.startTransaction();
@@ -128,6 +133,7 @@ async function connectUsers(u1: string, u2:string, _id: ObjectId) {
  */
 export async function resolveRequestInDb(id: string) {
     const oid=new ObjectId(id)
+    const requestsCollection = await getConnectRequestCollection();
     try {
         const request = await requestsCollection.findOne({_id: oid});
         if(request) {
@@ -143,6 +149,7 @@ export async function resolveRequestInDb(id: string) {
 
 
 export async function getRequestsFromDB(receiver: string) {
+    const requestsCollection = await getConnectRequestCollection();
     try {
         const requests = await requestsCollection.find({receiver}).toArray();
         return requests;
