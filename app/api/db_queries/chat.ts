@@ -1,6 +1,5 @@
 'use server'
 import assert from "assert";
-import { getConnectionsCollection, getInfoCollection, getMessagesCollection } from "./collections";
 
 
 
@@ -14,15 +13,15 @@ export type Connection = {
 
 export async function getConnections(username: string) {
     try {
-        const infoCollection =await getInfoCollection();
+        const infoCollection = await getInfoCollection();
         const connectionsCollection = await getConnectionsCollection();
         const messagesCollection = await getMessagesCollection();
 
-        const user = await connectionsCollection.findOne({username: username})
-        
+        const user = await connectionsCollection.findOne({ username: username })
+
         const connections = user?.connections ?? [];
-        const list = connections.map( async (connection)=>{
-            const info = await infoCollection.findOne({username: connection});
+        const list = connections.map(async (connection) => {
+            const info = await infoCollection.findOne({ username: connection });
             assert(info);
 
             let ob: Connection = {
@@ -34,18 +33,18 @@ export async function getConnections(username: string) {
             }
 
             const lastmsg = await messagesCollection
-            .find({ 
-                $or: [ {sender: username, receiver: connection}, 
-                    {sender: connection, receiver: username} ]
-                }, {projection: {_id: 0}, sort: { ts: -1 }, limit: 1}
-            ).toArray();
-            
-            
+                .find({
+                    $or: [{ sender: username, receiver: connection },
+                    { sender: connection, receiver: username }]
+                }, { projection: { _id: 0 }, sort: { ts: -1 }, limit: 1 }
+                ).toArray();
 
-            if(lastmsg.length) ob.lastmsg = lastmsg[0];
+
+
+            if (lastmsg.length) ob.lastmsg = lastmsg[0];
             return ob;
         })
-        if(!list) return [];
+        if (!list) return [];
         const result = await Promise.all(list)
         return result;
 
@@ -63,10 +62,10 @@ export async function getMessagesFromDb(user1: string, user2: string) {
 
         const messages = await messagesCollection.find({
             $or: [
-                {sender: user1, receiver: user2},
-                {sender: user2, receiver: user1}
+                { sender: user1, receiver: user2 },
+                { sender: user2, receiver: user1 }
             ]
-        }, { projection: { _id : 0} }).toArray();
+        }, { projection: { _id: 0 } }).toArray();
 
         return messages;
     } catch (error) {
@@ -85,17 +84,17 @@ export async function insertMessage(message: Messages) {
         return inserted.acknowledged;
     } catch (error) {
         console.log('error while inserting message, ', message);
-        console.log(error); 
-        return false;   
+        console.log(error);
+        return false;
     }
 }
 
 export async function readMessages(sender: string, receiver: string) {
     try {
         const messagesCollection = await getMessagesCollection();
-        
 
-        const result = await messagesCollection.updateMany({sender, receiver, unread: true}, {$set: {unread: false}});
+
+        const result = await messagesCollection.updateMany({ sender, receiver, unread: true }, { $set: { unread: false } });
         return result.modifiedCount;
     } catch (error) {
         console.log('error when setting messages to read', sender, receiver);
@@ -108,7 +107,7 @@ export async function getUnreadMessagesFromDB(username: string) {
     try {
         const messagesCollection = await getMessagesCollection();
 
-        const messages = await messagesCollection.find({receiver: username, unread: true}).toArray();
+        const messages = await messagesCollection.find({ receiver: username, unread: true }).toArray();
         return messages;
     } catch (error) {
         console.log('error when getting unreadMessages', username);

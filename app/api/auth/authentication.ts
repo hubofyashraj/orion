@@ -1,5 +1,5 @@
 'use server'
-import { addSession, checkCredentials, endSession } from "@/app/api/db_queries/auth";
+import { checkCredentials } from "@/app/api/db_queries/auth";
 import { deleteToken, insertToken, getToken } from "./cookie_store";
 import { JwtPayload, sign, verify } from "jsonwebtoken";
 import { redirect } from "next/navigation";
@@ -7,14 +7,13 @@ import { redirect } from "next/navigation";
 export async function login(formData: FormData) {
     const username = formData.get('username')?.toString().toLowerCase();
     const password = formData.get('password')?.toString();
-    
+
     if (username && password) {
-        const result = await checkCredentials({ username, password });
+        const result = await checkCredentials(username, password);
         if (result) {
             const token = sign({ username: username }, 'MY_JWT_SECRET', { expiresIn: '1h' });
             await insertToken(token);
             redirect('/');
-            return true;
         }
     }
     return false;
@@ -32,12 +31,12 @@ export async function logout(username?: string) {
 
 export async function validSession() {
     const token = await getToken();
-    if(token) {
+    if (token) {
         try {
-            const payload = verify(token, 'MY_JWT_SECRET') as {username: string} & JwtPayload;
-            return {status: 200, user: payload.username};
+            const payload = verify(token, 'MY_JWT_SECRET') as { username: string } & JwtPayload;
+            return { status: 200, user: payload.username };
         }
-        catch (error) { console.log('Error while verifying token\n', error) } 
-    } 
-    return {status: 401};
+        catch (error) { console.log('Error while verifying token\n', error) }
+    }
+    return { status: 401 };
 }

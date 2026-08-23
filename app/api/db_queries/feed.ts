@@ -1,34 +1,33 @@
 'use server';
 import { PullOperator, PushOperator } from "mongodb";
 import { validSession } from "../auth/authentication";
-import { getConnectionsCollection, getPostCollection, getPostCommentsCollection, getPostOptionsCollection, getPostStatsCollection, get_client } from "./collections";
+
+import { postRepository } from "../repositories/post.repository";
 
 
-
-
-const postSortComparator = (a: Post,b: Post) => {
+const postSortComparator = (a: Post, b: Post) => {
     const tsa = parseInt(a.post_id.replace(a.post_user, ''));
     const tsb = parseInt(b.post_id.replace(b.post_user, ''));
-    return tsb-tsa;
+    return tsb - tsa;
 }
 
 export async function getPostsFromDB() {
-    const {user, status} = await validSession();
+    const { user, status } = await validSession();
     const connectionsCollection = await getConnectionsCollection();
-    
-    if(status==401) return;
 
-    const document = await connectionsCollection.findOne({username: user})
+    if (status == 401) return;
+
+    const document = await connectionsCollection.findOne({ username: user })
     const connections = document?.connections;
 
     const posts: Post[] = [];
 
-    const promises  = connections?.map(async (connection) => {
+    const promises = connections?.map(async (connection) => {
         const userposts = await getPostsOfUser(connection, false);
         posts.push(...userposts);
     })
 
-    if(promises) await Promise.all(promises);
+    if (promises) await Promise.all(promises);
 
     posts.sort(postSortComparator)
 
@@ -36,12 +35,15 @@ export async function getPostsFromDB() {
 }
 
 export async function getPostFromDb(post_id: string) {
+
+    const post = postRepository.getPost(post_id);
+    return post
     const postCollection = await getPostCollection();
     try {
-        const post = await postCollection.findOne({post_id});
+        const post = await postCollection.findOne({ post_id });
         return post;
     } catch (error) {
-        console.log('error while reading post data from db, postid: ',post_id);
+        console.log('error while reading post data from db, postid: ', post_id);
         console.log(error);
     }
     return false;
@@ -49,8 +51,8 @@ export async function getPostFromDb(post_id: string) {
 
 export async function getPostsOfUser(user: string, sorted: boolean) {
     const postCollection = await getPostCollection();
-    const posts = await postCollection.find({post_user: user}).toArray();
-    if(!sorted) return posts;
+    const posts = await postCollection.find({ post_user: user }).toArray();
+    if (!sorted) return posts;
 
     posts.sort(postSortComparator)
 
@@ -60,17 +62,17 @@ export async function getPostsOfUser(user: string, sorted: boolean) {
 
 
 export async function getPostStats(post_id: string) {
-    const {user, status} = await validSession();
+    const { user, status } = await validSession();
     const postStatsCollection = await getPostStatsCollection();
     const postOptions = await getPostOptionsCollection();
-    if(status==401) return;
-    const stats = await postStatsCollection.findOne({post_id});
-    const options = await postOptions.findOne({post_id});
-    console.log({options});
-    
+    if (status == 401) return;
+    const stats = await postStatsCollection.findOne({ post_id });
+    const options = await postOptions.findOne({ post_id });
+    console.log({ options });
+
     const selfStats = {
-        liked: options?.post_liked_by.indexOf(user!)!=-1,
-        saved: options?.post_saved_by.indexOf(user!)!=-1
+        liked: options?.post_liked_by.indexOf(user!) != -1,
+        saved: options?.post_saved_by.indexOf(user!) != -1
     }
     return {
         stats,
@@ -86,26 +88,26 @@ export async function toggleLikeInDB(post_id: string, user: string, current: boo
     try {
         session.startTransaction();
 
-        if(current) {
-            await postStatsCollection.updateOne({post_id}, {$inc: {post_likes_count: -1}}, {session});
-            const likedby = (await postOptions.findOne({post_id: post_id}))!.post_liked_by;
-            await postOptions.updateOne({post_id}, {$set: {post_liked_by: likedby.filter((userInArray) => userInArray!=user)}});
+        if (current) {
+            await postStatsCollection.updateOne({ post_id }, { $inc: { post_likes_count: -1 } }, { session });
+            const likedby = (await postOptions.findOne({ post_id: post_id }))!.post_liked_by;
+            await postOptions.updateOne({ post_id }, { $set: { post_liked_by: likedby.filter((userInArray) => userInArray != user) } });
         } else {
-            await postStatsCollection.updateOne({post_id}, {$inc: {post_likes_count: 1}}, {session});
-            const likedby = (await postOptions.findOne({post_id: post_id}))!.post_liked_by;
-            await postOptions.updateOne({post_id}, {$set: {post_liked_by: [...likedby, user]}});
+            await postStatsCollection.updateOne({ post_id }, { $inc: { post_likes_count: 1 } }, { session });
+            const likedby = (await postOptions.findOne({ post_id: post_id }))!.post_liked_by;
+            await postOptions.updateOne({ post_id }, { $set: { post_liked_by: [...likedby, user] } });
         }
         await session.commitTransaction();
         return true;
     } catch (error) {
-        console.log({error});
-        
-        await session.abortTransaction();        
+        console.log({ error });
+
+        await session.abortTransaction();
         return false;
     } finally {
         await session.endSession();
     }
-    
+
 }
 
 export async function toggleSaveInDB(post_id: string, user: string, current: boolean) {
@@ -115,31 +117,31 @@ export async function toggleSaveInDB(post_id: string, user: string, current: boo
     const postOptions = await getPostOptionsCollection();
     try {
         session.startTransaction();
-        if(current) {
-            await postStatsCollection.updateOne({post_id}, {$inc: {post_save_count: -1}});
-            const savedby = (await postOptions.findOne({post_id: post_id}))!.post_saved_by;
-            await postOptions.updateOne({post_id}, {$set: {post_saved_by: savedby.filter((userInArray) => userInArray!=user)}});
+        if (current) {
+            await postStatsCollection.updateOne({ post_id }, { $inc: { post_save_count: -1 } });
+            const savedby = (await postOptions.findOne({ post_id: post_id }))!.post_saved_by;
+            await postOptions.updateOne({ post_id }, { $set: { post_saved_by: savedby.filter((userInArray) => userInArray != user) } });
         } else {
-            await postStatsCollection.updateOne({post_id}, {$inc: {post_save_count: 1}});
-            const savedby = (await postOptions.findOne({post_id: post_id}))!.post_saved_by;
-            await postOptions.updateOne({post_id}, {$set: {post_saved_by: [...savedby, user]}});
+            await postStatsCollection.updateOne({ post_id }, { $inc: { post_save_count: 1 } });
+            const savedby = (await postOptions.findOne({ post_id: post_id }))!.post_saved_by;
+            await postOptions.updateOne({ post_id }, { $set: { post_saved_by: [...savedby, user] } });
         }
         await session.commitTransaction();
         return true;
     } catch (error) {
-        await session.abortTransaction();        
+        await session.abortTransaction();
         return false;
     } finally {
         await session.endSession();
     }
-    
+
 }
 
 
 export async function getCommentsFromDb(post_id: string) {
     const commentsCollection = await getPostCommentsCollection();
     try {
-        const comments = await commentsCollection.find({post_id}).toArray();
+        const comments = await commentsCollection.find({ post_id }).toArray();
         return comments;
     } catch (error) {
         console.error('while fetching comments for post', post_id);
@@ -163,10 +165,10 @@ export async function saveCommentToDB(comment: PostComments) {
 
 export async function removeCommentFromDb(comment_id: string) {
     const commentsCollection = await getPostCommentsCollection();
-    
+
     try {
-        const result = await commentsCollection.deleteOne({comment_id});
-        if(result.acknowledged && result.deletedCount==1) return true;
+        const result = await commentsCollection.deleteOne({ comment_id });
+        if (result.acknowledged && result.deletedCount == 1) return true;
     } catch (error) {
         console.error('while deleting comment from db:', comment_id);
         console.error(error);

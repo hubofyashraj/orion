@@ -1,4 +1,4 @@
-type User = {
+type UserType = {
     _id?: ObjectId,
     username: string,
     password: string,
@@ -7,15 +7,15 @@ type User = {
 
 type Info = {
     _id?: ObjectId,
-    username: string, 
-    fullname: string, 
-    dob: string, 
-    profession: string, 
-    location: string, 
-    bio: string, 
-    gender: string, 
-    email: string, 
-    contact: string, 
+    username: string,
+    fullname: string,
+    dob: string,
+    profession: string,
+    location: string,
+    bio: string,
+    gender: string,
+    email: string,
+    contact: string,
     contact_privacy: boolean
     pfp_uploaded: boolean,
 }
@@ -23,14 +23,14 @@ type Info = {
 
 type InfoUpdate = {
     _id?: ObjectId,
-    fullname?: string, 
-    dob?: string, 
-    profession?: string, 
-    location?: string, 
-    bio?: string, 
-    gender?: string, 
-    email?: string, 
-    contact?: string, 
+    fullname?: string,
+    dob?: string,
+    profession?: string,
+    location?: string,
+    bio?: string,
+    gender?: string,
+    email?: string,
+    contact?: string,
     contact_privacy?: boolean
     pfp_uploaded?: boolean,
 }
@@ -72,7 +72,7 @@ type Post = {
     post_user: string,
     post_id: string,
     post_type: string,
-    post_length: number, 
+    post_length: number,
     post_content?: Array<string>,
     post_caption: string
 }
@@ -103,17 +103,17 @@ type PostComments = {
 }
 
 
-type UserSession = { 
-    _id?: ObjectId, 
-    user: string, 
-    token: string 
+type UserSession = {
+    _id?: ObjectId,
+    user: string,
+    token: string
 }
 
 
 type Match = {
-    username: string, 
-    fullname: string, 
-    status: string, 
+    username: string,
+    fullname: string,
+    status: string,
     hasPFP?: boolean
     _id?: string
 }

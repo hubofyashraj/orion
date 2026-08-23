@@ -2,7 +2,7 @@
 import { cookies } from "next/headers";
 
 export async function insertToken(token: string) {
-    const cookieStore = cookies();
+    const cookieStore = await cookies();
     cookieStore.set('authorization', token, {
         httpOnly: true,
         sameSite: false,
@@ -11,12 +11,12 @@ export async function insertToken(token: string) {
 }
 
 export async function deleteToken() {
-    const cookieStore = cookies();
+    const cookieStore = await cookies();
     cookieStore.set('authorization', '', { expires: new Date(0), httpOnly: true });
 }
 
 export async function getToken() {
     const cookieStore = cookies();
-    const token = cookieStore.get('authorization')?.value;
-    return token;    
+    const token = (await cookieStore).get('authorization')?.value;
+    return token;
 }

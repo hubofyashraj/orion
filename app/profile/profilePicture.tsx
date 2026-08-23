@@ -2,7 +2,6 @@
 import { ChangeEvent, useEffect, useRef, useState } from "react";
 import CropComponent from "./CropComponent";
 import ProfilePictureComponent from "../components/pfp";
-import { revalidatePath } from "next/cache";
 
 export default function ProfilePicture({
     info, refresh
@@ -11,19 +10,19 @@ export default function ProfilePicture({
 }) {
 
     const [imageChosen, setImageChosen] = useState(false)
-    
+
     const fileSelected = useRef<File | null>(null)
 
     const [refetch, setRftch] = useState(false);
 
     function onChangeHandler(e: ChangeEvent) {
         const file = (e.target as HTMLInputElement).files![0]
-        fileSelected.current=file
+        fileSelected.current = file
         setImageChosen(true);
     }
 
 
-    if(!info) return (<></>)
+    if (!info) return (<></>)
 
     return (
         <div className=" sm:ml-10 sm:mt-20 p-2  rounded-full bg-inherit">
@@ -35,16 +34,16 @@ export default function ProfilePicture({
                 </div>
             </div>
             {imageChosen &&
-                <CropComponent 
-                file={fileSelected.current!} 
-                close={(uploadSuccess)=>{
-                    setImageChosen(false) 
-                    console.log({uploadSuccess});
-                    
-                    if(uploadSuccess) {
-                        setRftch(!refetch)
-                    }
-                } } 
+                <CropComponent
+                    file={fileSelected.current!}
+                    close={(uploadSuccess) => {
+                        setImageChosen(false)
+                        console.log({ uploadSuccess });
+
+                        if (uploadSuccess) {
+                            setRftch(!refetch)
+                        }
+                    }}
                 />
             }
         </div>
